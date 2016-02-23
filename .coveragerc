@@ -1,0 +1,14 @@
+[paths]
+source =
+   src/luzfcb_djdocuments
+   */site-packages/luzfcb_djdocuments
+
+[run]
+branch = True
+source = luzfcb_djdocuments
+parallel = true
+
+[report]
+show_missing = true
+precision = 2
+omit = *migrations*
