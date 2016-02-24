@@ -9,10 +9,30 @@ env:
     - TOXENV=check
     - TOXENV=docs
 
-    - TOXENV=py27,codecov
-    - TOXENV=py34,codecov
-    - TOXENV=py35,codecov
-    - TOXENV=pypy,codecov
+    - TOXENV=py27-django18,codecov
+
+    - TOXENV=py27-django19,codecov
+
+    - TOXENV=py27-djangomaster,codecov
+
+    - TOXENV=py34-django18,codecov
+
+    - TOXENV=py34-django19,codecov
+
+    - TOXENV=py34-djangomaster,codecov
+
+    - TOXENV=py35-django18,codecov
+
+    - TOXENV=py35-django19,codecov
+
+    - TOXENV=py35-djangomaster,codecov
+
+    - TOXENV=pypy-django18,codecov
+
+    - TOXENV=pypy-django19,codecov
+
+    - TOXENV=pypy-djangomaster,codecov
+
 before_install:
   - python --version
   - uname -a
