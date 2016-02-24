@@ -9,7 +9,6 @@ from os.path import join
 from os.path import dirname
 from os.path import abspath
 
-
 if __name__ == "__main__":
     base_path = dirname(dirname(abspath(__file__)))
     print("Project path: {0}".format(base_path))
@@ -20,6 +19,7 @@ if __name__ == "__main__":
         bin_path = join(env_path, "bin")
     if not exists(env_path):
         import subprocess
+
         print("Making bootstrap env in: {0} ...".format(env_path))
         try:
             subprocess.check_call(["virtualenv", env_path])
@@ -34,7 +34,6 @@ if __name__ == "__main__":
 
     import subprocess
 
-
     jinja = jinja2.Environment(
         loader=jinja2.FileSystemLoader(join(base_path, "ci", "templates")),
         trim_blocks=True,
@@ -44,7 +43,6 @@ if __name__ == "__main__":
 
     tox_environments = [line.strip() for line in subprocess.check_output(['tox', '--listenvs']).splitlines()]
     tox_environments = [line for line in tox_environments if line not in ['clean', 'report', 'docs', 'check']]
-
 
     for name in os.listdir(join("ci", "templates")):
         with open(join(base_path, name), "w") as fh:

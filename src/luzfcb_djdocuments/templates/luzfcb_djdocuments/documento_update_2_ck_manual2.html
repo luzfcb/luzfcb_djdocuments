@@ -1,0 +1,559 @@
+{% load staticfiles %}
+{% load i18n %}
+{% load spurl %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="robots" content="noindex, nofollow">
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Editar</title>
+    <link type="text/css"
+            {#          href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/themes/blue/pace-theme-center-atom.css"#}
+            {#          href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/themes/blue/pace-theme-center-simple.css"#}
+            {#          href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/themes/blue/pace-theme-barber-shop.css"#}
+          href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/themes/blue/pace-theme-loading-bar.css"
+          rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/pace.min.js"
+            data-pace-options='{ "ajax": true , "restartOnRequestAfter": false, "document": false}'></script>
+
+
+    <link type="text/css"
+            {#          href="https://cdnjs.cloudflare.com/ajax/libs/humane-js/3.2.2/themes/flatty.min.css"#}
+          href="https://cdnjs.cloudflare.com/ajax/libs/humane-js/3.2.2/themes/jackedup.min.css"
+          rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/humane-js/3.2.2/humane.min.js"></script>
+    <style>
+        {#        .humane,#}
+        {#        .humane-jackedup {#}
+        {#            background-color: #d0ffcf;#}
+        {#        }#}
+
+    </style>
+    {#    <link type="text/css" href="{% static "luzfcb_djdocuments/bootstrap/bootstrap-3.3.5-dist/css/bootstrap.min.css" %}"#}
+    {#          rel="stylesheet">#}
+
+    {#    <link type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"#}
+    {#          rel="stylesheet">#}
+    <link type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.css"
+          rel="stylesheet">
+
+    {#    <link type="text/css"#}
+    {#          href="{% static "luzfcb_djdocuments/bootstrap/bootstrap-3.3.5-dist/css/bootstrap-theme.min.css" %}"#}
+    {#          rel="stylesheet">#}
+    <link type="text/css"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css"
+          rel="stylesheet">
+
+    {#    <link type="text/css"#}
+    {#          href="{% static "luzfcb_djdocuments/bootstrap/bootstrap-3.3.5-dist/fonts/glyphicons-halflings-regular.eot" %}"#}
+    {#          rel="stylesheet">#}
+    <link type="text/css"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/fonts/glyphicons-halflings-regular.eot"
+          rel="stylesheet">
+
+    <link type="text/css"
+          href="{% static "luzfcb_djdocuments/css/luzfcb_djdocuments.css" %}"
+          rel="stylesheet">
+    <style>
+        {##}
+        {##}
+        {#        .doc-cabecalho {#}
+        {##}
+        {#        }#}
+        {##}
+        {#        .doc-rodape {#}
+        {##}
+        {#        }#}
+        {##}
+        {#        .doc-container {#}
+        {#            display: table;#}
+        {#        }#}
+        {##}
+        {#        .doc-content {#}
+        {#            display: table-row;#}
+        {#            height: 100%;#}
+        {#        }#}
+        {##}
+        {#        .doc-content-body {#}
+        {#            display: table-cell;#}
+        {#        }#}
+        {##}
+        {#        .body {#}
+        {#            background: rgb(204, 204, 204);#}
+        {#        }#}
+        {##}
+        {#        .maindiv {#}
+        {#            /*#}
+        {#            the content is hidden by default,#}
+        {#            and will be shown only after#}
+        {#            completed page load and#}
+        {#            finalized ckeditor startup#}
+        {#            */#}
+        {#            display: none;#}
+        {#        }#}
+        {##}
+        {#        .content-section {#}
+        {#            margin-bottom: 100px;#}
+        {#        }#}
+        {##}
+        {#            .article {#}
+        {#                background: white;#}
+        {#                width: 21cm;#}
+        {#                height: 29.7cm;#}
+        {#                display: block;#}
+        {#                margin: 0 auto 0.5cm;#}
+        {#                box-shadow: 0 0 0.5cm rgba(0, 0, 0, 0.5);#}
+        {#                padding: 30px;#}
+        {#                font-size: 11pt;#}
+        {#                line-height: 22pt;#}
+        {#            }#}
+        {##}
+        {#        .article form {#}
+        {#            height: 100%;#}
+        {#        }#}
+        {##}
+        {#        @media print {#}
+        {#            body, .article[size="A4"] {#}
+        {#                margin: 0;#}
+        {#                box-shadow: 0;#}
+        {#                background: transparent;#}
+        {#            }#}
+        {##}
+        {#            .cke_pagebreak {#}
+        {#                display: block;#}
+        {#                page-break-before: always;#}
+        {#            }#}
+        {##}
+        {#            .content-section {#}
+        {#                margin-bottom: 0;#}
+        {#                padding-top: 0;#}
+        {#            }#}
+        {##}
+        {#            .no-print {#}
+        {#                display: none;#}
+        {#            }#}
+        {##}
+        {#        }#}
+        {##}
+    </style>
+
+
+    {#    <script src="{% static "luzfcb_djdocuments/js/jquery/1.11.3/jquery.min.js" %}"></script>#}
+    {#    <script src="{% static "luzfcb_djdocuments/bootstrap/bootstrap-3.3.5-dist/js/bootstrap.min.js" %}"></script>#}
+    {#    <script src="http://cdn.ckeditor.com/4.5.2/standard-all/ckeditor.js"></script>#}
+    {#    #}
+    <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    {#    <script src="http://cdn.ckeditor.com/4.5.2/full-all/ckeditor.js"></script>#}
+    {#    <script src="{% static "ckeditor/ckeditor/ckeditor.js" %}"></script>#}
+    <script src="{% static "luzfcb_djdocuments/ckeditor/4.5.5/ckeditor-full-min/ckeditor.js" %}"></script>
+    <script src="{% static "luzfcb_dj_simplelock/js/jquery_csrftoken.js" %}"></script>
+
+</head>
+
+<body class="body">
+<div class="maindiv">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div id="menu-superior" class="row navbar-fixed-top">
+                    <div class="col-md-12">
+                        <div class="btn-group">
+
+                            <button class="btn btn-default" type="button" id="salvar">
+                                <em class="glyphicon glyphicon-floppy-disk"></em> Salvar
+                            </button>
+                            <button class="btn btn-default" type="button">
+                                <em class="glyphicon glyphicon-align-center"></em> Imprimir
+                            </button>
+                            <button class="btn btn-default" type="button">
+                                <em class="glyphicon glyphicon-align-right"></em> Right
+                            </button>
+                            <button class="btn btn-default" type="button">
+                                <em class="glyphicon glyphicon-align-justify"></em> Justify
+                            </button>
+                        </div>
+                        <div id="top" class="cktop">
+                            <!-- Menu superior CKEditor -->
+                        </div>
+                    </div>
+                </div>
+                <div id="conteudo" class="row conteudo">
+                    <div class="center-block a4-pagina">
+                        <div class="col-md-12">
+                            <form role="form" method="post" id="formulario"
+                                  action="{% url 'documentos:update2' object.pk %}{% if popup or next_page_url %}?{% endif %}{% if popup %}popup=1{% endif %}{% if next_page_url %}&{{ next_kwarg_name }}={{ next_page_url }}{% endif %}">
+
+                                <div class="form-group ">
+                                    {{ form.cabecalho }}
+                                </div>
+                                <div class="form-group">
+                                    {{ form.titulo }}
+                                </div>
+                                <div class="form-group">
+                                    {{ form.conteudo }}
+                                </div>
+                                <div class="form-group">
+                                    {{ form.rodape }}
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row navbar-fixed-bottom">
+                    <div class="col-md-12">
+                        <div id="bottom">
+                            <!--  Menu inferior CKEditor  -->
+                        </div>
+                        <div class="btn-group">
+
+                            <button class="btn btn-default" type="button">
+                                <em class="glyphicon glyphicon-align-left"></em> Left
+                            </button>
+                            <button class="btn btn-default" type="button">
+                                <em class="glyphicon glyphicon-align-center"></em> Center
+                            </button>
+                            <button class="btn btn-default" type="button">
+                                <em class="glyphicon glyphicon-align-right"></em> Right
+                            </button>
+                            <button class="btn btn-default" type="button">
+                                <em class="glyphicon glyphicon-align-justify"></em> Justify
+                            </button>
+                            <div class="pull-right" id="status-bar">Documento: {{ object.identificador_versao }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+<script>
+    function get_ckenabledElementIds() {
+        return $('[data-djckeditor]').map(function () {
+            return this.id;
+        }).get();
+    }
+
+    var ckenabledElementIds = get_ckenabledElementIds();
+
+
+    var ckeditor_config = {
+        extraPlugins: [
+            'sharedspace',
+            {#            'save',#}
+            'autolink',
+            'autogrow',
+            "base64image",
+            "dialog", // required by base64image
+            "dialogui", // required by base64image
+            "maiuscula",
+            "extenso"
+
+        ].join(),
+        removePlugins: 'resize,maximize,magicline',
+        removeButtons: 'resize,Maximize',
+        sharedSpaces: {
+            'top': 'top',
+            'bottom': 'bottom'
+        },
+        contentsCss: '{% static "luzfcb_djdocuments/css/ckeditor_custom_styles.css" %}',
+        startupShowBorders: false,
+        autoGrow_onStartup: true,
+        autoGrow_minHeight: 0,
+        autoGrow_bottomSpace: 0,
+        toolbar: 'Basic',
+        toolbar_Basic: [
+            {name: 'clipboard', items: ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo']},
+            {name: 'editing', items: ['Scayt']},
+            {name: 'links', items: ['Link', 'Unlink', 'Anchor']},
+            {name: 'insert', items: ['base64image', 'Table', 'HorizontalRule', 'SpecialChar']},
+            {name: 'extra', items: ['Extenso', "Maiuscula", "Minuscula"]},
+            {name: 'document', items: ['Source']},
+            '/',
+            {
+                name: 'basicstyles',
+                items: ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'RemoveFormat']
+            },
+            {name: 'paragraph', items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote']},
+            {name: 'styles', items: ['Styles', 'Format']},
+            {name: 'about', items: ['About']}
+
+        ],
+        base64image_disableUrlImages: true,
+
+
+    };
+
+    function startCkEditor() {
+        {#        var dict = {};#}
+        ckenabledElementIds.map(function (id_elemento) {
+            CKEDITOR.replace(id_elemento, ckeditor_config);
+            {#            dict[id_elemento] = CKEDITOR.replace(id_elemento, ckeditor_config);#}
+        });
+        {#        return dict;#}
+    }
+
+    startCkEditor();
+
+
+    CKEDITOR.on('instanceReady', function (evt) {
+        var ckeditor_first_div_id = "cke_" + evt.editor.name;
+        var selector_str = "#content-section " + "#" + ckeditor_first_div_id;
+        {#        console.log('$("' + selector_str + '")');#}
+        $(selector_str).addClass("mynewcssclass");
+        if (evt.editor.name === "id_conteudo") {
+            {#            alert("Treco chato")#}
+        }
+        evt.editor.fire('click');
+        evt.editor.execCommand('autogrow');
+
+    });
+    function beforeUnload(evt) {
+        var item_nao_salvo = false;
+        for (var instance in CKEDITOR.instances) {
+            if (CKEDITOR.instances.hasOwnProperty(instance)) {
+                if (CKEDITOR.instances[instance].checkDirty()) {
+                    item_nao_salvo = true;
+                }
+            }
+        }
+        if (item_nao_salvo) {
+            return evt.returnValue = "{% trans "O documento possui modificações e ainda não foi salvo" %}";
+        }
+
+    }
+
+    {#    {% if not debug %}#}
+    if (window.addEventListener) {
+        window.addEventListener('beforeunload', beforeUnload, false);
+    } else {
+        window.attachEvent('onbeforeunload', beforeUnload);
+    }
+    {#    {% endif %}#}
+
+
+
+    //http://brack3t.com/ajax-and-django-views.html
+    //https://github.com/wavded/humane-js
+    //https://github.com/alertifyjs/alertify.js
+    //versao 2
+    $(document).ready(function () {
+        var requestRunning = false;
+
+        var conteudo_modificado = {};
+
+        var $botao_salvar = $("#salvar");
+        var $formulario = $("#formulario");
+
+
+        function ativarDesativarSalvar() {
+            var ativar = false;
+            for (var key in conteudo_modificado) {
+                ativar = conteudo_modificado[key];
+                if (ativar) {
+                    break;
+                }
+            }
+            if (ativar) {
+                $botao_salvar.prop('disabled', false);
+            }
+            else {
+                $botao_salvar.prop('disabled', true);
+            }
+            return ativar;
+
+        }
+
+        for (var instance in CKEDITOR.instances) {
+            var id_elemento = "" + instance;
+            conteudo_modificado[id_elemento] = false;
+            CKEDITOR.instances[id_elemento].on('change', function () {
+                conteudo_modificado[this.name] = !!CKEDITOR.instances[this.name].checkDirty();
+                ativarDesativarSalvar();
+
+            });
+
+        }
+        function django_message(msg, level) {
+            console.log("Level: ", level, 'MSG: ', msg)
+        }
+
+        function apply_form_field_error(fieldname, error) {
+            var input = $("#id_" + fieldname),
+                    container = $("#div_id_" + fieldname),
+                    error_msg = $("<span />").addClass("help-inline ajax-error").text(error[0]);
+
+            container.addClass("error");
+            error_msg.insertAfter(input);
+        }
+
+        function clear_form_field_errors(form) {
+            $(".ajax-error", $(form)).remove();
+            $(".error", $(form)).removeClass("error");
+        }
+
+        //seu codigo lindo aqui
+        $formulario.submit(function (event) {
+            // Stop form from submitting normally
+            event.preventDefault();
+
+
+            if (requestRunning) { // don't do anything if an AJAX request is pending
+                return;
+            }
+
+            for (var instance in CKEDITOR.instances) {
+                if (CKEDITOR.instances.hasOwnProperty(instance)) {
+                    CKEDITOR.instances[instance].updateElement();
+                }
+            }
+            // Get some values from elements on the page:
+            var $form = $(this);
+            var conteudo = $form.serializeArray();
+            var url = $form.attr("action").replace(/\s/g, "");
+
+            clear_form_field_errors($form);
+            requestRunning = true;
+            // Send the data using post
+            // parametros url, data, callback, type
+            // sendo que callback é sucess
+            var posting = $.post(url, conteudo, 'JSON');
+
+            // Put the results in a div
+            posting.fail(function (jqXHR, textStatus, errorThrown) {
+                {#                                        console.log("fail textStatus:", textStatus);#}
+                {#                                        console.log("fail errorThrown:", errorThrown);#}
+                {#                                        var content = textStatus;#}
+                {#                                        $("#results").empty().append(content);#}
+
+
+                var errors = jqXHR.responseJSON;
+                {#                    var errors = $.parseJSON(jqXHR.responseText);#}
+                console.log(errors);
+                var msg = "Erro ao salvar documento" + errors.document_number + "\n";
+                humane.log(msg, {
+                    timeout: 2500,
+                    clickToClose: true,
+                    addnCls: 'humane-error'
+                });
+                {#                $.each(errors, function (index, value) {#}
+                {#                    if (index === "__all__") {#}
+                {#                        django_message(value[0], "error");#}
+                {#                    } else {#}
+                {#                        apply_form_field_error(index, value);#}
+                {#                    }#}
+                {#                });#}
+
+
+            });
+            // Put the results in a div
+            posting.done(function (data, textStatus, jqXHR) {
+                console.log("done data:", data);
+                console.log("done textStatus:", textStatus);
+                console.log("done jqXHR:", jqXHR);
+                var content = $(data);
+                console.log($(data));
+                for (var instance in CKEDITOR.instances) {
+                    if (CKEDITOR.instances.hasOwnProperty(instance)) {
+                        CKEDITOR.instances[instance].resetUndo();
+                        conteudo_modificado[instance] = false;
+                    }
+                }
+                ativarDesativarSalvar();
+                var mensagem = "Documento N° " + data.document_number + " salvo com sucesso!";
+                humane.log(mensagem, {
+                    timeout: 2500,
+                    clickToClose: true,
+                    addnCls: 'humane-sucess'
+                });
+                $("#status-bar").empty().append('Documento: ' + data.identificador_versao);
+            });
+            posting.always(function (data, textStatus, errorThrown) {
+                console.log("always");
+                requestRunning = false;
+            });
+        }).bind('ajax:complete', function () {
+
+            // tasks to do
+            console.log("ajax completo");
+
+
+        });
+        $botao_salvar.click(function () {
+
+            $("#formulario").submit();
+
+        });
+
+
+    });
+
+
+
+</script>
+
+
+<script>
+    function corrigir_padding_conteudo() {
+        var menusuperior = $('#menu-superior');
+        var conteudo = $('#conteudo');
+        var altura_menu_superior = parseInt(menusuperior.css('height').replace(/[^-\d\.]/g, ''));
+        var adicional_altura = 130;
+        {#        var adicional_altura = 0;#}
+        var valor = "".concat(altura_menu_superior + adicional_altura).concat("px");
+        conteudo.css('padding-top', valor);
+        console.log('corrigindo');
+    }
+    {#    $(window).resize(function () {#}
+    {#        corrigir_padding_conteudo();#}
+    {#    });#}
+    window.addEventListener('resize.corrigir_padding_conteudo', corrigir_padding_conteudo, false);
+
+    Pace.on('hide', function () {
+
+        $(".maindiv").fadeIn("fast");
+        corrigir_padding_conteudo();
+        for (var instance in CKEDITOR.instances) {
+            if (CKEDITOR.instances.hasOwnProperty(instance)) {
+                //instance.editor.fire( 'click' );
+                CKEDITOR.instances[instance].execCommand('autogrow');
+            }
+
+        }
+    });
+
+
+
+
+</script>
+
+{% include 'luzfcb_dj_simplelock/dj_simplelock.html' %}
+{#<script>#}
+{#    function resizeToMinimum() {#}
+{#        var minimum = [878, 600];#}
+{#        var current = [window.outerWidth, window.outerHeight];#}
+{#        var restricted = [];#}
+{#        var i = 2;#}
+{##}
+{#        while (i-- > 0) {#}
+{#            restricted[i] = mimimum[i] > current[i] ? minimum[i] : current[i];#}
+{#        }#}
+{#        console.log("redimencionando x:" + current[0] + " - y:" + current[1]);#}
+{#        window.resizeTo(current[0], current[1]);#}
+{##}
+{#    }#}
+{##}
+{#    window.addEventListener('resize', resizeToMinimum, false)#}
+{#</script>#}
+
+
+</body>
+
+</html>

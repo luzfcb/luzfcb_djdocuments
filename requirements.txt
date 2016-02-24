@@ -1,0 +1,8 @@
+#django==1.9.2
+django-spurl==0.6.4
+django-simple-captcha==0.5.1
+django-braces==1.8.1
+python-status==1.0.1
+-e git+https://github.com/luzfcb/django-simple-history.git@wip-generic-views#egg=django-simple-history
+-e git+https://github.com/luzfcb/luzfcb_dj_simplelock.git@master#egg=luzfcb_dj_simplelock
+-e git+https://github.com/maraujop/django-crispy-forms.git@dev#egg=django-crispy-forms

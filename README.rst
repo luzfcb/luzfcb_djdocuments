@@ -36,7 +36,7 @@ Overview
     :target: https://landscape.io/github/luzfcb/luzfcb_djdocuments/master
     :alt: Code Quality Status
 
-.. |codacy| image:: https://img.shields.io/codacy/REPLACE_WITH_PROJECT_ID.svg?style=flat
+.. |codacy| image:: https://img.shields.io/codacy/a71897c2633843088927a0008fb14f12.svg?style=flat
     :target: https://www.codacy.com/app/luzfcb/luzfcb_djdocuments
     :alt: Codacy Code Quality Status
 

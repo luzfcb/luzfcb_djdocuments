@@ -1,0 +1,7 @@
+[contenteditable="false"] {
+    background-color: rgba(0, 0, 0, 0.15) !important;
+}
+
+body {
+    word-wrap: break-word;
+}

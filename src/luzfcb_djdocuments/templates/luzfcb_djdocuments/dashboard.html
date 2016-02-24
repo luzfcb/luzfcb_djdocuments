@@ -1,0 +1,100 @@
+{% extends "luzfcb_djdocuments/base.html" %}
+{% load staticfiles %}
+{% block titulo %}
+    Dashboard
+{% endblock titulo %}
+
+{% block cabecalho_app %}
+    <h2><i class="icofont-home"></i> Dashboard Documentos
+        <small>welcome to stilearn</small>
+    </h2>
+{% endblock cabecalho_app %}
+
+{% block conteudo_app %}
+    {{ block.super }}
+
+    <a href="{% url 'documentos:list' %}">
+        Lista de documentos
+    </a>
+    |
+    <a href="{% url 'documentos:validar' %}">
+        Validar
+    </a>
+
+    <h4>
+        {% if quantidade_documentos_cadastrados %}
+            Documentos Cadastrados: {{ quantidade_documentos_cadastrados }}
+        {% endif %}
+
+    </h4>
+    <h4>
+        {% if quantidade_meus_documentos %}
+            Documentos criados por mim: {{ quantidade_meus_documentos }}
+        {% endif %}
+
+    </h4>
+
+
+
+    <a href="{% url 'documentos:create' %}?next=/list/?teste=1">
+        Criar novo v1 - mesma janela
+    </a>
+    <p>
+    <p>
+        <a href="{% url 'documentos:create' %}?next=/list/?teste=1" target="_blank">
+            Criar novo v1 - Nova aba
+        </a>
+    <p>
+    <p>
+        {#    <a href="{% url 'documentos:create' %}?next=https://www.google.com" class="djpopup">#}
+        {#        Criar novo v2#}
+        {#    </a>#}
+
+        <a href="{% url 'documentos:create' %}?popup=1&next=http://127.0.0.1:8004/list/?teste=1" id="create3"
+           class="djpopup" data-fullscreen="no" data-scrollbars="no"
+           alt="my link text">
+            Criar novo v5
+        </a>
+    <p>
+    <p>
+    {# adicone a classe djpopup para abrir a url em uma popup #}
+    <a href="{% url 'documentos:create' %}?popup=1&next=/list/?teste=1" id="create3" class="djpopup"
+       data-fullscreen="no" data-scrollbars="no"
+       alt="my link text">
+        Criar novo v6
+    </a>
+
+
+
+    <script>
+
+
+        function popUpClosed(algo) {
+            console.log('recarregando pagina...');
+            console.log('algo: ' + algo);
+            //window.location.reload();
+        }
+
+    </script>
+
+
+{% endblock conteudo_app %}
+
+{% block js_app %}
+    {{ block.super }}
+    <script type="text/javascript" src="{% static "luzfcb_djdocuments/js/luzfcb_djdocuments.js" %}"></script>
+{#    <script type="text/javascript" src="{% static "luzfcb_djdocuments/js/platform.js" %}"></script>#}
+{#    <script type="text/javascript">#}
+{#        console.log(platform.os.family);#}
+{#        //Linux|Android == 42#}
+{#        //iOS on Chrome and Safari == 124#}
+{#        //iOS on Firefox == 44#}
+{#        //Win == 44#}
+{#        //alert(platform.os.family);#}
+{#        window.addEventListener("keyup", function (e) {#}
+{#            if (e.keyCode == 42) {#}
+{#                alert("The 'print screen' key is pressed");#}
+{#            }#}
+{#        });#}
+{#    </script>#}
+{% endblock js_app %}

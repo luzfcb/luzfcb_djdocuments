@@ -1,0 +1,36 @@
+{% extends "luzfcb_djdocuments/documento_assinar_base.html" %}
+{% load staticfiles %}
+{% load crispy_forms_tags %}
+
+
+
+{% block conteudo_app %}
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    {% if form and object %}
+        Tem certeza que deseja assinar o documento {{ object.titulo }} {{ object.identificador_versao }}
+        {% crispy form %}
+    {% endif %}
+
+{% endblock conteudo_app %}
+{% block js_app %}
+    <script>if (!window.jQuery) {
+        document.write('<script src="{% static 'luzfcb_djdocuments/js/jquery/1.11.3/jquery.min.js' %}"><\/script>');
+        document.write('<script src="{% static 'luzfcb_djdocuments/js/jquery/1.11.3/jquery-migrate.min.js' %}"><\/script>');
+    }
+    </script>
+    {% include 'autocomplete_light/static.html' %}
+
+    {% if form %}
+        {{ form.media }}
+    {% endif %}
+
+{% endblock js_app %}
+
+

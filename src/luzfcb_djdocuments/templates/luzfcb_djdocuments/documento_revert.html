@@ -1,0 +1,35 @@
+{% extends "luzfcb_djdocuments/base.html" %}
+
+
+
+{% block titulo %}
+    Reverter Documento
+{% endblock titulo %}
+
+
+
+
+{% block conteudo_app %}
+    {{ block.super }}
+
+
+    {% if form %}
+
+        <form action="." method="post">
+            {% csrf_token %}
+                <button type="submit" class="btn btn-primary">
+                    Reverter para esta versão
+                </button>
+        </form>
+        {{ object.conteudo|safe }}
+    {% endif %}
+
+
+{% endblock conteudo_app %}
+
+
+{% block js_app %}
+    {% if form.media %}
+        {{ form.media }}
+    {% endif %}
+{% endblock %}

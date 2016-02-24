@@ -1,0 +1,62 @@
+{% extends "luzfcb_djdocuments/documento_validacao_base.html" %}
+{% load staticfiles %}
+{% load crispy_forms_tags %}
+
+{% block extra_head_js %}
+    <script>if (!window.jQuery) {
+        document.write('<script src="{% static 'luzfcb_djdocuments/js/jquery/1.11.3/jquery.min.js' %}"><\/script>');
+        document.write('<script src="{% static 'luzfcb_djdocuments/js/jquery/1.11.3/jquery-migrate.min.js' %}"><\/script>');
+    }
+    </script>
+    <script src="{% static 'parsley/js/parsley.min.js' %}"></script>
+
+
+{% endblock extra_head_js %}
+{% block conteudo_app %}
+
+    {% if form %}
+                {% crispy form %}
+{#        <form name="{{ form.form_name }}" action="." method="post">#}
+{#            {% csrf_token %}#}
+{#            {{ form }}#}
+{##}
+{#            <div>#}
+{#                <button type="submit" class="btn btn-primary">Verificar validade</button>#}
+{#            </div>#}
+{#        </form>#}
+    {% else %}
+        Nada para mostrar
+    {% endif %}
+{% endblock %}
+
+{% block js_app %}
+    {{ block.super }}
+    {% if form.media %}
+        {{ form.media }}
+    {% endif %}
+
+    <script>
+        {#        $('.js-captcha-refresh').click(function () {#}
+        {#            $form = $(this).parents('form');#}
+        {##}
+        {#            $.getJSON($(this).data('url'), {}, function (json) {#}
+        {#                // This should update your captcha image src and captcha hidden input#}
+        {#                $('img[class="captcha"]').attr('src', json['new_cptch_image']);#}
+        {#                $('#id_captcha_0').val(json['new_cptch_key']);#}
+        {#                $('#id_captcha_1').val('');#}
+        {#            });#}
+        {#            console.log("OIIIII");#}
+        {##}
+        {#            return false;#}
+        {#        });#}
+        function refresh_captcha() {
+            $.getJSON($(this).data('url'), {'refresh_captcha': 1}, function (json) {
+                $('img[class="captcha"]').attr('src', json['new_cptch_image']);
+                $('#id_captcha_0').val(json['new_cptch_key']);
+                $('#id_captcha_1').val('');
+            });
+        }
+
+    </script>
+
+{% endblock %}

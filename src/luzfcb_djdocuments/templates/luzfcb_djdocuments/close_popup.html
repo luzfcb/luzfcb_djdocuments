@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+<script>
+    function OnClose() {
+        "use strict";
+        if (window.opener != null && !window.opener.closed) {
+            window.opener.HideModalDiv();
+            {% if next_page_url and not close %}
+                window.opener.redirecionar("{{ next_page_url }}");
+            {% endif %}
+        }
+    }
+    window.onunload = OnClose;
+    window.close();
+</script>
+
+</body>
+</html>
+
