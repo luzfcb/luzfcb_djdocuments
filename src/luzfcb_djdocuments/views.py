@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function, unicode_literals
+
+from django.db.models.functions import Concat
 from django.shortcuts import render
 from django.views import generic
-from .models import Documento
+from django.contrib.auth.models import User
 
+from .utils.module_loading import get_real_user_model_class
+from .models import Documento
 
 import json
 import datetime
@@ -17,7 +21,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.db import transaction
 from django.utils import timezone
-from django.db.models import Q
+from django.db.models import Q, CharField
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, resolve_url
 from django.utils import six
@@ -39,6 +43,8 @@ import logging
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
+
+USER_MODEL = get_real_user_model_class()
 
 
 class AjaxableResponseMixin(object):
@@ -628,3 +634,28 @@ class AjaxUpdateTesteApagar(LoginRequiredMixin,
 
     def post(self, request, *args, **kwargs):
         return super(AjaxUpdateTesteApagar, self).post(request, *args, **kwargs)
+
+
+from dal import autocomplete
+from django.db.models.expressions import Value
+
+
+class UserAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        # Don't forget to filter out results depending on the visitor !
+        if not self.request.user.is_authenticated():
+            return USER_MODEL.objects.none()
+
+        qs = USER_MODEL.objects.all()
+
+        if self.q:
+            qs = qs.filter(Q(first_name__icontains=self.q) | Q(last_name__icontains=self.q))
+
+            # qs = qs.annotate(full_name=Concat('first_name', Value(' '), 'last_name', output_field=CharField()))
+            # qs = qs.filter(full_name__icontains=self.q)
+
+        print(qs.query)
+        return qs
+
+    def get_result_label(self, result):
+        return result.get_full_name().title()

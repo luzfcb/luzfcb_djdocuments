@@ -46,6 +46,8 @@ LUZFCB_DJDOCUMENTS_APPS = [
     'braces',
     'crispy_forms',
     'captcha',
+    'dal',
+    'dal_select2',
     # end dependencies
 
     'luzfcb_djdocuments',
@@ -87,12 +89,24 @@ WSGI_APPLICATION = 'test_project.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
+USE_PG = True
 
-DATABASES = {
-    'default': {
+if USE_PG:
+    DB_ENGINE_CONFIG = {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        'NAME': 'luzfcb_djdocuments_testdb',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
+        'HOST': '127.0.0.1',
+    }
+else:
+    DB_ENGINE_CONFIG = {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
+
+DATABASES = {
+    'default': DB_ENGINE_CONFIG
 }
 
 # Password validation
@@ -140,7 +154,6 @@ CAPTCHA_FONT_PATH = (
     os.path.join(FONT_DIR, 'RockSalt.ttf'),
     os.path.join(FONT_DIR, 'ShadowsIntoLight.ttf'),
 )
-print(CAPTCHA_FONT_PATH)
 CAPTCHA_FOREGROUND_COLOR = '#991100'
 
 CAPTCHA_FONT_SIZE = 50

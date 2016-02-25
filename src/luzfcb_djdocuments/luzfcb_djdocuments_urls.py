@@ -72,7 +72,10 @@ urlpatterns = [
         views.PDFViewer.as_view(),
         name='pdf_view'
         ),
-
+    url(r'^user-autocomplete/$',
+        views.UserAutocomplete.as_view(),
+        name='user-autocomplete'
+        ),
 ]
 
 if DJANGO_DOCUMENTOS_ENABLE_GENERAL_DASHBOARD:

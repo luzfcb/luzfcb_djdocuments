@@ -2,6 +2,7 @@
 from __future__ import absolute_import, print_function, unicode_literals
 # import autocomplete_light
 from captcha.fields import CaptchaField
+from dal import autocomplete
 from django import forms
 from django.contrib.auth.hashers import check_password
 from django.utils.translation import ugettext_lazy as _
@@ -61,6 +62,7 @@ class NextFormMixin(forms.Form):
 class DocumentoFormCreate(SaveHelperFormMixin, NextFormMixin, IsPopUpMixin, forms.ModelForm):
     # cabecalho = ckeditor_fields.RichTextField(blank=True)
     titulo = forms.CharField(max_length=500, widget=forms.HiddenInput())
+
     # conteudo = forms.CharField(widget=CKEditorWidget(), label='')
 
     # rodape = ckeditor_fields.RichTextField(blank=True)
@@ -76,6 +78,7 @@ class DocumentoFormCreate(SaveHelperFormMixin, NextFormMixin, IsPopUpMixin, form
 class DocumentoFormUpdate(SaveHelperFormMixin, forms.ModelForm):
     # cabecalho = ckeditor_fields.RichTextField(blank=True)
     titulo = forms.CharField(max_length=500, widget=forms.HiddenInput())
+
     # conteudo = forms.CharField(widget=CKEditorWidget(), label='')
 
     # rodape = ckeditor_fields.RichTextField(blank=True)
@@ -213,7 +216,12 @@ class AssinarDocumento(AssinarDocumentoHelperFormMixin, forms.ModelForm):
     #                                                    to_field_name='pk')
     # assinado_por = autocomplete_light.ModelChoiceField('UserAutocomplete', label='Usuario Assinante',
     #                                                    to_field_name='pk')
-    assinado_por = forms.ModelChoiceField(get_real_user_model_class().objects.all().order_by('username'))
+    # assinado_por = forms.ModelChoiceField(get_real_user_model_class().objects.all().order_by('username'))
+
+    assinado_por = forms.ModelChoiceField(
+        queryset=get_real_user_model_class().objects.all().order_by('username'),
+        widget=autocomplete.ModelSelect2(url='documentos:user-autocomplete')
+    )
 
     password = forms.CharField(label="Sua senha",
                                widget=forms.PasswordInput)

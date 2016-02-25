@@ -41,7 +41,10 @@ if __name__ == "__main__":
         keep_trailing_newline=True
     )
 
-    tox_environments = [line.strip() for line in subprocess.check_output(['tox', '--listenvs']).splitlines()]
+    tox_environments = [
+        line.strip()
+        for line in subprocess.check_output(['tox', '--listenvs'], universal_newlines=True).splitlines()
+        ]
     tox_environments = [line for line in tox_environments if line not in ['clean', 'report', 'docs', 'check']]
 
     for name in os.listdir(join("ci", "templates")):

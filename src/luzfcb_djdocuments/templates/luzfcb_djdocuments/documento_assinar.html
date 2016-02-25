@@ -20,12 +20,7 @@
 
 {% endblock conteudo_app %}
 {% block js_app %}
-    <script>if (!window.jQuery) {
-        document.write('<script src="{% static 'luzfcb_djdocuments/js/jquery/1.11.3/jquery.min.js' %}"><\/script>');
-        document.write('<script src="{% static 'luzfcb_djdocuments/js/jquery/1.11.3/jquery-migrate.min.js' %}"><\/script>');
-    }
-    </script>
-    {% include 'autocomplete_light/static.html' %}
+    {{ block.super }}
 
     {% if form %}
         {{ form.media }}
