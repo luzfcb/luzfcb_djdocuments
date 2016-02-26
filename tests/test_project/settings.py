@@ -50,6 +50,10 @@ LUZFCB_DJDOCUMENTS_APPS = [
     'dal_select2',
     # end dependencies
 
+    # development dependencies
+    'debug_toolbar',
+    # end development dependencies
+
     'luzfcb_djdocuments',
     'test_app'
 ]

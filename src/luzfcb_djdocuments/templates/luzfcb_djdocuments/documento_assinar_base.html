@@ -1,1 +1,21 @@
-{% extends "luzfcb_djdocuments/base.html" %}
+{#{% extends "luzfcb_djdocuments/base.html" %}#}
+<!DOCTYPE html>
+{% load staticfiles %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    {% block css_app %}
+    {% endblock css_app %}
+    {% block extra_head_js %}
+    {% endblock extra_head_js %}
+</head>
+<body>
+{% block conteudo_app %}
+{% endblock conteudo_app %}
+<script src="{% static 'luzfcb_dj_simplelock/js/jquery-2.2.0.min.js' %}"></script>
+{% block js_app %}
+{% endblock %}
+<div class=""></div>
+</body>
+</html>

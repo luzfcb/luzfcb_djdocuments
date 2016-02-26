@@ -1,16 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function, unicode_literals
 
-from django.db.models.functions import Concat
-from django.shortcuts import render
-from django.views import generic
-from django.contrib.auth.models import User
-
-from .utils.module_loading import get_real_user_model_class
-from .models import Documento
-
 import json
-import datetime
+
 import status
 from captcha.helpers import captcha_image_url
 from captcha.models import CaptchaStore
@@ -19,14 +11,15 @@ from django.contrib.auth.models import AnonymousUser
 from django.core import signing
 from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse, reverse_lazy
-from django.db import transaction
-from django.utils import timezone
-from django.db.models import Q, CharField
+from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, resolve_url
 from django.utils import six
 from django.views import generic
+from dal import autocomplete
 from luzfcb_dj_simplelock.views import LuzfcbLockMixin
+
+from .utils.module_loading import get_real_user_model_class
 # from phantom_pdf import render_to_pdf
 from simple_history.views import HistoryRecordListViewMixin, RevertFromHistoryRecordViewMixin
 from braces.views import LoginRequiredMixin
@@ -34,7 +27,6 @@ from .forms import (
     AssinarDocumento, DocumentoFormCreate, DocumentoFormUpdate2, DocumentoRevertForm, DocumetoValidarForm,
 )
 from .models import Documento
-from .samples_html import BIG_SAMPLE_HTML  # noqa
 from .utils import add_querystrings_to_url
 # from .models import DocumentoConteudo
 
@@ -45,6 +37,29 @@ import logging
 logger = logging.getLogger(__name__)
 
 USER_MODEL = get_real_user_model_class()
+
+
+class UserAutocomplete(autocomplete.Select2QuerySetView):
+    """
+    Autocomplete view to Django User Based
+    """
+
+    def get_queryset(self):
+        # Don't forget to filter out results depending on the visitor !
+        if not self.request.user.is_authenticated():
+            return USER_MODEL.objects.none()
+
+        qs = USER_MODEL.objects.all()
+
+        if self.q:
+            qs = qs.filter(Q(first_name__icontains=self.q) | Q(last_name__icontains=self.q))
+
+            # qs = qs.annotate(full_name=Concat('first_name', Value(' '), 'last_name', output_field=CharField()))
+            # qs = qs.filter(full_name__icontains=self.q)
+        return qs
+
+    def get_result_label(self, result):
+        return result.get_full_name().title()
 
 
 class AjaxableResponseMixin(object):
@@ -155,9 +170,16 @@ class NextURLMixin(object):
         return ret
 
     def get_context_data(self, **kwargs):
+
         context = super(NextURLMixin, self).get_context_data(**kwargs)
-        context['next_kwarg_name'] = self.next_kwarg_name  # self.get_next_kwarg_name()
-        context['next_page_url'] = self.next_page_url or self.get_next_page_url()
+        next_kwarg_name = self.next_kwarg_name  # self.get_next_kwarg_name()
+        next_page_url = self.next_page_url or self.get_next_page_url()
+        context['next_kwarg_name'] = next_kwarg_name
+        context['next_page_url'] = next_page_url
+        if next_kwarg_name and next_page_url:
+            context['next_page_paran'] = '{}={}'.format(next_kwarg_name, next_page_url)
+        else:
+            context['next_page_paran'] = ''
         # context['next_url2'] = self.request.build_absolute_uri(self.get_next_page_url())
         return context
 
@@ -206,7 +228,12 @@ class PopupMixin(object):
 
     def get_context_data(self, **kwargs):
         context = super(PopupMixin, self).get_context_data(**kwargs)
-        context['popup'] = self.get_is_popup()
+        is_popup = self.get_is_popup()
+        context['popup'] = is_popup
+        if is_popup:
+            context['popup_paran'] = 'popup=1'
+        else:
+            context['popup_paran'] = ''
         return context
 
 
@@ -492,7 +519,7 @@ class PDFViewer(generic.TemplateView):
 
 
 class AssinarDocumentoView(DocumentoAssinadoRedirectMixin, AuditavelViewMixin, generic.UpdateView):
-    template_name = 'luzfcb_djdocuments/documento_assinar.html'
+    template_name = 'luzfcb_djdocuments/documento_assinar_apagar.html'
     form_class = AssinarDocumento
     model = Documento
 
@@ -502,6 +529,7 @@ class AssinarDocumentoView(DocumentoAssinadoRedirectMixin, AuditavelViewMixin, g
         initial = super(AssinarDocumentoView, self).get_initial()
         # copia o dicionario, para evitar mudar acidentalmente um dicionario mutavel
         initial = initial.copy()
+        USER_MODEL.objects.get(id=2)
         user = getattr(self.request, 'user', None)
         if user and user.is_authenticated():
             initial.update({
@@ -634,28 +662,3 @@ class AjaxUpdateTesteApagar(LoginRequiredMixin,
 
     def post(self, request, *args, **kwargs):
         return super(AjaxUpdateTesteApagar, self).post(request, *args, **kwargs)
-
-
-from dal import autocomplete
-from django.db.models.expressions import Value
-
-
-class UserAutocomplete(autocomplete.Select2QuerySetView):
-    def get_queryset(self):
-        # Don't forget to filter out results depending on the visitor !
-        if not self.request.user.is_authenticated():
-            return USER_MODEL.objects.none()
-
-        qs = USER_MODEL.objects.all()
-
-        if self.q:
-            qs = qs.filter(Q(first_name__icontains=self.q) | Q(last_name__icontains=self.q))
-
-            # qs = qs.annotate(full_name=Concat('first_name', Value(' '), 'last_name', output_field=CharField()))
-            # qs = qs.filter(full_name__icontains=self.q)
-
-        print(qs.query)
-        return qs
-
-    def get_result_label(self, result):
-        return result.get_full_name().title()

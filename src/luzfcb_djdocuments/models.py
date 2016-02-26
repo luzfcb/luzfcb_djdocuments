@@ -82,7 +82,7 @@ class Documento(models.Model):
         if self.pk:
             if hasattr(self._meta, 'simple_history_manager_attribute'):
                 history_manager = getattr(self, self._meta.simple_history_manager_attribute)
-                max_db_value = history_manager.aggregate(Max('versao_numero')).values()[0]
+                max_db_value = list(history_manager.aggregate(Max('versao_numero')).values())[0]
                 self.versao_numero = max_db_value + 1 if max_db_value >= self.versao_numero else self.versao_numero + 1
             else:
                 raise MissingHistoryRecordsField(

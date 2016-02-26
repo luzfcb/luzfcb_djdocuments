@@ -10,10 +10,10 @@ from django.utils.translation import ugettext_lazy as _
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import HTML, Submit
 
-from .utils.module_loading import get_real_user_model_class
+from test_app.tests.samples_html import CABECALHO, BIG_SAMPLE_HTML, RODAPE, TITULO
 from .widgets import SplitedHashField3
+from .utils.module_loading import get_real_user_model_class
 from .models import Documento
-from .samples_html import CABECALHO, TITULO, RODAPE, BIG_SAMPLE_HTML
 
 
 class ProdutoForm(forms.ModelForm):
@@ -101,16 +101,26 @@ class CkeditorWidgetNew(forms.Textarea):
 
 
 class DocumentoFormUpdate2(SaveHelperFormMixin, forms.ModelForm):
-    # cabecalho = ckeditor_fields.RichTextField(blank=True)
-    # titulo = forms.CharField(max_length=500, widget=forms.HiddenInput())
-    # cabecalho = forms.CharField(widget=CKEditorWidget(config_name='compartilhado'), label='', initial='Cabecalho')
-    # conteudo = forms.CharField(widget=CKEditorWidget(config_name='compartilhado'), label='')
-    # rodape = forms.CharField(widget=CKEditorWidget(config_name='compartilhado'), label='', initial='Rodape')
-
-    cabecalho = forms.CharField(widget=forms.Textarea(attrs={'data-djckeditor': 'true'}), label='', initial=CABECALHO)
-    titulo = forms.CharField(widget=forms.Textarea(attrs={'data-djckeditor': 'true'}), label='', initial=TITULO)
-    conteudo = forms.CharField(widget=CkeditorWidgetNew, label='', initial=BIG_SAMPLE_HTML)
-    rodape = forms.CharField(widget=forms.Textarea(attrs={'data-djckeditor': 'true'}), label='', initial=RODAPE)
+    cabecalho = forms.CharField(
+        widget=forms.Textarea(attrs={'data-djckeditor': 'true'}),
+        label='',
+        initial=CABECALHO
+    )
+    titulo = forms.CharField(
+        widget=forms.Textarea(attrs={'data-djckeditor': 'true'}),
+        label='',
+        initial=TITULO
+    )
+    conteudo = forms.CharField(
+        widget=CkeditorWidgetNew,
+        label='',
+        initial=BIG_SAMPLE_HTML
+    )
+    rodape = forms.CharField(
+        widget=forms.Textarea(attrs={'data-djckeditor': 'true'}),
+        label='',
+        initial=RODAPE
+    )
 
     class Meta:
         model = Documento
@@ -211,14 +221,13 @@ class AssinarDocumentoHelperFormMixin(object):
         self.helper = AssinarDocumentoHelper(self)
 
 
-class AssinarDocumento(AssinarDocumentoHelperFormMixin, forms.ModelForm):
-    # assinado_por = autocomplete_light.ModelChoiceField('UserAutocomplete', label='Usuario Assinante',
-    #                                                    to_field_name='pk')
-    # assinado_por = autocomplete_light.ModelChoiceField('UserAutocomplete', label='Usuario Assinante',
-    #                                                    to_field_name='pk')
-    # assinado_por = forms.ModelChoiceField(get_real_user_model_class().objects.all().order_by('username'))
+class UserModelChoiceField(forms.ModelChoiceField):
+    def label_from_instance(self, obj):
+        return obj.get_full_name().title()
 
-    assinado_por = forms.ModelChoiceField(
+
+class AssinarDocumento(AssinarDocumentoHelperFormMixin, forms.ModelForm):
+    assinado_por = UserModelChoiceField(
         queryset=get_real_user_model_class().objects.all().order_by('username'),
         widget=autocomplete.ModelSelect2(url='documentos:user-autocomplete')
     )
@@ -298,17 +307,3 @@ class RemoverAssinaturaDocumento(AssinarDocumentoHelperFormMixin, forms.ModelFor
 
         documento.remover_assinatura_documento(current_logged_user=self.current_logged_user)
         return documento
-
-# from django.contrib.auth.models import User
-#
-# class UserSelectForm(forms.Form):
-#     user = forms.ModelChoiceField(queryset=None)
-#
-#     def __init__(self, *args, **kwargs):
-#         user_queryset = kwargs.pop('user_queryset', User.objects.all())
-#         user = kwargs.pop('user', None)
-#         super(UserSelectForm, self).__init__(*args, **kwargs)
-#         self.fields['user'].queryset = user_queryset
-#         if user:
-#             # how to select default
-#             pass

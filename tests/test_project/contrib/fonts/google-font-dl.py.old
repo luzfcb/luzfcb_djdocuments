@@ -240,7 +240,7 @@ def download_file(url, filename):
     responsedata = decode_response(response)
 
     try:
-        fd = os.open(filename, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0666)
+        fd = os.open(filename, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0x0666)
     except OSError as e:
         if e.errno == errno.EEXIST:
             logger.warn("File '{0}' already exists, skipping".format(filename))

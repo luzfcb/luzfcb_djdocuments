@@ -2,7 +2,7 @@
 {% load staticfiles %}
 
 {% block css_app %}
-        {{ block.super }}
+    {{ block.super }}
 
     <style>
         .overlay {
@@ -53,9 +53,11 @@
 
 {% block js_app %}
     {{ block.super }}
-    <script>if (!window.jQuery) {
-        document.write('<script src="{% static 'luzfcb_dj_simplelock/js/jquery-2.2.0.min.js' %}"><\/script>');
-    }
-    </script>
+    {#    <script>#}
+    {#        if (!window.jQuery) {#}
+    {#            document.write('<script src="{% static 'luzfcb_dj_simplelock/js/jquery-2.2.0.min.js' %}"><\/script>');#}
+    {#        }#}
+    {#    </script>#}
+
     <script type="text/javascript" src="{% static "luzfcb_djdocuments/js/luzfcb_djdocuments.js" %}"></script>
 {% endblock js_app %}
