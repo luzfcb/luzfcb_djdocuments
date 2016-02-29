@@ -9,6 +9,7 @@ from .samples_html import BIG_SAMPLE_HTML
 
 class TestViewEditarDocumento(SplinterStaticLiveServerTestCase):
     use_virtual_display = False
+    # splinter_driver = 'phantomjs'
 
     def setUp(self):
         self.user1_data = {
@@ -34,7 +35,26 @@ class TestViewEditarDocumento(SplinterStaticLiveServerTestCase):
     def test_visit_editar_view_url(self):
         self.visit_url(reverse(self.editar_documento_view_name, kwargs={'pk': self.documento1.pk}))
         self.wait_for_seconds(1)
+
+        js = """
+        for (var instance in CKEDITOR.instances) {
+            if (CKEDITOR.instances.hasOwnProperty(instance)) {
+                CKEDITOR.instances[instance].setData('%s');
+                setTimeout(function(){},2000);
+                $('#salvar').click();
+            }
+
+        }
+        """ % "Adeus mundo"
+        self.browser.execute_script(js)
+        self.wait_for_seconds(1)
         botao_salvar = self.browser.find_by_id('salvar')
         botao_salvar.click()
+        self.wait_for_seconds(5)
+        # div_cke_id_document_cabecalho = self.browser.find_by_id('cke_id_document-cabecalho')
+        # with self.browser.get_iframe('iframemodal') as iframe:
+        #     iframe.do_stuff()
+
+
         self.wait_for_seconds(5)
         self.assertTrue(True)
