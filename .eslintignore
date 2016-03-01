@@ -1,0 +1,3 @@
+**/{*.min,jquery}.js
+src/luzfcb_djdocuments/static/luzfcb_djdocuments/js/vendor/**/*.js
+node_modules/**.js
