@@ -324,18 +324,18 @@
 </section>
 <div id="pdf-aqui"></div>
 <!-- javascript ================================================== -->
-<script src="{% static "luzfcb_djdocuments/js/jquery/1.12.1/jquery-1.12.1.min.js" %}"></script>
+<script src="{% static "luzfcb_djdocuments/js/vendor/jquery/1.12.1/jquery-1.12.1.min.js" %}"></script>
 {#<script src="{% static "js/bootstrap.js" %}"></script>#}
 <script src="{% static "luzfcb_djdocuments/js/paralax-jspdf/1.1.135/jspdf.min.js" %}"></script>
 <script>
     if (!window.jQuery) {
-        document.write('<script src="{% static 'luzfcb_djdocuments/js/jquery/1.11.3/jquery.min.js' %}"><\/script>');
-        document.write('<script src="{% static 'luzfcb_djdocuments/js/jquery/1.11.3/jquery-migrate.min.js' %}"><\/script>');
+        document.write('<script src="{% static 'luzfcb_djdocuments/js/vendor/jquery/1.11.3/jquery.min.js' %}"><\/script>');
+        document.write('<script src="{% static 'luzfcb_djdocuments/js/vendor/jquery/1.11.3/jquery-migrate.min.js' %}"><\/script>');
     }
 </script>
 
 
-<script src="{% static 'luzfcb_djdocuments/js/qrcode/0.12.0/jquery.qrcode.min.js' %}"></script>
+<script src="{% static 'luzfcb_djdocuments/js/vendor/qrcode/0.12.0/jquery.qrcode.min.js' %}"></script>
 
 {% if object.esta_assinado %}
     <script>
