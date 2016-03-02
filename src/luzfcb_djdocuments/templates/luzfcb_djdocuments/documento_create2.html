@@ -1,0 +1,6 @@
+{% extends "luzfcb_djdocuments/base_editor.html" %}
+{% load spurl %}
+{% block extra_head_variables %}
+    {% url 'documentos:create' as base_documento_update_url %}
+    {% spurl base=base_documento_update_url add_query="{{ next_page_paran }}" add_query="{{ popup_paran }}" as documento_post_url %}
+{% endblock extra_head_variables %}

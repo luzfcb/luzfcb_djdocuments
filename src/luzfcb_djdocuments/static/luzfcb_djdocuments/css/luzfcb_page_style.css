@@ -1,0 +1,28 @@
+.body {
+    background: rgb(204, 204, 204) !important;
+}
+
+.maindiv {
+    display: none;
+}
+
+.form-group {
+    margin-bottom: 0 !important;
+}
+
+.a4-pagina {
+
+    background: white !important;
+    width: 21cm !important;
+    /*height: 29.7cm;*/
+    display: block !important;
+    /*margin: 0 auto 0.5cm;*/
+    box-shadow: 0 0 0.5cm rgba(0, 0, 0, 0.5) !important;
+    /*padding: 30px;*/
+    /*font-size: 11pt;*/
+    /*line-height: 22pt;*/
+}
+
+.conteudo {
+    padding-bottom: 20em !important;
+}

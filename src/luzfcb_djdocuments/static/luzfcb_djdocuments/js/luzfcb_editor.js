@@ -3,7 +3,7 @@
  */
 
 
-(function(window, jQuery, Pace, luzfcb) {
+(function (window, jQuery, Pace, luzfcb) {
     "use strict";
 
     var conteudo_modificado = {};
@@ -28,7 +28,7 @@
     }
 
     function get_ckenabledElementIds() {
-        return $ckeditor_enable_form_fields.map(function() {
+        return $ckeditor_enable_form_fields.map(function () {
             return this.id;
         }).get();
     }
@@ -105,10 +105,10 @@
     }
 
     function startCkEditor() {
-        ckenabledElementIds.map(function(id_elemento) {
+        ckenabledElementIds.map(function (id_elemento) {
             CKEDITOR.replace(id_elemento, ckeditor_config);
             // vicula a funcao para controlar a ativacao/desativacao do botao salvar, no evento de quando ha mudancas no editor
-            CKEDITOR.instances[id_elemento].on('change', function() {
+            CKEDITOR.instances[id_elemento].on('change', function () {
                 ativarDesativarSalvar();
             });
         });
@@ -180,7 +180,7 @@
     //https://github.com/wavded/humane-js
     //https://github.com/alertifyjs/alertify.js
     //versao 2
-    jQuery(document).ready(function() {
+    jQuery(document).ready(function () {
 
 
         var requestRunning = false;
@@ -192,7 +192,7 @@
         }
 
         //seu codigo lindo aqui
-        $formulario.submit(function(event) {
+        $formulario.submit(function (event) {
             // Stop form from submitting normally
             event.preventDefault();
 
@@ -219,7 +219,7 @@
             var posting = $.post(url, conteudo, 'JSON');
 
             // Put the results in a div
-            posting.fail(function(jqXHR, textStatus, errorThrown) {
+            posting.fail(function (jqXHR, textStatus, errorThrown) {
 
 
                 var errors = jqXHR.responseJSON;
@@ -235,7 +235,7 @@
 
             });
             // Put the results in a div
-            posting.done(function(data, textStatus, jqXHR) {
+            posting.done(function (data, textStatus, jqXHR) {
                 log_to_console("done data:", data);
                 log_to_console("done textStatus:", textStatus);
                 log_to_console("done jqXHR:", jqXHR);
@@ -257,18 +257,18 @@
                 });
                 $status_bar.empty().append('Documento: ' + data.identificador_versao);
             });
-            posting.always(function(data, textStatus, errorThrown) {
+            posting.always(function (data, textStatus, errorThrown) {
                 log_to_console("always");
                 requestRunning = false;
             });
-        }).bind('ajax:complete', function() {
+        }).bind('ajax:complete', function () {
 
             // tasks to do
             log_to_console("ajax completo");
 
 
         });
-        $botao_salvar.click(function() {
+        $botao_salvar.click(function () {
 
             $formulario.submit();
 
@@ -281,7 +281,7 @@
     init_page_scripts();
 
     //
-    Pace.on('hide', function() {
+    Pace.on('hide', function () {
 
         $main_div.fadeIn("fast");
         corrigir_padding_conteudo();
@@ -298,3 +298,31 @@
 })(window, jQuery, Pace, window.luzfcb || (window.luzfcb = {}));
 
 
+jQuery(document).on('click', '.djpopup2', function () {
+    "use strict";
+    var popUpObj;
+    //var id = $(this).attr('id');
+    // var id = uuid.v4();
+    var url_to_open = $(this).prop("href");
+    var desabilitado = $(this).attr("disabled");
+
+    if (!desabilitado) {
+        var popup_windows_options = "toolbar=no," +
+            "scrollbars=yes," +
+            "location=no," +
+            "statusbar=no," +
+            "menubar=no," +
+            "resizable=0," +
+            "width=980," +
+            "height=980," +
+            //"left = 490," +
+            //"top=300"
+            "";
+
+        popUpObj = window.open(url_to_open, 'print_diag', popup_windows_options);
+        if (window.focus) {
+            popUpObj.focus();
+        }
+    }
+    return false;
+});

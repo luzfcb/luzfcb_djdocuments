@@ -51,7 +51,9 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
     <script src="{% static "luzfcb_djdocuments/js/vendor/ckeditor/4.5.7/ckeditor-full-min/ckeditor.js" %}"></script>
     <script src="{% static "luzfcb_dj_simplelock/js/jquery_csrftoken.js" %}"></script>
+    {% block extra_head_variables %}
 
+    {% endblock extra_head_variables %}
 </head>
 
 <body class="body">
@@ -66,16 +68,16 @@
                             <button class="btn btn-default" type="button" id="salvar">
                                 <em class="glyphicon glyphicon-floppy-disk"></em> Salvar
                             </button>
-                            <a class="btn btn-default djpopup2" type="button"
-                               href="{% url 'documentos:imprimir' pk=object.pk %}">
-                                <em class="glyphicon glyphicon-print"></em>Imprimir
-                            </a>
-                            <button class="btn btn-default" type="button">
-                                <em class="glyphicon glyphicon-align-right"></em> Right
-                            </button>
-                            <button class="btn btn-default" type="button">
-                                <em class="glyphicon glyphicon-align-justify"></em> Justify
-                            </button>
+                            {#                            <a class="btn btn-default djpopup2" type="button"#}
+                            {#                               href="{% url 'documentos:imprimir' pk=object.pk %}">#}
+                            {#                                <em class="glyphicon glyphicon-print"></em>Imprimir#}
+                            {#                            </a>#}
+                            {#                            <button class="btn btn-default" type="button">#}
+                            {#                                <em class="glyphicon glyphicon-align-right"></em> Right#}
+                            {#                            </button>#}
+                            {#                            <button class="btn btn-default" type="button">#}
+                            {#                                <em class="glyphicon glyphicon-align-justify"></em> Justify#}
+                            {#                            </button>#}
                             <div class="pull-right" id="status-bar">Documento: {{ object.identificador_versao }}</div>
                         </div>
                         <div id="top" class="cktop">
@@ -86,10 +88,8 @@
                 <div id="conteudo" class="row conteudo">
                     <div class="center-block a4-pagina">
                         <div class="col-md-12">
-                            {% url 'documentos:update2' pk=object.pk as base_documento_update_url %}
-                            {% spurl base=base_documento_update_url add_query="{{ next_page_paran }}" add_query="{{ popup_paran }}" as documento_update_url %}
                             <form role="form" method="post" id="formulario"
-                                  action="{{ documento_update_url }}">
+                                  action="{{ documento_post_url }}">
 
                                 <div class="form-group ">
                                     {{ form.cabecalho }}
@@ -155,16 +155,8 @@
 
 </script>
 <script src="{% static "luzfcb_djdocuments/js/luzfcb_editor.js" %}"></script>
+{% block extra_js_button %}{% endblock extra_js_button %}
 
-{# luzfcb_dj_simplelock includes. Requires jQuery loaded first #}
-{% include 'luzfcb_dj_simplelock/dj_simplelock.html' %}
-{# end luzfcb_dj_simplelock includes. #}
-
-<script>
-    for (var i in CKEDITOR.instances) {
-        console.log(i + ': ' + CKEDITOR.instances[i].checkDirty());
-    }
-</script>
 </body>
 
 </html>

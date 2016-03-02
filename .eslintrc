@@ -20,7 +20,12 @@
         "linebreak-style": [2, "unix"],
         "semi": [2, "always"],
         "space-before-blocks": [2, "always"],
-        "space-before-function-paren": [2, {"anonymous": "never", "named": "never"}],
+        "space-before-function-paren": [2,
+            {
+//                "anonymous": "never",
+                "named": "never"
+            }
+        ],
         "space-infix-ops": [2, {"int32Hint": false}],
         "strict": [1, "function"]
     },

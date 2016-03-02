@@ -265,9 +265,10 @@ class CopyDocumentContentMixin(object):
 
 class DocumentoCreateView(AjaxableResponseMixin, CopyDocumentContentMixin, NextURLMixin, PopupMixin, AuditavelViewMixin,
                           generic.CreateView):
-    template_name = 'luzfcb_djdocuments/documento_create.html'
+    template_name = 'luzfcb_djdocuments/documento_create2.html'
     model = Documento
-    form_class = DocumentoFormCreate
+    # form_class = DocumentoFormCreate
+    form_class = DocumentoFormUpdate2
     success_url = reverse_lazy('documentos:list')
     is_popup = False
 
@@ -642,7 +643,7 @@ class AjaxUpdateTesteApagar(LoginRequiredMixin,
     document_json_fields = ('titulo', 'document_number', 'document_version_number', 'identificador_versao')
     template_name = 'luzfcb_djdocuments/documento_update_2_ck_manual2.html'
     # template_name = 'luzfcb_djdocuments/documento_update.html'
-    lock_revalidated_at_every_x_seconds = 1
+    lock_revalidated_at_every_x_seconds = 3
     model = Documento
     prefix = 'document'
     # form_class = DocumentoFormCreate
