@@ -48,6 +48,7 @@ LUZFCB_DJDOCUMENTS_APPS = [
     'captcha',
     'dal',
     'dal_select2',
+    'bootstrap_pagination',
     # end dependencies
 
     # development dependencies

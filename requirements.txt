@@ -5,12 +5,16 @@ django-braces==1.8.1
 python-status==1.0.1
 django-autocomplete-light==3.0.4
 psycopg2==2.6.1
+django-bootstrap-pagination==1.6.1
+
+
+-e git+https://github.com/luzfcb/django-simple-history.git@wip-generic-views2#egg=django-simple-history
+-e git+https://github.com/luzfcb/luzfcb_dj_simplelock.git@master#egg=luzfcb_dj_simplelock
+-e git+https://github.com/maraujop/django-crispy-forms.git@dev#egg=django-crispy-forms
+
+
 # development dependencies
 django-debug-toolbar==1.4
 splinter==0.7.3
 PyVirtualDisplay==0.1.5
 # end development dependencies
-
--e git+https://github.com/luzfcb/django-simple-history.git@wip-generic-views2#egg=django-simple-history
--e git+https://github.com/luzfcb/luzfcb_dj_simplelock.git@master#egg=luzfcb_dj_simplelock
--e git+https://github.com/maraujop/django-crispy-forms.git@dev#egg=django-crispy-forms
