@@ -1,4 +1,9 @@
 autolink
 autogrow
 sharedspaces
+justify
+stylesheetparser
+
+sei extenso
+sei maiuscula
 base64image fork (https://github.com/85x14/base64image)
