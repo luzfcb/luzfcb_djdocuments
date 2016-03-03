@@ -3,7 +3,7 @@
  */
 
 
-(function (window, jQuery, Pace, luzfcb) {
+(function (window, jQuery, Pace, humane, luzfcb) {
     "use strict";
 
     var conteudo_modificado = {};
@@ -40,6 +40,9 @@
         for (var instance in CKEDITOR.instances) {
             var id_elemento = "" + instance;
             conteudo_modificado[id_elemento] = false;
+            //verifica se ha modificacoes no conteudo desde o carregamento do editor
+            // ou desde a execucao do metodo resetDirty
+            //http://docs.ckeditor.com/#!/api/CKEDITOR.editor-method-checkDirty
             conteudo_modificado[id_elemento] = !!CKEDITOR.instances[id_elemento].checkDirty();
         }
         var ativar = false;
@@ -65,6 +68,9 @@
         var item_nao_salvo = false;
         for (var instance in CKEDITOR.instances) {
             if (CKEDITOR.instances.hasOwnProperty(instance)) {
+                //verifica se ha modificacoes no conteudo desde o carregamento do editor
+                // ou desde a execucao do metodo resetDirty
+                //http://docs.ckeditor.com/#!/api/CKEDITOR.editor-method-checkDirty
                 if (CKEDITOR.instances[instance].checkDirty()) {
                     item_nao_salvo = true;
                 }
@@ -83,7 +89,7 @@
 
         var valor = "".concat(String(altura_menu_superior + adicional_altura)).concat("px");
         $conteudo.css('padding-top', valor);
-        log_to_console('corrigindo');
+        log_to_console('corrigir_padding_conteudo');
     }
 
     // jQuery(window).resize(function () {
@@ -127,7 +133,12 @@
             "dialog", // required by base64image
             "dialogui", // required by base64image
             "maiuscula",
-            "extenso"
+            "extenso",
+            'justify',
+            // habilita o plugin stylesheetparser: http://ckeditor.com/addon/stylesheetparser
+            // requer desabilitar o suporte a Advanced Content Filter
+            'stylesheetparser'
+            // end habilita o plugin stylesheetparser
 
         ].join(),
         removePlugins: 'resize,maximize,magicline',
@@ -146,7 +157,7 @@
             {name: 'save', items: ['Inlinesave']},
             '/',
             {name: 'clipboard', items: ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo']},
-            {name: 'editing', items: ['Scayt']},
+            {name: 'editing', items: ['Scayt', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock']},
             {name: 'links', items: ['Link', 'Unlink', 'Anchor']},
             {name: 'insert', items: ['base64image', 'Table', 'HorizontalRule', 'SpecialChar']},
             {name: 'extra', items: ['Extenso', "Maiuscula", "Minuscula"]},
@@ -164,7 +175,13 @@
             {name: 'about', items: ['About']}
 
         ],
-        base64image_disableUrlImages: true
+        // desativa o Advanced Content Filter
+        // http://docs.ckeditor.com/#!/guide/dev_advanced_content_filter
+        // para poder utilizar o plugin stylesheetparser http://ckeditor.com/addon/stylesheetparser
+        allowedContent: true,
+        // end desativa o Advanced Content Filter
+        base64image_disableUrlImages: true,
+        justifyClasses: ['AlignLeft', 'AlignCenter', 'AlignRight', 'AlignJustify']
 
 
     };
@@ -203,6 +220,8 @@
 
             for (var instance in CKEDITOR.instances) {
                 if (CKEDITOR.instances.hasOwnProperty(instance)) {
+                    //atualiza o textarea vinculado ao editor
+                    //http://docs.ckeditor.com/#!/api/CKEDITOR.editor-method-updateElement
                     CKEDITOR.instances[instance].updateElement();
                 }
             }
@@ -225,7 +244,7 @@
                 var errors = jqXHR.responseJSON;
 
                 log_to_console(errors);
-                var msg = "Erro ao salvar documento" + errors.document_number + "\n" + console.table(errors);
+                var msg = "Erro ao salvar documento" + errors.document_number + "\n";
                 humane.log(msg, {
                     timeout: 2500,
                     clickToClose: true,
@@ -243,9 +262,12 @@
                 log_to_console(jQuery(data));
                 for (var editor_instance in CKEDITOR.instances) {
                     if (CKEDITOR.instances.hasOwnProperty(editor_instance)) {
+                        // http://docs.ckeditor.com/#!/api/CKEDITOR.editor-method-resetDirty
+                        CKEDITOR.instances[editor_instance].resetDirty();
+                        //http://docs.ckeditor.com/#!/api/CKEDITOR.editor-method-resetUndo
                         CKEDITOR.instances[editor_instance].resetUndo();
+
                         conteudo_modificado[editor_instance] = false;
-                        log_to_console('desativando desfazer');
                     }
                 }
                 ativarDesativarSalvar();
@@ -295,7 +317,7 @@
     });
 
 
-})(window, jQuery, Pace, window.luzfcb || (window.luzfcb = {}));
+})(window, jQuery, Pace, humane, window.luzfcb || (window.luzfcb = {}));
 
 
 jQuery(document).on('click', '.djpopup2', function () {
