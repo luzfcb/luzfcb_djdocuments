@@ -8,8 +8,158 @@
     background: #cfd1cf linear-gradient(to bottom, #f5f5f5, #cfd1cf);
 
 }
-.cke_combopanel {
-    width: 250px !important;
-    height: 240px !important;
+
+/*.cke_combopanel {*/
+    /*width: 250px !important;*/
+    /*height: 240px !important;*/
+/*}*/
+
+/*.cke_combo_text {*/
+    /*width: 97px !important;*/
+/*}*/
+
+/* importado do SEI */
+
+
+.cke_combo__styles .cke_combo_text {
+    width: 230px !important;
+}
+
+.cke_button__save_label {
+    display: inline !important;
+}
+
+.cke_button__autotexto_label {
+    display: inline !important;
+}
+
+.cke_combopanel__styles {
+    width: 500px !important;
+}
+
+
+p.Tabela_Texto_8 {
+    font-size: 8pt;
+    font-family: Times New Roman;
+    text-align: left;
+    word-wrap: normal;
+    margin: 0 3pt 0 3pt;
+}
+
+p.Tabela_Texto_Alinhado_Direita {
+    font-size: 11pt;
+    font-family: Times New Roman;
+    text-align: right;
+    word-wrap: normal;
+    margin: 0 3pt 0 3pt;
+}
+
+p.Tabela_Texto_Alinhado_Esquerda {
+    font-size: 11pt;
+    font-family: Times New Roman;
+    text-align: left;
+    word-wrap: normal;
+    margin: 0 3pt 0 3pt;
+}
+
+p.Tabela_Texto_Centralizado {
+    font-size: 11pt;
+    font-family: Times New Roman;
+    text-align: center;
+    word-wrap: normal;
+    margin: 0 3pt 0;
+}
+
+p.Tachado {
+    font-size: 11pt;
+    font-family: Times New Roman;
+    text-indent: 1.18in;
+    text-align: justify;
+    word-wrap: normal;
+    text-decoration: line-through;
+}
+
+p.Texto_Alinhado_Direita {
+    font-size: 12pt;
+    font-family: Times New Roman;
+    text-align: right;
+    word-wrap: normal;
+    margin: 6pt;
+}
+
+p.Texto_Alinhado_Esquerda {
+    font-size: 12pt;
+    font-family: Times New Roman;
+    text-align: left;
+    word-wrap: normal;
+    margin: 6pt;
+}
+
+p.Texto_Alinhado_Esquerda_Espaçamento_Simples {
+    font-size: 12pt;
+    font-family: Times New Roman;
+    text-align: left;
+    word-wrap: normal;
+    margin: 0;
+}
+
+p.Texto_Centralizado {
+    font-size: 12pt;
+    font-family: Times New Roman;
+    text-align: center;
+    word-wrap: normal;
+    margin: 6pt;
+}
+
+p.Texto_Centralizado_Maiusculas {
+    font-weight: bold;
+    font-size: 13pt;
+    font-family: Times New Roman;
+    text-align: center;
+    text-transform: uppercase;
+    word-wrap: normal;
+}
+
+p.Texto_Citação {
+    font-size: 10pt;
+    font-family: Times New Roman;
+    word-wrap: normal;
+    margin: 4pt 0 4pt 1.18in;
+    text-align: justify;
+}
+
+p.Texto_Ementa {
+    font-size: 10pt;
+    font-family: Times New Roman;
+    text-align: justify;
+    word-wrap: normal;
+    margin: 4pt 0 4pt 3.14in;
+}
+
+p.Texto_Justificado {
+    font-size: 12pt;
+    font-family: Times New Roman;
+    text-align: justify;
+    word-wrap: normal;
+    text-indent: 0;
+    margin: 6pt;
+}
+
+p.Texto_Justificado_Recuo_Primeira_Linha {
+    font-size: 12pt;
+    font-family: Times New Roman;
+    text-indent: 1.18in;
+    text-align: justify;
+    word-wrap: normal;
+    margin: 6pt;
+}
+
+p.Texto_Mono_Espaçado {
+    font-size: 8pt;
+    font-family: Courier New;
+    text-align: left;
+    white-space: pre;
+    word-wrap: normal;
+    margin: 2pt;
 }
 
