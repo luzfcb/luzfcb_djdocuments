@@ -62,32 +62,32 @@ class UserAutocomplete(autocomplete.Select2QuerySetView):
         return result.get_full_name().title()
 
 
-class AjaxableResponseMixin(object):
-    """
-    Mixin to add AJAX support to a form.
-    Must be used with an object-based FormView (e.g. CreateView)
-    """
-
-    def form_invalid(self, form):
-        response = super(AjaxableResponseMixin, self).form_invalid(form)
-        if self.request.is_ajax():
-            return JsonResponse(form.errors, status=400)
-        else:
-            return response
-
-    def form_valid(self, form):
-        # We make sure to call the parent's form_valid() method because
-        # it might do some processing (in the case of CreateView, it will
-        # call form.save() for example).
-        response = super(AjaxableResponseMixin, self).form_valid(form)
-        if self.request.is_ajax():
-            print('eh ajax')
-            data = {
-                'pk': self.object.pk,
-            }
-            return JsonResponse(data)
-        else:
-            return response
+# class AjaxableResponseMixin(object):
+#     """
+#     Mixin to add AJAX support to a form.
+#     Must be used with an object-based FormView (e.g. CreateView)
+#     """
+#
+#     def form_invalid(self, form):
+#         response = super(AjaxableResponseMixin, self).form_invalid(form)
+#         if self.request.is_ajax():
+#             return JsonResponse(form.errors, status=400)
+#         else:
+#             return response
+#
+#     def form_valid(self, form):
+#         # We make sure to call the parent's form_valid() method because
+#         # it might do some processing (in the case of CreateView, it will
+#         # call form.save() for example).
+#         response = super(AjaxableResponseMixin, self).form_valid(form)
+#         if self.request.is_ajax():
+#             print('eh ajax')
+#             data = {
+#                 'pk': self.object.pk,
+#             }
+#             return JsonResponse(data)
+#         else:
+#             return response
 
 
 class DocumentoGeneralDashboardView(generic.TemplateView):
@@ -263,7 +263,11 @@ class CopyDocumentContentMixin(object):
         return documento_pk
 
 
-class DocumentoCreateView(AjaxableResponseMixin, CopyDocumentContentMixin, NextURLMixin, PopupMixin, AuditavelViewMixin,
+class DocumentoCreateView(#AjaxableResponseMixin,
+                          CopyDocumentContentMixin,
+                          NextURLMixin,
+                          PopupMixin,
+                          AuditavelViewMixin,
                           generic.CreateView):
     template_name = 'luzfcb_djdocuments/documento_create2.html'
     model = Documento
@@ -604,7 +608,7 @@ class ImprimirView(DocumentoDetailView):
 
 
 class AjaxFormPostMixin(object):
-    document_json_fields = ('pk',)
+    document_json_fields = ('pk', 'versao_numero')
 
     def form_valid(self, form):
         response = super(AjaxFormPostMixin, self).form_valid(form)
@@ -641,7 +645,7 @@ class AjaxUpdateTesteApagar(LoginRequiredMixin,
                             generic.UpdateView):
     detail_view_named_url = 'documentos:detail'
     document_json_fields = ('titulo', 'document_number', 'document_version_number', 'identificador_versao')
-    template_name = 'luzfcb_djdocuments/documento_update_2_ck_manual2.html'
+    template_name = 'luzfcb_djdocuments/editor/documento_editor.html'
     # template_name = 'luzfcb_djdocuments/documento_update.html'
     lock_revalidated_at_every_x_seconds = 3
     model = Documento

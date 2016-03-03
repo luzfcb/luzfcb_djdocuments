@@ -37,11 +37,11 @@
     <link type="application/vnd.ms-fontobject"
           href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/fonts/glyphicons-halflings-regular.eot"
           rel="stylesheet">
-
-    <link type="text/css"
-          href="{% static "luzfcb_djdocuments/css/luzfcb_page_style.css" %}"
-          rel="stylesheet">
-
+    {% if not disable_pagestyle %}
+        <link type="text/css"
+              href="{% static "luzfcb_djdocuments/css/luzfcb_page_style.css" %}"
+              rel="stylesheet">
+    {% endif %}
     <link type="text/css"
           href="{% static "luzfcb_djdocuments/css/luzfcb_djdocuments.css" %}"
           rel="stylesheet">
@@ -61,6 +61,9 @@
             <div class="col-md-12">
                 <div id="menu-superior" class="row navbar-fixed-top cor-de-fundo-menus">
                     <div class="col-md-12">
+                        <div class="pull-right" id="status-bar">
+                            Documento: {{ object.identificador_versao }}
+                        </div>
                         <div class="btn-group">
 
                             <button class="btn btn-default" type="button" id="salvar">
@@ -76,12 +79,12 @@
                             <button class="btn btn-default" type="button">
                                 <em class="glyphicon glyphicon-align-justify"></em> Justify
                             </button>
-                            <div class="pull-right" id="status-bar">Documento: {{ object.identificador_versao }}</div>
                         </div>
                         <div id="top" class="cktop">
                             <!-- Menu superior CKEditor -->
                         </div>
                     </div>
+
                 </div>
                 <div id="conteudo" class="row conteudo">
                     <div class="center-block a4-pagina">
@@ -148,7 +151,10 @@
         window.luzfcb.editor.ckeditor_contentsCss = ckeditor_contentsCss;
         window.luzfcb.editor.msg_nao_salvo = msg_nao_salvo;
         window.luzfcb.editor.$botao_salvar = $botao_salvar;
-        window.luzfcb.editor.$formulario = $formulario
+        window.luzfcb.editor.$formulario = $formulario;
+        {% if debug %}
+            window.luzfcb.editor.debug = true;
+        {% endif %}
 
     })(window, jQuery);
 
@@ -160,11 +166,6 @@
 {% include 'luzfcb_dj_simplelock/dj_simplelock.html' %}
 {# end luzfcb_dj_simplelock includes. #}
 
-<script>
-    for (var i in CKEDITOR.instances) {
-        console.log(i + ': ' + CKEDITOR.instances[i].checkDirty());
-    }
-</script>
 </body>
 
 </html>
