@@ -63,3 +63,5 @@ docs/_build
 *.bak
 
 *.sqlite3
+
+tests/static_collected
