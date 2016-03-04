@@ -143,11 +143,17 @@
     (function (window, jQuery) {
         window.luzfcb = window.luzfcb || {};
         window.luzfcb.editor = window.luzfcb.editor || {};
-        var ckeditor_contentsCss = '{% static "luzfcb_djdocuments/css/ckeditor_custom_styles.css" %}';
+        var ckeditor_contentsCss = '{% static "luzfcb_djdocuments/css/luzfcb_document_format_styles.css" %}';
         var msg_nao_salvo = '{% trans "O documento possui modificações e ainda não foi salvo" %}';
+        var ckeditor_style_name = 'luzfcb_djdocuments';
+        var ckeditor_style_full_url = '{% static "luzfcb_djdocuments/js/luzfcb_ckeditor.styles.js" %}';
+
 
         var $botao_salvar = jQuery("#salvar");
         var $formulario = jQuery("#formulario");
+
+        window.luzfcb.editor.ckeditor_style_name = ckeditor_style_name;
+        window.luzfcb.editor.ckeditor_style_full_url = ckeditor_style_full_url;
         window.luzfcb.editor.ckeditor_contentsCss = ckeditor_contentsCss;
         window.luzfcb.editor.msg_nao_salvo = msg_nao_salvo;
         window.luzfcb.editor.$botao_salvar = $botao_salvar;

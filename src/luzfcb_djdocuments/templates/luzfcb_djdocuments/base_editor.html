@@ -28,14 +28,16 @@
         {#        }#}
 
     </style>
-    <link type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.css"
-          rel="stylesheet">
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
+          integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
 
-    <link type="text/css"
-          href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css"
-          rel="stylesheet">
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css"
+          integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+
     <link type="application/vnd.ms-fontobject"
-          href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/fonts/glyphicons-halflings-regular.eot"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/fonts/glyphicons-halflings-regular.eot"
           rel="stylesheet">
 
     <link type="text/css"
@@ -48,7 +50,9 @@
 
 
     <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+            integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS"
+            crossorigin="anonymous"></script>
     <script src="{% static "luzfcb_djdocuments/js/vendor/ckeditor/4.5.7/ckeditor-full-min/ckeditor.js" %}"></script>
     <script src="{% static "luzfcb_dj_simplelock/js/jquery_csrftoken.js" %}"></script>
     {% block extra_head_variables %}
@@ -140,7 +144,7 @@
     (function (window, jQuery) {
         window.luzfcb = window.luzfcb || {};
         window.luzfcb.editor = window.luzfcb.editor || {};
-        var ckeditor_contentsCss = '{% static "luzfcb_djdocuments/css/ckeditor_custom_styles.css" %}';
+        var ckeditor_contentsCss = '{% static "luzfcb_djdocuments/css/ckeditor_custom_css_escolhidos_bootstrap.css" %}';
         var msg_nao_salvo = '{% trans "O documento possui modificações e ainda não foi salvo" %}';
 
         var $botao_salvar = jQuery("#salvar");
