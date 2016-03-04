@@ -9,6 +9,9 @@
     var conteudo_modificado = {};
 
     luzfcb.editor.debug = luzfcb.editor.debug || false;
+    var selected_style_name = luzfcb.editor.ckeditor_style_name;
+    var selected_style_full_url = luzfcb.editor.ckeditor_style_full_url;
+    var selected_style = '' + selected_style_name + ':' + selected_style_full_url;
     var ckeditor_contentsCss = luzfcb.editor.ckeditor_contentsCss;
     var msg_nao_salvo = luzfcb.editor.msg_nao_salvo;
 
@@ -137,7 +140,7 @@
             'justify',
             // habilita o plugin stylesheetparser: http://ckeditor.com/addon/stylesheetparser
             // requer desabilitar o suporte a Advanced Content Filter
-            'stylesheetparser'
+            //'stylesheetparser'
             // end habilita o plugin stylesheetparser
 
         ].join(),
@@ -147,6 +150,7 @@
             'top': 'top',
             'bottom': 'bottom'
         },
+        stylesSet: selected_style,
         contentsCss: ckeditor_contentsCss,
         startupShowBorders: false,
         autoGrow_onStartup: true,
@@ -178,7 +182,7 @@
         // desativa o Advanced Content Filter
         // http://docs.ckeditor.com/#!/guide/dev_advanced_content_filter
         // para poder utilizar o plugin stylesheetparser http://ckeditor.com/addon/stylesheetparser
-        allowedContent: true,
+        //allowedContent: true,
         // end desativa o Advanced Content Filter
         base64image_disableUrlImages: true,
         justifyClasses: ['AlignLeft', 'AlignCenter', 'AlignRight', 'AlignJustify']
