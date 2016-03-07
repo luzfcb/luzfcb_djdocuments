@@ -68,6 +68,8 @@ class Documento(models.Model):
                                                 blank=True, on_delete=models.SET_NULL, editable=False)
     versao_numero = models.IntegerField(default=1, auto_created=True, editable=False)
 
+    eh_template = models.BooleanField(default=False, editable=True)
+
     versoes = HistoricalRecords()
     objects = DocumentoManager()
 
@@ -181,3 +183,15 @@ class Documento(models.Model):
             ("pode_reverter_para_uma_versao_anterior_documento", "Pode Reverter documento para uma versão anterior"),
             ("pode_imprimir", "Pode Imprimir documento"),
         )
+
+
+class DocumentoTemplateManager(models.Manager):
+    def get_queryset(self):
+        return super(DocumentoTemplateManager, self).get_queryset().filter(esta_ativo=True, eh_template=True)
+
+
+class DocumentoTemplate(Documento):
+    objects = DocumentoTemplateManager()
+
+    class Meta:
+        proxy = True

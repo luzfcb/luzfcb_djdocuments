@@ -11,36 +11,16 @@ from simple_history.admin import SimpleHistoryAdmin
 from . import models
 
 
-# @admin.register(models.Documento)
-class DocumentContentAdmin(admin.ModelAdmin):
-    list_display = (
-        'titulo', 'criado_em', 'criado_por', 'modificado_em', 'modificado_por', 'revertido_em', 'revertido_por',
-        'revertido_da_versao', 'esta_ativo', 'esta_bloqueado', 'versao_numero', 'visualizar_versao'
-    )
-    readonly_fields = ('criado_em', 'criado_por', 'modificado_em', 'modificado_por', 'revertido_em', 'revertido_por',
-                       'revertido_da_versao',
-                       )
-
-    def visualizar_versao(self, obj):
-        url_triplet = self.admin_site.name, self.model._meta.app_label, self.model._meta.model_name
-        history_url = reverse('%s:%s_%s_history' % url_triplet,
-                              args=(obj.pk,))
-        html = format_html('<a href="{}">{}</a>'.format(history_url, 'Visualizar'))
-        return html
-
-    visualizar_versao.allow_tags = True
-    visualizar_versao.short_description = "Visualizar Versões"
-
-
 @admin.register(models.Documento)
-class DocTeste(SimpleHistoryAdmin):
+class DocumentoAdmin(SimpleHistoryAdmin):
     list_display = (
         # 'criado_em', 'criado_por', 'versao_numero', 'assinatura_hash', 'visualizar_versao'
         'identificador_versao', 'esta_assinado', 'assinatura_hash', 'criado_em', 'titulo', 'criado_por',
         'modificado_em',
         'modificado_por', 'revertido_em', 'revertido_por',
         'revertido_da_versao', 'esta_ativo', 'esta_bloqueado', 'versao_numero', 'visualizar_versao',
-        'assinado_em', 'assinado_por', 'assinatura_removida_em', 'assinatura_removida_por'
+        'assinado_em', 'assinado_por', 'assinatura_removida_em', 'assinatura_removida_por',
+        'eh_template'
     )
 
     readonly_fields = (
@@ -74,4 +54,26 @@ class DocTeste(SimpleHistoryAdmin):
     def save_model(self, request, obj, form, change):
         if not obj.criado_por:
             obj.criado_por = request.user
-        super(DocTeste, self).save_model(request, obj, form, change)
+        super(DocumentoAdmin, self).save_model(request, obj, form, change)
+
+
+@admin.register(models.DocumentoTemplate)
+class DocumentoTemplateAdmin(DocumentoAdmin):
+    objects = models.DocumentoTemplateManager()
+    readonly_fields = DocumentoAdmin.readonly_fields + ('eh_template',)
+
+    class Meta:
+        proxy = True
+
+    # def get_form(self, request, obj=None, *args, **kwargs):
+    #     form = super(DocumentoTemplateAdmin, self).get_form(request, *args, **kwargs)
+    #     # Initial values
+    #     form.base_fields['eh_template'].initial = True
+    #     if obj and obj.eh_template:
+    #         form.base_fields['eh_template'].initial = obj.eh_template
+    #     return form
+
+    def save_model(self, request, obj, form, change):
+        if not obj.eh_template:
+            obj.eh_template = True
+        super(DocumentoTemplateAdmin, self).save_model(request, obj, form, change)

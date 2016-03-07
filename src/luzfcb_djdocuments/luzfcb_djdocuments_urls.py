@@ -5,7 +5,8 @@ from django.conf.urls import url
 
 from .settings import DJANGO_DOCUMENTOS_ENABLE_GENERAL_DASHBOARD
 
-from . import views
+from .views import documentos as documentos_views
+from .views import documento_template
 
 urlpatterns = [
     # url(r'^$',
@@ -13,11 +14,11 @@ urlpatterns = [
     # name='dashboard'
     # ),
     url(r'^$',
-        views.DocumentoDashboardView.as_view(),
+        documentos_views.DocumentoDashboardView.as_view(),
         name='dashboard'
         ),
     url(r'^list/$',
-        views.DocumentoListView.as_view(),
+        documentos_views.DocumentoListView.as_view(),
         name='list'
         ),
     # url(r'^create/$',
@@ -25,55 +26,55 @@ urlpatterns = [
     #     name='create'
     #     ),
     url(r'^d/create/$',
-        views.DocumentoCreateView.as_view(),
+        documentos_views.DocumentoCreateView.as_view(),
         name='create'
         ),
     url(r'^detail/(?P<pk>\d+)/$',
-        views.DocumentoDetailView.as_view(),
+        documentos_views.DocumentoDetailView.as_view(),
         name='detail'
         ),
     url(r'^update/(?P<pk>\d+)/$',
-        views.DocumentoUpdateView.as_view(),
+        documentos_views.DocumentoUpdateView.as_view(),
         name='update'
         ),
     url(r'^update2/(?P<pk>\d+)/$',
-        views.AjaxUpdateTesteApagar.as_view(),
+        documentos_views.AjaxUpdateTesteApagar.as_view(),
         name='update2'
         ),
     url(r'^history/(?P<pk>\d+)/$',
-        views.DocumentoHistoryView.as_view(),
+        documentos_views.DocumentoHistoryView.as_view(),
         name='history'
         ),
     url(r'^revert/(?P<pk>\d+)/$',
-        views.DocumentoRevertView.as_view(),
+        documentos_views.DocumentoRevertView.as_view(),
         name='revert'
         ),
     url(r'^close/$',
-        views.CloseView.as_view(),
+        documentos_views.CloseView.as_view(),
         name='close'
         ),
     url(r'^assinar/(?P<pk>\d+)/$',
-        views.AssinarDocumentoView.as_view(),
+        documentos_views.AssinarDocumentoView.as_view(),
         name='assinar'
         ),
     url(r'^validar/$',
-        views.DocumentoValidacaoView.as_view(),
+        documentos_views.DocumentoValidacaoView.as_view(),
         name='validar'
         ),
     url(r'^validar/visualizar/(?P<pk>\d+)/$',
-        views.DocumentoDetailValidarView.as_view(),
+        documentos_views.DocumentoDetailValidarView.as_view(),
         name='validar-detail'
         ),
     url(r'^imprimir/(?P<pk>\d+)/$',
-        views.ImprimirView.as_view(),
+        documentos_views.ImprimirView.as_view(),
         name='imprimir'
         ),
     url(r'^pdf-file/$',
-        views.PDFViewer.as_view(),
+        documentos_views.PDFViewer.as_view(),
         name='pdf_view'
         ),
     url(r'^user-autocomplete/$',
-        views.UserAutocomplete.as_view(),
+        documentos_views.UserAutocomplete.as_view(),
         name='user-autocomplete'
         ),
 ]
@@ -81,7 +82,15 @@ urlpatterns = [
 if DJANGO_DOCUMENTOS_ENABLE_GENERAL_DASHBOARD:
     urlpatterns += [
         url(r'^all$',
-            views.DocumentoGeneralDashboardView.as_view(),
+            documentos_views.DocumentoGeneralDashboardView.as_view(),
             name='dashboard_general'
             ),
     ]
+
+urlpatterns = urlpatterns + [
+    url(r'^t/list/$',
+        documento_template.DocumentoTemplateListView.as_view(),
+        name='template_list'
+        ),
+
+]

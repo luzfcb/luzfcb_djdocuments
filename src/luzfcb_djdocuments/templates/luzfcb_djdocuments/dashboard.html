@@ -13,6 +13,11 @@
 {% block conteudo_app %}
     {{ block.super }}
 
+
+    <a href="{% url 'documentos:template_list' %}">
+        Lista de Templates de Documentos
+    </a>
+
     <a href="{% url 'documentos:list' %}">
         Lista de documentos
     </a>
@@ -83,18 +88,18 @@
 {% block js_app %}
     {{ block.super }}
     <script type="text/javascript" src="{% static "luzfcb_djdocuments/js/luzfcb_djdocuments.js" %}"></script>
-{#    <script type="text/javascript" src="{% static "luzfcb_djdocuments/js/platform.js" %}"></script>#}
-{#    <script type="text/javascript">#}
-{#        console.log(platform.os.family);#}
-{#        //Linux|Android == 42#}
-{#        //iOS on Chrome and Safari == 124#}
-{#        //iOS on Firefox == 44#}
-{#        //Win == 44#}
-{#        //alert(platform.os.family);#}
-{#        window.addEventListener("keyup", function (e) {#}
-{#            if (e.keyCode == 42) {#}
-{#                alert("The 'print screen' key is pressed");#}
-{#            }#}
-{#        });#}
-{#    </script>#}
+    {#    <script type="text/javascript" src="{% static "luzfcb_djdocuments/js/platform.js" %}"></script>#}
+    {#    <script type="text/javascript">#}
+    {#        console.log(platform.os.family);#}
+    {#        //Linux|Android == 42#}
+    {#        //iOS on Chrome and Safari == 124#}
+    {#        //iOS on Firefox == 44#}
+    {#        //Win == 44#}
+    {#        //alert(platform.os.family);#}
+    {#        window.addEventListener("keyup", function (e) {#}
+    {#            if (e.keyCode == 42) {#}
+    {#                alert("The 'print screen' key is pressed");#}
+    {#            }#}
+    {#        });#}
+    {#    </script>#}
 {% endblock js_app %}
