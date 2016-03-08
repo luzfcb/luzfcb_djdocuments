@@ -3,7 +3,6 @@ from __future__ import absolute_import, print_function, unicode_literals
 
 from django import template
 from django.forms.models import modelform_factory
-
 from simple_history.forms import new_readonly_form_class
 
 from ..utils import identificador

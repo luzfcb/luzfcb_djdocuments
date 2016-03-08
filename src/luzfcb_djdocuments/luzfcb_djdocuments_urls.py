@@ -4,7 +4,6 @@ from __future__ import absolute_import, print_function, unicode_literals
 from django.conf.urls import url
 
 from .settings import DJANGO_DOCUMENTOS_ENABLE_GENERAL_DASHBOARD
-
 from .views import documentos as documentos_views
 from .views import documento_template
 
@@ -32,10 +31,6 @@ urlpatterns = [
     url(r'^detail/(?P<pk>\d+)/$',
         documentos_views.DocumentoDetailView.as_view(),
         name='detail'
-        ),
-    url(r'^update/(?P<pk>\d+)/$',
-        documentos_views.DocumentoUpdateView.as_view(),
-        name='update'
         ),
     url(r'^update2/(?P<pk>\d+)/$',
         documentos_views.AjaxUpdateTesteApagar.as_view(),

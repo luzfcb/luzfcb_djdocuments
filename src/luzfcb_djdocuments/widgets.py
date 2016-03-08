@@ -6,7 +6,6 @@ from django import forms
 from django.core.validators import RegexValidator
 from django.forms import widgets
 from django.utils.translation import ugettext
-from dal import autocomplete
 
 from .utils.split_utils import gsplit
 
@@ -219,5 +218,3 @@ class SplitedHashField3(forms.MultiValueField):
 
     def compress(self, data_list):
         return ''.join(data_list)
-
-

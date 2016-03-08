@@ -5,7 +5,6 @@ from django.contrib import admin
 from django.core.urlresolvers import reverse
 from django.utils import timezone
 from django.utils.html import format_html
-
 from simple_history.admin import SimpleHistoryAdmin
 
 from . import models

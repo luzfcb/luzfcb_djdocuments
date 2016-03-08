@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function, unicode_literals
+
 from django.contrib.auth.hashers import SHA1PasswordHasher
 from django.db import models
 from django.db.models import Max
 from django.utils import timezone
 from django.utils.six import python_2_unicode_compatible
-
 from simple_history.models import HistoricalRecords
 from simple_history.views import MissingHistoryRecordsField
+
 from .settings import USER_MODEL
 from .utils import identificador
 

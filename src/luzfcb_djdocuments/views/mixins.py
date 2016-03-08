@@ -4,7 +4,7 @@ from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse
 from django.http import JsonResponse
-from django.shortcuts import resolve_url, redirect
+from django.shortcuts import redirect, resolve_url
 from django.utils import six
 
 

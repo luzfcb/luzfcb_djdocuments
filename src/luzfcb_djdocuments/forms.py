@@ -1,19 +1,21 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function, unicode_literals
+
 # import autocomplete_light
 from captcha.fields import CaptchaField
+# from ckeditor.widgets import CKEditorWidget
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import HTML, Submit
 from dal import autocomplete
 from django import forms
 from django.contrib.auth.hashers import check_password
 from django.utils.translation import ugettext_lazy as _
-# from ckeditor.widgets import CKEditorWidget
-from crispy_forms.helper import FormHelper
-from crispy_forms.layout import HTML, Submit
 
-from test_app.tests.samples_html import CABECALHO, BIG_SAMPLE_HTML, RODAPE, TITULO
-from .widgets import SplitedHashField3
-from .utils.module_loading import get_real_user_model_class
+from test_app.tests.samples_html import BIG_SAMPLE_HTML, CABECALHO, RODAPE, TITULO
+
 from .models import Documento
+from .utils.module_loading import get_real_user_model_class
+from .widgets import SplitedHashField3
 
 
 class ProdutoForm(forms.ModelForm):

@@ -2,7 +2,10 @@
 from __future__ import absolute_import, print_function, unicode_literals
 
 import json
+# import the logging library
+import logging
 
+from braces.views import LoginRequiredMixin
 from captcha.helpers import captcha_image_url
 from captcha.models import CaptchaStore
 from dal import autocomplete
@@ -11,28 +14,25 @@ from django.contrib.auth.models import AnonymousUser
 from django.core import signing
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.db.models import Q
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse
 from django.views import generic
 from luzfcb_dj_simplelock.views import LuzfcbLockMixin
-
 # from phantom_pdf import render_to_pdf
 from simple_history.views import HistoryRecordListViewMixin, RevertFromHistoryRecordViewMixin
-from braces.views import LoginRequiredMixin
 
 from luzfcb_djdocuments.views.mixins import (
+    AjaxFormPostMixin,
     AuditavelViewMixin,
+    CopyDocumentContentMixin,
+    DocumentoAssinadoRedirectMixin,
     NextURLMixin,
-    PopupMixin, CopyDocumentContentMixin, DocumentoAssinadoRedirectMixin, AjaxFormPostMixin)
-from ..utils.module_loading import get_real_user_model_class
-from ..forms import (
-    AssinarDocumento, DocumentoFormUpdate2, DocumentoRevertForm, DocumetoValidarForm,
+    PopupMixin
 )
+
+from ..forms import AssinarDocumento, DocumentoFormUpdate2, DocumentoRevertForm, DocumetoValidarForm
 from ..models import Documento
 from ..utils import add_querystrings_to_url
-# from .models import DocumentoConteudo
-
-# import the logging library
-import logging
+from ..utils.module_loading import get_real_user_model_class
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -131,12 +131,11 @@ class DocumentoListView(generic.ListView):
         return qs
 
 
-class DocumentoCreateView(  # AjaxableResponseMixin,
-    CopyDocumentContentMixin,
-    NextURLMixin,
-    PopupMixin,
-    AuditavelViewMixin,
-    generic.CreateView):
+class DocumentoCreateView(CopyDocumentContentMixin,
+                          NextURLMixin,
+                          PopupMixin,
+                          AuditavelViewMixin,
+                          generic.CreateView):
     template_name = 'luzfcb_djdocuments/documento_create2.html'
     model = Documento
     # form_class = DocumentoFormCreate
@@ -223,74 +222,6 @@ class DocumentoDetailView(NextURLMixin, PopupMixin, generic.DetailView):
             }
         )
         return context
-
-
-class DocumentoUpdateView(DocumentoAssinadoRedirectMixin,
-                          AuditavelViewMixin,
-                          # NextURLMixin,
-                          PopupMixin,
-                          generic.UpdateView):
-    template_name = 'luzfcb_djdocuments/documento_update_2_ck_manual.html'
-    # template_name = 'luzfcb_djdocuments/documento_update.html'
-    model = Documento
-    # form_class = DocumentoFormCreate
-    form_class = DocumentoFormUpdate2
-    # success_url = reverse_lazy('documentos:list')
-    success_url = None
-
-    # def get_success_url(self):
-    #     next_kwarg_name = self.get_next_kwarg_name()
-    #     next_page_url = self.get_next_page_url()
-    #     is_popup = self.get_is_popup()
-    #
-    #     document_param_name = 'document'
-    #     document_param_value = self.object.pk
-    #
-    #     doc = {
-    #         document_param_name: document_param_value
-    #     }
-    #
-    #     next_url = add_querystrings_to_url(next_page_url, doc)
-    #     if not is_popup and next_page_url:
-    #         # print('aqui')
-    #         return next_url
-    #
-    #     if not next_page_url:
-    #         return reverse('documentos:detail', {'pk': self.object.pk})
-    #
-    #     close_url = add_querystrings_to_url(reverse('documentos:close'), {next_kwarg_name: next_url})
-    #
-    #     return close_url
-    # def get_success_url(self):
-    #     next_kwarg_name = self.get_next_kwarg_name()
-    #     next_page_url = self.get_next_page_url()
-    #     is_popup = self.get_is_popup()
-    #     new_url = add_querystrings_to_url(reverse('documentos:update', kwargs={'pk': self.object.pk}), {next_kwarg_name: next_page_url})
-    #     if is_popup:
-    #         new_url = add_querystrings_to_url(new_url, {'popup': 1})
-    #     return new_url
-
-    def form_invalid(self, form):
-        response = super(DocumentoUpdateView, self).form_invalid(form)
-        if self.request.is_ajax():
-            return JsonResponse(form.errors, status=400)
-        else:
-            return response
-
-    def form_valid(self, form):
-        # We make sure to call the parent's form_valid() method because
-        # it might do some processing (in the case of CreateView, it will
-        # call form.save() for example).
-        response = super(DocumentoUpdateView, self).form_valid(form)
-        if self.request.is_ajax():
-            print('eh ajax')
-            data = {
-                'pk': self.object.pk,
-                'conteudo': self.object.conteudo
-            }
-            return JsonResponse(data)
-        else:
-            return response
 
 
 class DocumentoHistoryView(HistoryRecordListViewMixin, NextURLMixin, PopupMixin, generic.DetailView):

@@ -14,8 +14,8 @@ if PY3:
     text_type = str
     range_func = range
 else:
-    text_type = unicode
-    range_func = xrange
+    text_type = unicode  # noqa
+    range_func = xrange  # noqa
 
 DOCUMENT_MAX_DIGITS = 8
 DOCUMENT_VERSION_MAX_DIGITS = 3

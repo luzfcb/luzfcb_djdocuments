@@ -1,10 +1,10 @@
+from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 
-from .utils import SplinterStaticLiveServerTestCase
-from django.contrib.auth.models import User
-
 from luzfcb_djdocuments.models import Documento
+
 from .samples_html import BIG_SAMPLE_HTML
+from .utils import SplinterStaticLiveServerTestCase
 
 
 class TestViewEditarDocumento(SplinterStaticLiveServerTestCase):
