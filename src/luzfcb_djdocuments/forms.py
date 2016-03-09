@@ -14,7 +14,7 @@ from django.utils.translation import ugettext_lazy as _
 # TODO: remove this ugly hack
 try:
     from test_app.tests.samples_html import BIG_SAMPLE_HTML, CABECALHO, RODAPE, TITULO
-except:
+except ImportError:
     BIG_SAMPLE_HTML = CABECALHO = RODAPE = TITULO = ''
 
 from .models import Documento
