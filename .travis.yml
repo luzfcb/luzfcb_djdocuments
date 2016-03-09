@@ -27,11 +27,11 @@ env:
 
     - TOXENV=py35-djangomaster,codecov
 
-    - TOXENV=pypy-django18,codecov
-
-    - TOXENV=pypy-django19,codecov
-
-    - TOXENV=pypy-djangomaster,codecov
+#    - TOXENV=pypy-django18,codecov
+#
+#    - TOXENV=pypy-django19,codecov
+#
+#    - TOXENV=pypy-djangomaster,codecov
 
 before_install:
   - python --version
