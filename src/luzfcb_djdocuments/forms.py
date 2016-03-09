@@ -11,7 +11,11 @@ from django import forms
 from django.contrib.auth.hashers import check_password
 from django.utils.translation import ugettext_lazy as _
 
-from test_app.tests.samples_html import BIG_SAMPLE_HTML, CABECALHO, RODAPE, TITULO
+# TODO: remove this ugly hack
+try:
+    from test_app.tests.samples_html import BIG_SAMPLE_HTML, CABECALHO, RODAPE, TITULO
+except:
+    BIG_SAMPLE_HTML = CABECALHO = RODAPE = TITULO = ''
 
 from .models import Documento
 from .utils.module_loading import get_real_user_model_class
