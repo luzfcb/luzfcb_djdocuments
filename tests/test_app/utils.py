@@ -7,7 +7,8 @@ from splinter.browser import Browser
 
 class SplinterStaticLiveServerTestCase(StaticLiveServerTestCase):
     # fixtures = ['user-data.json']
-    splinter_driver = 'firefox'
+    # splinter_driver = 'firefox'
+    splinter_driver = 'phantomjs'
     virtual_display_size = (1024, 768)
     use_virtual_display = True
 

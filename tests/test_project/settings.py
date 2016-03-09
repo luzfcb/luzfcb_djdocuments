@@ -151,6 +151,10 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static_collected')
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'users_mediafiles')
+
+
 FONT_DIR = os.path.join(
     os.path.dirname(BASE_DIR), 'tests', 'test_project', 'contrib', 'fonts')
 

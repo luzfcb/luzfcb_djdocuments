@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 
@@ -8,7 +9,7 @@ from .utils import SplinterStaticLiveServerTestCase
 
 
 class TestViewEditarDocumento(SplinterStaticLiveServerTestCase):
-    use_virtual_display = False
+    use_virtual_display = True
     # splinter_driver = 'phantomjs'
 
     def setUp(self):
