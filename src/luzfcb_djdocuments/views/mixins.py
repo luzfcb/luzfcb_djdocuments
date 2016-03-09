@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import, print_function, unicode_literals
+
 import status
 from django.contrib import messages
 from django.contrib.auth.models import AnonymousUser
