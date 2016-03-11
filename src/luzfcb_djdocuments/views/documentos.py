@@ -8,12 +8,10 @@ import logging
 from braces.views import LoginRequiredMixin
 from captcha.helpers import captcha_image_url
 from captcha.models import CaptchaStore
-from dal import autocomplete
 from django.contrib import messages
 from django.contrib.auth.models import AnonymousUser
 from django.core import signing
 from django.core.urlresolvers import reverse, reverse_lazy
-from django.db.models import Q
 from django.http import HttpResponse
 from django.views import generic
 from luzfcb_dj_simplelock.views import LuzfcbLockMixin
@@ -38,29 +36,6 @@ from ..utils.module_loading import get_real_user_model_class
 logger = logging.getLogger(__name__)
 
 USER_MODEL = get_real_user_model_class()
-
-
-class UserAutocomplete(autocomplete.Select2QuerySetView):
-    """
-    Autocomplete view to Django User Based
-    """
-
-    def get_queryset(self):
-        # Don't forget to filter out results depending on the visitor !
-        if not self.request.user.is_authenticated():
-            return USER_MODEL.objects.none()
-
-        qs = USER_MODEL.objects.all()
-
-        if self.q:
-            qs = qs.filter(Q(first_name__icontains=self.q) | Q(last_name__icontains=self.q))
-
-            # qs = qs.annotate(full_name=Concat('first_name', Value(' '), 'last_name', output_field=CharField()))
-            # qs = qs.filter(full_name__icontains=self.q)
-        return qs
-
-    def get_result_label(self, result):
-        return result.get_full_name().title()
 
 
 # class AjaxableResponseMixin(object):
@@ -136,7 +111,7 @@ class DocumentoCreateView(CopyDocumentContentMixin,
                           PopupMixin,
                           AuditavelViewMixin,
                           generic.CreateView):
-    template_name = 'luzfcb_djdocuments/documento_create2.html'
+    # template_name = 'luzfcb_djdocuments/documento_create2.html'
     model = Documento
     # form_class = DocumentoFormCreate
     form_class = DocumentoFormUpdate2
@@ -188,6 +163,11 @@ class DocumentoCreateView(CopyDocumentContentMixin,
 
     def get_titulo(self):
         return self.request.GET.get('djdtitulo', False)
+
+    def get(self, *args, **kwargs):
+        original_response = super(DocumentoCreateView, self).get(*args, **kwargs)
+
+        return original_response
 
 
 class CloseView(NextURLMixin, generic.TemplateView):
@@ -425,3 +405,10 @@ class AjaxUpdateTesteApagar(LoginRequiredMixin,
 
     def post(self, request, *args, **kwargs):
         return super(AjaxUpdateTesteApagar, self).post(request, *args, **kwargs)
+
+
+from ..forms import CriarDocumentoForm
+
+
+class CriarDocumento(generic.FormView):
+    form_class = CriarDocumentoForm

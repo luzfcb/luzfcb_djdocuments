@@ -313,3 +313,19 @@ class RemoverAssinaturaDocumento(AssinarDocumentoHelperFormMixin, forms.ModelFor
 
         documento.remover_assinatura_documento(current_logged_user=self.current_logged_user)
         return documento
+
+
+class TemplareModelChoiceField(forms.ModelChoiceField):
+    def label_from_instance(self, obj):
+        return obj.get_full_name().title()
+
+
+class CriarDocumentoForm(forms.Form):
+    titulo = forms.CharField(max_length=500)
+    template_documento = TemplareModelChoiceField(
+        queryset=get_real_user_model_class().objects.all().order_by('username'),
+        widget=autocomplete.ModelSelect2(url='documentos:user-autocomplete')
+    )
+
+
+

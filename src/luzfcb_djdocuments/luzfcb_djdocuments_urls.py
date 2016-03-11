@@ -3,6 +3,7 @@ from __future__ import absolute_import, print_function, unicode_literals
 
 from django.conf.urls import url
 
+import luzfcb_djdocuments.views.autocompletes
 from .settings import DJANGO_DOCUMENTOS_ENABLE_GENERAL_DASHBOARD
 from .views import documentos as documentos_views
 from .views import documento_template
@@ -34,7 +35,7 @@ urlpatterns = [
         ),
     url(r'^update2/(?P<pk>\d+)/$',
         documentos_views.AjaxUpdateTesteApagar.as_view(),
-        name='update2'
+        name='editar'
         ),
     url(r'^history/(?P<pk>\d+)/$',
         documentos_views.DocumentoHistoryView.as_view(),
@@ -69,7 +70,7 @@ urlpatterns = [
         name='pdf_view'
         ),
     url(r'^user-autocomplete/$',
-        documentos_views.UserAutocomplete.as_view(),
+        luzfcb_djdocuments.views.autocompletes.UserAutocomplete.as_view(),
         name='user-autocomplete'
         ),
 ]
@@ -87,5 +88,8 @@ urlpatterns = urlpatterns + [
         documento_template.DocumentoTemplateListView.as_view(),
         name='template_list'
         ),
-
+    url(r'^t/$',
+        documento_template.DocumentoTemplateDashboard.as_view(),
+        name='template_dashboard'
+        ),
 ]

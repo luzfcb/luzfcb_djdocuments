@@ -69,10 +69,12 @@
                             <button class="btn btn-default" type="button" id="salvar">
                                 <em class="glyphicon glyphicon-floppy-disk"></em> Salvar
                             </button>
-                            <a class="btn btn-default djpopup2" type="button"
-                               href="{% url 'documentos:imprimir' pk=object.pk %}">
-                                <em class="glyphicon glyphicon-print"></em>Imprimir
-                            </a>
+                            {% if object %}
+                                <a class="btn btn-default djpopup2" type="button"
+                                   href="{% url 'documentos:imprimir' pk=object.pk %}">
+                                    <em class="glyphicon glyphicon-print"></em>Imprimir
+                                </a>
+                            {% endif %}
                             <button class="btn btn-default" type="button">
                                 <em class="glyphicon glyphicon-align-right"></em> Right
                             </button>
@@ -88,26 +90,27 @@
                 </div>
                 <div id="conteudo" class="row conteudo">
                     <div class="center-block a4-pagina">
-                        <div class="col-md-12">
-                            {% url 'documentos:update2' pk=object.pk as base_documento_update_url %}
-                            {% spurl base=base_documento_update_url add_query="{{ next_page_paran }}" add_query="{{ popup_paran }}" as documento_update_url %}
-                            <form role="form" method="post" id="formulario"
-                                  action="{{ documento_update_url }}">
-
-                                <div class="form-group ">
-                                    {{ form.cabecalho }}
-                                </div>
-                                <div class="form-group">
-                                    {{ form.titulo }}
-                                </div>
-                                <div class="form-group">
-                                    {{ form.conteudo }}
-                                </div>
-                                <div class="form-group">
-                                    {{ form.rodape }}
-                                </div>
-                            </form>
-                        </div>
+                        <table>
+                            <div class="col-md-12">
+                                {% url 'documentos:editar' pk=object.pk as base_documento_update_url %}
+                                {% spurl base=base_documento_update_url add_query="{{ next_page_paran }}" add_query="{{ popup_paran }}" as documento_update_url %}
+                                <form role="form" method="post" id="formulario"
+                                      action="{{ documento_update_url }}">
+                                    <div class="form-group ">
+                                        {{ form.cabecalho }}
+                                    </div>
+                                    <div class="form-group">
+                                        {{ form.titulo }}
+                                    </div>
+                                    <div class="form-group">
+                                        {{ form.conteudo }}
+                                    </div>
+                                    <div class="form-group">
+                                        {{ form.rodape }}
+                                    </div>
+                                </form>
+                            </div>
+                        </table>
                     </div>
                 </div>
 

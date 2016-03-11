@@ -15,7 +15,10 @@ from .utils import identificador
 
 class DocumentoManager(models.Manager):
     def get_queryset(self):
-        return super(DocumentoManager, self).get_queryset().filter(esta_ativo=True)
+        return super(DocumentoManager, self).get_queryset().filter(esta_ativo=True, eh_template=False)
+
+    def inativos(self):
+        return super(DocumentoManager, self).get_queryset().filter(esta_ativo=False)
 
     def assinados(self):
         return super(DocumentoManager, self).get_queryset().filter(esta_assinado=True)
@@ -23,11 +26,15 @@ class DocumentoManager(models.Manager):
 
 @python_2_unicode_compatible
 class Documento(models.Model):
-    titulo = models.CharField(blank=True, max_length=500, editable=True)
+    cabecalho = models.TextField(blank=True)
+    titulo = models.TextField(blank=True)
+    conteudo = models.TextField(blank=True)
+    rodape = models.TextField(blank=True)
 
-    # conteudo = ckeditor_fields.RichTextField()
-    conteudo = models.TextField()
+    eh_template = models.BooleanField(default=False, editable=True)
+    versao_numero = models.IntegerField(default=1, auto_created=True, editable=False)
 
+    # fields para auditoria
     criado_em = models.DateTimeField(default=timezone.now, blank=True, editable=False)
     criado_por = models.ForeignKey(to=USER_MODEL,
                                    related_name="%(app_label)s_%(class)s_criado_por", null=True,
@@ -67,9 +74,6 @@ class Documento(models.Model):
                                                 related_name="%(app_label)s_%(class)s_assinatura_removida_por",
                                                 null=True,
                                                 blank=True, on_delete=models.SET_NULL, editable=False)
-    versao_numero = models.IntegerField(default=1, auto_created=True, editable=False)
-
-    eh_template = models.BooleanField(default=False, editable=True)
 
     versoes = HistoricalRecords()
     objects = DocumentoManager()
@@ -189,6 +193,9 @@ class Documento(models.Model):
 class DocumentoTemplateManager(models.Manager):
     def get_queryset(self):
         return super(DocumentoTemplateManager, self).get_queryset().filter(esta_ativo=True, eh_template=True)
+
+    def inativos(self):
+        return super(DocumentoTemplateManager, self).get_queryset().filter(esta_ativo=False)
 
 
 class DocumentoTemplate(Documento):

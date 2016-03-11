@@ -1,0 +1,49 @@
+{% extends "luzfcb_djdocuments/base.html" %}
+{% load staticfiles %}
+{% block titulo %}
+    Dashboard
+{% endblock titulo %}
+
+{% block cabecalho_app %}
+    <h2><i class="icofont-home"></i> Dashboard Documentos
+        <small>welcome to stilearn</small>
+    </h2>
+{% endblock cabecalho_app %}
+
+{% block conteudo_app %}
+    {{ block.super }}
+
+
+    <a href="{% url 'documentos:template_list' %}">
+        Template de documentos
+    </a>
+    <br/>
+    <a href="{% url 'documentos:list' %}">
+        Documentos
+    </a>
+
+    <a href="{% url 'documentos:validar' %}">
+        Validar
+    </a>
+
+    <h4>
+        {% if quantidade_documentos_cadastrados %}
+            Documentos Cadastrados: {{ quantidade_documentos_cadastrados }}
+        {% endif %}
+
+    </h4>
+    <h4>
+        {% if quantidade_meus_documentos %}
+            Templates de Documentos criados por mim: {{ quantidade_meus_documentos }}
+        {% endif %}
+
+    </h4>
+
+
+{% endblock conteudo_app %}
+
+{% block js_app %}
+    {{ block.super }}
+    <script type="text/javascript" src="{% static "luzfcb_djdocuments/js/luzfcb_djdocuments.js" %}"></script>
+
+{% endblock js_app %}
