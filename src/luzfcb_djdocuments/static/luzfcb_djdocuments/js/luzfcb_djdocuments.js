@@ -53,7 +53,7 @@ jQuery(document).ready(function ($) {
         //var id = $(this).attr('id');
         var id = uuid.v4();
         var url_to_open = $(this).prop("href");
-        var desabilitado = $(this).attr("disabled");
+        var desabilitado = $(this).attr("disabled") || false;
 
         if (!desabilitado) {
 

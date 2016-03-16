@@ -290,7 +290,7 @@ class PDFViewer(generic.TemplateView):
 
 
 class AssinarDocumentoView(DocumentoAssinadoRedirectMixin, AuditavelViewMixin, generic.UpdateView):
-    template_name = 'luzfcb_djdocuments/documento_assinar_apagar.html'
+    template_name = 'luzfcb_djdocuments/documento_assinar.html'
     form_class = AssinarDocumento
     model = Documento
 
@@ -347,7 +347,7 @@ class AssinarDocumentoView2(generic.UpdateView):
 
 
 class ImprimirView(DocumentoDetailView):
-    template_name = 'luzfcb_djdocuments/documento_print.html'
+    template_name = 'luzfcb_djdocuments/documento_print_novo.html'
 
     def render_to_response(self, context, **response_kwargs):
         """
@@ -372,15 +372,22 @@ class ImprimirView(DocumentoDetailView):
                 **response_kwargs
             )
 
+    def get_context_data(self, **kwargs):
+        context = super(ImprimirView, self).get_context_data(**kwargs)
+        context.update({
+            'disableTable': True
+        })
+        return context
 
-class AjaxUpdateTesteApagar(LoginRequiredMixin,
-                            AjaxFormPostMixin,
-                            DocumentoAssinadoRedirectMixin,
-                            AuditavelViewMixin,
-                            NextURLMixin,
-                            PopupMixin,
-                            LuzfcbLockMixin,
-                            generic.UpdateView):
+
+class DocumentoEditor(LoginRequiredMixin,
+                      AjaxFormPostMixin,
+                      DocumentoAssinadoRedirectMixin,
+                      AuditavelViewMixin,
+                      NextURLMixin,
+                      PopupMixin,
+                      LuzfcbLockMixin,
+                      generic.UpdateView):
     detail_view_named_url = 'documentos:detail'
     document_json_fields = ('titulo', 'document_number', 'document_version_number', 'identificador_versao')
     template_name = 'luzfcb_djdocuments/editor/documento_editor.html'
@@ -396,15 +403,15 @@ class AjaxUpdateTesteApagar(LoginRequiredMixin,
         return reverse('documentos:detail', kwargs={'pk': self.object.pk})
 
     def form_valid(self, form):
-        return super(AjaxUpdateTesteApagar, self).form_valid(form)
+        return super(DocumentoEditor, self).form_valid(form)
 
         # success_url = None
 
     def get(self, request, *args, **kwargs):
-        return super(AjaxUpdateTesteApagar, self).get(request, *args, **kwargs)
+        return super(DocumentoEditor, self).get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        return super(AjaxUpdateTesteApagar, self).post(request, *args, **kwargs)
+        return super(DocumentoEditor, self).post(request, *args, **kwargs)
 
 
 from ..forms import CriarDocumentoForm

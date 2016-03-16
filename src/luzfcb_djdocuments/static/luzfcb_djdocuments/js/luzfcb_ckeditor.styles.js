@@ -4,61 +4,109 @@
 if (typeof(CKEDITOR) !== 'undefined') {
 // The set of styles for the <b>Styles</b> drop-down list.
     CKEDITOR.stylesSet.add('luzfcb_djdocuments', [
-        // Block Styles
-        {name: 'Blue Title', element: 'h3', styles: {'color': 'Blue'}},
-        {name: 'Red Title', element: 'h3', styles: {'color': 'Red'}},
-
-        // // Inline Styles
-        // {name: 'Marker: Yellow', element: 'span', styles: {'background-color': 'Yellow'}},
-        // {name: 'Marker: Green', element: 'span', styles: {'background-color': 'Lime'}},
-        //
-        // // Object Styles
-        // {
-        //     name: 'Imagem a esquerda',
-        //     element: 'img',
-        //     attributes: {
-        //         style: 'padding: 5px; margin-right: 5px',
-        //         border: '2',
-        //         align: 'left'
-        //     }
-        // },
-        // {
-        //     name: 'Imagem a direita2',
-        //     element: 'img',
-        //     // attributes: {
-        //     styles: 'padding: 5px; margin-right: 5px; border: 2; align: right',
-        //     // border: '2',
-        //     // align: 'right'
-        //     // }
-        // },
-        // {
-        //     name: 'Imagem a centro',
-        //     element: 'img',
-        //     attributes: {
-        //         style: 'padding: 5px; margin-right: 5px',
-        //         border: '2',
-        //         align: 'middle'
-        //     }
-        // },
         {
-            name: 'Imagem Centralizar',
-            element: 'img',
+            name: 'Tabela_Texto_8',
+            element: 'p',
             attributes: {
-                class: 'img-responsive center-block'
+                class: 'Tabela_Texto_8'
+            }
+        },
+         {
+            name: 'Tabela_Texto_Alinhado_Direita',
+            element: 'p',
+            attributes: {
+                class: 'Tabela_Texto_Alinhado_Direita'
+            }
+        },
+         {
+            name: 'Tabela_Texto_Alinhado_Esquerda',
+            element: 'p',
+            attributes: {
+                class: 'Tabela_Texto_Alinhado_Esquerda'
             }
         },
         {
-            name: 'Imagem Esquerda',
-            element: 'img',
+            name: 'Tabela_Texto_Centralizado',
+            element: 'p',
             attributes: {
-                class: 'img-responsive pull-left'
+                class: 'Tabela_Texto_Centralizado'
             }
         },
-        {
-            name: 'Imagem Direita',
-            element: 'img',
+         {
+            name: 'Tachado',
+            element: 'p',
             attributes: {
-                class: 'img-responsive pull-right'
+                class: 'Tachado'
+            }
+        },
+         {
+            name: 'Texto_Alinhado_Direita',
+            element: 'p',
+            attributes: {
+                class: 'Texto_Alinhado_Direita'
+            }
+        },
+         {
+            name: 'Texto_Alinhado_Esquerda',
+            element: 'p',
+            attributes: {
+                class: 'Texto_Alinhado_Esquerda'
+            }
+        },
+         {
+            name: 'Texto_Alinhado_Esquerda_Espaçamento_Simples',
+            element: 'p',
+            attributes: {
+                class: 'Texto_Alinhado_Esquerda_Espaçamento_Simples'
+            }
+        },
+         {
+            name: 'Texto_Centralizado',
+            element: 'p',
+            attributes: {
+                class: 'Texto_Centralizado'
+            }
+        },
+         {
+            name: 'Texto_Centralizado_Maiusculas',
+            element: 'p',
+            attributes: {
+                class: 'Texto_Centralizado_Maiusculas'
+            }
+        },
+         {
+            name: 'Texto_Citação',
+            element: 'p',
+            attributes: {
+                class: 'Texto_Citação'
+            }
+        },
+         {
+            name: 'Texto_Ementa',
+            element: 'p',
+            attributes: {
+                class: 'Texto_Ementa'
+            }
+        },
+         {
+            name: 'Texto_Justificado',
+            element: 'p',
+            attributes: {
+                class: 'Texto_Justificado'
+            }
+        },
+         {
+            name: 'Texto_Justificado_Recuo_Primeira_Linha',
+            element: 'p',
+            attributes: {
+                class: 'Texto_Justificado_Recuo_Primeira_Linha'
+            }
+        },
+         {
+            name: 'Texto_Mono_Espaçado',
+            element: 'p',
+            attributes: {
+                class: 'Texto_Mono_Espaçado'
             }
         }
     ]);

@@ -1,5 +1,6 @@
 .body {
     background: rgb(204, 204, 204) !important;
+    font-family: "Times New Roman";
 }
 
 .maindiv {
@@ -25,4 +26,27 @@
 
 .conteudo {
     padding-bottom: 20em !important;
+}
+
+@media print {
+    .no-print {
+        visibility: hidden !important;
+        display: none !important;
+    }
+
+    body {
+        background: transparent !important;
+        z-index: 0;
+    }
+
+    .body {
+        background: transparent !important;
+        z-index: 0;
+    }
+
+    .a4-pagina {
+        background: transparent !important;
+        display: block !important;
+        box-shadow: none !important;
+    }
 }

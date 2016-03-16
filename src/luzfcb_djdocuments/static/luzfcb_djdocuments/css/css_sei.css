@@ -1,16 +1,8 @@
-[contenteditable="false"] {
-    background-color: rgba(0, 0, 0, 0.15) !important;
-}
-
-body {
-    word-wrap: break-word;
-}
-
 p.Tabela_Texto_8 {
     font-size: 8pt;
     font-family: Times New Roman;
     text-align: left;
-    word-wrap: inherit;
+    word-wrap: normal;
     margin: 0 3pt 0 3pt;
 }
 
@@ -18,7 +10,7 @@ p.Tabela_Texto_Alinhado_Direita {
     font-size: 11pt;
     font-family: Times New Roman;
     text-align: right;
-    word-wrap: inherit;
+    word-wrap: normal;
     margin: 0 3pt 0 3pt;
 }
 
@@ -26,7 +18,7 @@ p.Tabela_Texto_Alinhado_Esquerda {
     font-size: 11pt;
     font-family: Times New Roman;
     text-align: left;
-    word-wrap: inherit;
+    word-wrap: normal;
     margin: 0 3pt 0 3pt;
 }
 
@@ -34,7 +26,7 @@ p.Tabela_Texto_Centralizado {
     font-size: 11pt;
     font-family: Times New Roman;
     text-align: center;
-    word-wrap: inherit;
+    word-wrap: normal;
     margin: 0 3pt 0;
 }
 
@@ -43,7 +35,7 @@ p.Tachado {
     font-family: Times New Roman;
     text-indent: 1.18in;
     text-align: justify;
-    word-wrap: inherit;
+    word-wrap: normal;
     text-decoration: line-through;
 }
 
@@ -51,7 +43,7 @@ p.Texto_Alinhado_Direita {
     font-size: 12pt;
     font-family: Times New Roman;
     text-align: right;
-    word-wrap: inherit;
+    word-wrap: normal;
     margin: 6pt;
 }
 
@@ -59,7 +51,7 @@ p.Texto_Alinhado_Esquerda {
     font-size: 12pt;
     font-family: Times New Roman;
     text-align: left;
-    word-wrap: inherit;
+    word-wrap: normal;
     margin: 6pt;
 }
 
@@ -67,7 +59,7 @@ p.Texto_Alinhado_Esquerda_Espaçamento_Simples {
     font-size: 12pt;
     font-family: Times New Roman;
     text-align: left;
-    word-wrap: inherit;
+    word-wrap: normal;
     margin: 0;
 }
 
@@ -75,7 +67,7 @@ p.Texto_Centralizado {
     font-size: 12pt;
     font-family: Times New Roman;
     text-align: center;
-    word-wrap: inherit;
+    word-wrap: normal;
     margin: 6pt;
 }
 
@@ -85,13 +77,13 @@ p.Texto_Centralizado_Maiusculas {
     font-family: Times New Roman;
     text-align: center;
     text-transform: uppercase;
-    word-wrap: inherit;
+    word-wrap: normal;
 }
 
 p.Texto_Citação {
     font-size: 10pt;
     font-family: Times New Roman;
-    word-wrap: inherit;
+    word-wrap: normal;
     margin: 4pt 0 4pt 1.18in;
     text-align: justify;
 }
@@ -100,7 +92,7 @@ p.Texto_Ementa {
     font-size: 10pt;
     font-family: Times New Roman;
     text-align: justify;
-    word-wrap: inherit;
+    word-wrap: normal;
     margin: 4pt 0 4pt 3.14in;
 }
 
@@ -108,7 +100,7 @@ p.Texto_Justificado {
     font-size: 12pt;
     font-family: Times New Roman;
     text-align: justify;
-    word-wrap: inherit;
+    word-wrap: normal;
     text-indent: 0;
     margin: 6pt;
 }
@@ -118,7 +110,7 @@ p.Texto_Justificado_Recuo_Primeira_Linha {
     font-family: Times New Roman;
     text-indent: 1.18in;
     text-align: justify;
-    word-wrap: inherit;
+    word-wrap: normal;
     margin: 6pt;
 }
 
@@ -127,6 +119,6 @@ p.Texto_Mono_Espaçado {
     font-family: Courier New;
     text-align: left;
     white-space: pre;
-    word-wrap: inherit;
+    word-wrap: normal;
     margin: 2pt;
 }

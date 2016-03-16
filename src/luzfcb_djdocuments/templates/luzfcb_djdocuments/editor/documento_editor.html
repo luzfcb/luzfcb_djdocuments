@@ -38,8 +38,8 @@
           href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/fonts/glyphicons-halflings-regular.eot"
           rel="stylesheet">
     {% if not disable_pagestyle %}
-        <link href="{% static "luzfcb_djdocuments/css/luzfcb_page_style.css" %}"
-              rel="stylesheet">
+        <link href="{% static "luzfcb_djdocuments/css/luzfcb_page_style.css" %}" rel="stylesheet">
+
     {% endif %}
     <link href="{% static "luzfcb_djdocuments/css/luzfcb_djdocuments.css" %}"
           rel="stylesheet">
@@ -147,6 +147,8 @@
         window.luzfcb = window.luzfcb || {};
         window.luzfcb.editor = window.luzfcb.editor || {};
         var ckeditor_contentsCss = '{% static "luzfcb_djdocuments/css/luzfcb_document_format_styles.css" %}';
+
+
         var msg_nao_salvo = '{% trans "O documento possui modificações e ainda não foi salvo" %}';
         var ckeditor_style_name = 'luzfcb_djdocuments';
         var ckeditor_style_full_url = '{% static "luzfcb_djdocuments/js/luzfcb_ckeditor.styles.js" %}';

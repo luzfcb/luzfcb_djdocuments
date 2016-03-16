@@ -34,7 +34,7 @@ urlpatterns = [
         name='detail'
         ),
     url(r'^update2/(?P<pk>\d+)/$',
-        documentos_views.AjaxUpdateTesteApagar.as_view(),
+        documentos_views.DocumentoEditor.as_view(),
         name='editar'
         ),
     url(r'^history/(?P<pk>\d+)/$',

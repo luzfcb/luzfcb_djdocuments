@@ -68,6 +68,7 @@
     }
 
     function antes_de_sair_da_pagina(evt) {
+        //executado antes do mudar/sair/fecha a pagina
         var item_nao_salvo = false;
         for (var instance in CKEDITOR.instances) {
             if (CKEDITOR.instances.hasOwnProperty(instance)) {
@@ -100,6 +101,7 @@
     // });
 
     function register_windows_page_events() {
+        //executado antes do mudar/sair/fecha a pagina
 
         if (window.addEventListener) {
             //evento executado ao redimencionar a janela
@@ -113,7 +115,7 @@
 
     }
 
-    function startCkEditor() {
+    function startCkEditor(ckeditor_config) {
         ckenabledElementIds.map(function (id_elemento) {
             CKEDITOR.replace(id_elemento, ckeditor_config);
             // vicula a funcao para controlar a ativacao/desativacao do botao salvar, no evento de quando ha mudancas no editor
@@ -126,7 +128,7 @@
 
 
     // configuracao das intancias do ckeditor
-    var ckeditor_config = {
+    luzfcb.editor.ckeditor_config = {
         extraPlugins: [
             'sharedspace',
 
@@ -137,7 +139,7 @@
             "dialogui", // required by base64image
             "maiuscula",
             "extenso",
-            'justify',
+            // "zoom"
             // habilita o plugin stylesheetparser: http://ckeditor.com/addon/stylesheetparser
             // requer desabilitar o suporte a Advanced Content Filter
             //'stylesheetparser'
@@ -158,25 +160,14 @@
         autoGrow_bottomSpace: 0,
         toolbar: 'Basic',
         toolbar_Basic: [
-            {name: 'save', items: ['Inlinesave']},
-            '/',
-            {name: 'clipboard', items: ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo']},
-            {name: 'editing', items: ['Scayt', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock']},
-            {name: 'links', items: ['Link', 'Unlink', 'Anchor']},
-            {name: 'insert', items: ['base64image', 'Table', 'HorizontalRule', 'SpecialChar']},
-            {name: 'extra', items: ['Extenso', "Maiuscula", "Minuscula"]},
-            {name: 'document', items: ['Source']},
-            '/',
             {
                 name: 'basicstyles',
-                items: ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'RemoveFormat']
-            },
-            {
-                name: 'paragraph',
-                items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote']
-            },
-            {name: 'styles', items: ['Styles', 'Format']},
-            {name: 'about', items: ['About']}
+                items: ['Find', 'Replace', '-', 'RemoveFormat', 'Bold', 'Italic', 'Underline', 'Strike', 'Maiuscula', 'Minuscula', 'TextColor', 'BGColor']},
+            {name: 'clipboard', items: ['Cut', 'Copy', 'PasteFromWord', 'PasteText', '-', 'Undo', 'Redo', 'ShowBlocks']},
+            {name: 'paragraph', items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', 'base64image', '-', 'Blockquote']},
+            {name: 'insert', items: ['Table', 'SpecialChar', 'HorizontalRule', 'Extenso']},
+            {name: 'document', items: ['Source', 'Zoom']},
+            {name: 'styles', items: ['Styles']}
 
         ],
         // desativa o Advanced Content Filter
@@ -190,9 +181,11 @@
 
     };
 
+
+
     function init_page_scripts() {
         register_windows_page_events();
-        startCkEditor();
+        startCkEditor(luzfcb.editor.ckeditor_config);
 
     }
 
@@ -212,7 +205,7 @@
             jQuery(".error", jQuery(form)).removeClass("error");
         }
 
-        //seu codigo lindo aqui
+
         $formulario.submit(function (event) {
             // Stop form from submitting normally
             event.preventDefault();
@@ -224,12 +217,13 @@
 
             for (var instance in CKEDITOR.instances) {
                 if (CKEDITOR.instances.hasOwnProperty(instance)) {
-                    //atualiza o textarea vinculado ao editor
+                    //atualiza o textarea vinculado ao editor, porque ao editar, voce nao esta editando o textarea
+                    // e sim o conteudo de um iframe criado pelo ckeditor.
                     //http://docs.ckeditor.com/#!/api/CKEDITOR.editor-method-updateElement
                     CKEDITOR.instances[instance].updateElement();
                 }
             }
-            // Get some values from elements on the page:
+
             var $form = jQuery(this);
             var conteudo = $form.serializeArray();
             var url = $form.attr("action").replace(/\s/g, "");
