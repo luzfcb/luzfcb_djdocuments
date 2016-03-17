@@ -27,7 +27,7 @@ from luzfcb_djdocuments.views.mixins import (
     PopupMixin
 )
 
-from ..forms import AssinarDocumento, DocumentoFormUpdate2, DocumentoRevertForm, DocumetoValidarForm
+from ..forms import AssinarDocumento, DocumentoEditarForm, DocumentoRevertForm, DocumetoValidarForm
 from ..models import Documento
 from ..utils import add_querystrings_to_url
 from ..utils.module_loading import get_real_user_model_class
@@ -114,7 +114,7 @@ class DocumentoCreateView(CopyDocumentContentMixin,
     # template_name = 'luzfcb_djdocuments/documento_create2.html'
     model = Documento
     # form_class = DocumentoFormCreate
-    form_class = DocumentoFormUpdate2
+    form_class = DocumentoEditarForm
     success_url = reverse_lazy('documentos:list')
     is_popup = False
 
@@ -396,7 +396,7 @@ class DocumentoEditor(LoginRequiredMixin,
     model = Documento
     prefix = 'document'
     # form_class = DocumentoFormCreate
-    form_class = DocumentoFormUpdate2
+    form_class = DocumentoEditarForm
     success_url = reverse_lazy('documentos:list')
 
     def get_lock_url_to_redirect_if_locked(self):
@@ -417,5 +417,36 @@ class DocumentoEditor(LoginRequiredMixin,
 from ..forms import CriarDocumentoForm
 
 
-class CriarDocumento(generic.FormView):
+def create_from_template(current_user, pk_documento):
+    template_documento = Documento.objects.get(pk=pk_documento)
+
+    document_kwargs = {
+        'cabecalho': template_documento.cabecalho,
+        'titulo': template_documento.titulo,
+        'conteudo': template_documento.conteudo,
+        'rodape': template_documento.rodape,
+        'criado_por': current_user,
+        'modificado_por': current_user
+    }
+
+    documento_novo = Documento(**document_kwargs)
+
+    return documento_novo
+
+
+class DocumentoCriar(generic.FormView):
+    template_name = 'luzfcb_djdocuments/documento_create2.html'
     form_class = CriarDocumentoForm
+    default_template_pk = 5
+
+    def form_valid(self, form):
+        template_selecionado = form.cleaned_data['template_documento']
+        documento_novo = create_from_template(self.request.user, template_selecionado)
+
+        editar_url = reverse('documentos:editar', kwargs={'pk': documento_novo.pk})
+        return redirect(editar_url, permanent=True)
+
+    def get_initial(self):
+        initial = super(DocumentoCriar, self).get_initial()
+        initial.update({'template_documento': self.default_template_pk})
+        return initial

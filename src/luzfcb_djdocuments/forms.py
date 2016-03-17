@@ -106,7 +106,7 @@ class CkeditorWidgetNew(forms.Textarea):
         super(CkeditorWidgetNew, self).__init__(default_attrs)
 
 
-class DocumentoFormUpdate2(SaveHelperFormMixin, forms.ModelForm):
+class DocumentoEditarForm(SaveHelperFormMixin, forms.ModelForm):
     cabecalho = forms.CharField(
         widget=forms.Textarea(attrs={'data-djckeditor': 'true'}),
         label='',
@@ -130,7 +130,7 @@ class DocumentoFormUpdate2(SaveHelperFormMixin, forms.ModelForm):
 
     class Meta:
         model = Documento
-        fields = ('titulo', 'cabecalho', 'conteudo', 'rodape')
+        fields = ('cabecalho', 'titulo', 'conteudo', 'rodape')
         # fields = '__all__'
         # exclude = ['criado_por', 'modificado_por', 'esta_assinado']
         # widgets = {
@@ -315,17 +315,21 @@ class RemoverAssinaturaDocumento(AssinarDocumentoHelperFormMixin, forms.ModelFor
         return documento
 
 
+from .templatetags.luzfcb_djdocuments_tags import remover_tags_html
+
+
 class TemplareModelChoiceField(forms.ModelChoiceField):
     def label_from_instance(self, obj):
-        return obj.get_full_name().title()
+        return remover_tags_html(obj.titulo)
+
+
+from .models import DocumentoTemplate
 
 
 class CriarDocumentoForm(forms.Form):
     titulo = forms.CharField(max_length=500)
     template_documento = TemplareModelChoiceField(
-        queryset=get_real_user_model_class().objects.all().order_by('username'),
-        widget=autocomplete.ModelSelect2(url='documentos:user-autocomplete')
+        queryset=DocumentoTemplate.objects.all(),
+        # widget=autocomplete.ModelSelect2(url='documentos:user-autocomplete')
+        widget=forms.RadioSelect
     )
-
-
-

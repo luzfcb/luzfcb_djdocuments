@@ -8,11 +8,11 @@ from django.utils.html import format_html
 from simple_history.admin import SimpleHistoryAdmin
 
 from . import models
-from .forms import DocumentoFormUpdate2
+from .forms import DocumentoEditarForm
 
 @admin.register(models.Documento)
 class DocumentoAdmin(SimpleHistoryAdmin):
-    form = DocumentoFormUpdate2
+    form = DocumentoEditarForm
     list_display = (
         # 'criado_em', 'criado_por', 'versao_numero', 'assinatura_hash', 'visualizar_versao'
         'identificador_versao', 'esta_assinado', 'assinatura_hash', 'criado_em', 'titulo', 'criado_por',

@@ -1,6 +1,18 @@
-{% extends "luzfcb_djdocuments/editor/documento_editor.html" %}
+{% extends "luzfcb_djdocuments/documento_assinar_base.html" %}
 {% load spurl %}
-{% block extra_head_variables %}
-    {% url 'documentos:create' as base_documento_update_url %}
-    {% spurl base=base_documento_update_url add_query="{{ next_page_paran }}" add_query="{{ popup_paran }}" as documento_post_url %}
-{% endblock extra_head_variables %}
+{% load crispy_forms_tags %}
+
+{% block conteudo_app %}
+    {% if form %}
+        {% crispy form %}
+    {% endif %}
+
+{% endblock conteudo_app %}
+{% block js_app %}
+
+
+    {% if form %}
+        {{ form.media }}
+    {% endif %}
+
+{% endblock js_app %}

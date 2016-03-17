@@ -26,7 +26,7 @@ urlpatterns = [
     #     name='create'
     #     ),
     url(r'^d/create/$',
-        documentos_views.DocumentoCreateView.as_view(),
+        documentos_views.DocumentoCriar.as_view(),
         name='create'
         ),
     url(r'^detail/(?P<pk>\d+)/$',
