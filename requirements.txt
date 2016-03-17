@@ -6,6 +6,7 @@ python-status==1.0.1
 django-autocomplete-light==3.0.4
 psycopg2==2.6.1
 django-bootstrap-pagination==1.6.1
+bleach==1.4.2
 
 
 -e git+https://github.com/luzfcb/django-simple-history.git@wip-generic-views2#egg=django-simple-history
@@ -18,3 +19,4 @@ django-debug-toolbar==1.4
 splinter==0.7.3
 PyVirtualDisplay==0.1.5
 # end development dependencies
+

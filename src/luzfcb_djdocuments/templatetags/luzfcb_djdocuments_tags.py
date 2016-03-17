@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function, unicode_literals
 
+import bleach
 from django import template
 from django.forms.models import modelform_factory
+from django.utils.safestring import mark_safe
+from django.template.defaultfilters import striptags
+
 from simple_history.forms import new_readonly_form_class
 
 from ..utils import identificador
@@ -38,7 +42,6 @@ def identificador_versao(model_instance):
 
 @register.filter
 def absolute_uri(url, request):
-
     """
     Usage: {{ url|absolute_uri:request }}
 
@@ -58,3 +61,12 @@ def absolute_uri(url, request):
     {{ '/foo/bar/'|absolute_uri:request as zz }}
     """
     return request.build_absolute_uri(url)
+
+
+@register.filter
+def remover_tags_html(value):
+    """
+        Usage: {{ value|remover_tags_html }}
+    """
+    striped_str = striptags(value)
+    return mark_safe(bleach.clean(striped_str))
