@@ -5,7 +5,7 @@
 <html lang="pt-br" id="this-doc">
 <head>
     <meta charset="utf-8">
-    <title>{{ object.titulo|striptags }}_{{ object.identificador_versao }}</title>
+    <title>{{ object.titulo|remover_tags_html|slugify|slice:":200" }}_{{ object.identificador_versao }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
     <meta name="author" content="diti">
@@ -16,8 +16,8 @@
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>
-		<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
-	<![endif]-->
+        <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
     {% block css_app %}
 
 
@@ -178,7 +178,7 @@
 
 {% if object.esta_assinado %}
     <script>
-        var url_validacao = $("#url_validacao");
+        var url_validacao = $("#url_validacao").attr("href");
         var opcoes = {
             // render method: 'canvas', 'image' or 'div'
             render: 'canvas',
@@ -204,7 +204,7 @@
             background: null,
 
             // content
-            text: url_validacao.attr("href"),
+            text: url_validacao,
 
             // corner radius relative to module width: 0.0 .. 0.5
             radius: 0.0,
@@ -236,78 +236,6 @@
     </script>
 {% endif %}
 
-
-
-{#<script>#}
-{#    function OnClose() {#}
-{#        "use strict";#}
-{#        if (window.opener != null && !window.opener.closed) {#}
-{#            window.opener.HideModalDiv();#}
-{#            {% if next_page_url %}#}
-{#                window.opener.redirecionar("{{ next_page_url }}");#}
-{#            {% endif %}#}
-{#        }#}
-{#    }#}
-{#    window.onunload = OnClose;#}
-{#    window.close();#}
-{#</script>#}
-
-{#<script>#}
-{#    function printAndCloseOnLoad(printAndClose) {#}
-{#        if (printAndClose) {#}
-{#            // close self without prompting#}
-{#            window.open('', '_self', '');#}
-{#            window.close();#}
-{#        }#}
-{#    }#}
-{##}
-{#    $(document).ready(function () {#}
-{#        if (window.location.search.indexOf("PrintAndClose=") > 0)#}
-{#            print();#}
-{#    });#}
-{#</script>#}
-
-<script>
-    {#    var beforePrint = function () {#}
-    {#        alert('Antes de imprimir');#}
-    {#        document.getElementById('printImage').src = 'http://stackoverflow.com/favicon.ico';#}
-    {##}
-    {#    };#}
-    {#    var afterPrint = function () {#}
-    {#        alert('Depois de imprimir');#}
-    {#        document.getElementById('printImage').src = 'http://google.com/favicon.ico';#}
-    {#    };#}
-    {##}
-    {#    if (window.matchMedia) {#}
-    {#        var mediaQueryList = window.matchMedia('print');#}
-    {#        mediaQueryList.addListener(function (mql) {#}
-    {#            if (mql.matches) {#}
-    {#                beforePrint();#}
-    {#            } else {#}
-    {#                afterPrint();#}
-    {#            }#}
-    {#        });#}
-    {#    }#}
-    {##}
-    {#    window.onbeforeprint = beforePrint;#}
-    {#    window.onafterprint = afterPrint;#}
-
-
-    {#    https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onafterprint#}
-    {#http://stackoverflow.com/questions/13598790/onbeforeprint-and-onafterprint-is-not-working-in-chrome-and-ie#}
-    {#    if ('matchMedia' in window) {#}
-    {#        window.matchMedia('print').addListener(function (media) {#}
-    {#            //do before-printing stuff#}
-    {#            alert('Algo depois de imprimir no Chrome');#}
-    {#        });#}
-    {#    } else {#}
-    {#        window.onbeforeprint = function () {#}
-    {#            //do before-printing stuff#}
-    {#            alert('onbeforeprint Algo depois de imprimir no Chrome');#}
-    {#        }#}
-    {#    }#}
-
-</script>
 {% block js_app %}
 {% endblock %}
 </body>
