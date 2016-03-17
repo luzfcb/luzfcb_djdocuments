@@ -1,20 +1,13 @@
 {% extends "luzfcb_djdocuments/documento_assinar_base.html" %}
 {% load staticfiles %}
 {% load crispy_forms_tags %}
+{% load luzfcb_djdocuments_tags %}
 
 
 
 {% block conteudo_app %}
-    {% if messages %}
-        <ul class="messages">
-            {% for message in messages %}
-                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
-
     {% if form and object %}
-        Tem certeza que deseja assinar o documento {{ object.titulo }} {{ object.identificador_versao }}
+        Tem certeza que deseja assinar o documento "{{ object.titulo|remover_tags_html }}" número: {{ object.identificador_versao }}
         {% crispy form %}
     {% endif %}
 
