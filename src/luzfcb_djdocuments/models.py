@@ -179,6 +179,9 @@ class Documento(models.Model):
 
     class Meta:
         ordering = ['criado_em']
+        verbose_name = 'Documento Digital'
+        verbose_name_plural = 'Documentos Digitais'
+
         permissions = (
             ("pode_criar_documento", "Pode Criar documento"),
             ("pode_editar_documento", "Pode Editar documento"),
