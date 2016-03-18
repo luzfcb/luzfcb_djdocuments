@@ -49,7 +49,7 @@
     <link href="{% static 'luzfcb_djdocuments/css/luzfcb_document_format_styles_print.css' %}"
           rel="stylesheet">
 </head>
-<body class="body">
+<body class="body" onload="subst()">
 <section class="section" id="documento-section">
     <div class="container">
         <div class="signin-form row-fluid">
@@ -125,7 +125,7 @@
                         <tr>
                             <td style="width: 200px; height: 105px">
                                 <a id="url_validacao" href="{{ validar_url|absolute_uri:request }}">
-                                    <div id="codigo_qr" style="alignment: center"></div>
+                                    <div id="codigo_qr" style="alignment: center; display: block;"></div>
                                     <p class="no-print">Verifique a Validade</p>
                                 </a>
 
@@ -144,7 +144,7 @@
                         <tbody>
                         <tr>
                             <td></td>
-                            <td style="text-align:right">{{ object.identificador_versao }}</td>
+                            <td style="text-align:right">{{ object.identificador_versao }} - Página [page] de [toPage]
                         </tr>
                         </tbody>
                     </table>
@@ -179,64 +179,70 @@
 {% if object.esta_assinado %}
     <script>
         var url_validacao = $("#url_validacao").attr("href");
-        var opcoes = {
-            // render method: 'canvas', 'image' or 'div'
-            render: 'canvas',
 
-            // version range somewhere in 1 .. 40
-            minVersion: 1,
-            maxVersion: 40,
+        function gerar_qr(dado, renderizar_em) {
+            var opcoes = {
+                // render method: 'canvas', 'image' or 'div'
+                render: 'canvas',
 
-            // error correction level: 'L', 'M', 'Q' or 'H'
-            ecLevel: 'H',
+                // version range somewhere in 1 .. 40
+                minVersion: 1,
+                maxVersion: 40,
 
-            // offset in pixel if drawn onto existing canvas
-            left: 0,
-            top: 0,
+                // error correction level: 'L', 'M', 'Q' or 'H'
+                ecLevel: 'H',
 
-            // size in pixel
-            size: 110,
+                // offset in pixel if drawn onto existing canvas
+                left: 0,
+                top: 0,
 
-            // code color or image element
-            fill: '#000',
+                // size in pixel
+                size: 110,
 
-            // background color or image element, null for transparent background
-            background: null,
+                // code color or image element
+                fill: '#000',
 
-            // content
-            text: url_validacao,
+                // background color or image element, null for transparent background
+                background: null,
 
-            // corner radius relative to module width: 0.0 .. 0.5
-            radius: 0.0,
+                // content
+                text: dado,
 
-            // quiet zone in modules
-            quiet: 0,
+                // corner radius relative to module width: 0.0 .. 0.5
+                radius: 0.0,
 
-            // modes
-            // 0: normal
-            // 1: label strip
-            // 2: label box
-            // 3: image strip
-            // 4: image box
-            mode: 2,
+                // quiet zone in modules
+                quiet: 0,
 
-            mSize: 0.1,
-            mPosX: 0.5,
-            mPosY: 0.5,
+                // modes
+                // 0: normal
+                // 1: label strip
+                // 2: label box
+                // 3: image strip
+                // 4: image box
+                mode: 2,
 
-            label: 'DPE-TO',
-            fontname: 'sans',
-            fontcolor: '#ff8300',
+                mSize: 0.1,
+                mPosX: 0.5,
+                mPosY: 0.5,
 
-            image: null
-        };
+                label: 'DPE-TO',
+                fontname: 'sans',
+                fontcolor: '#ff8300',
 
-        $("#codigo_qr").qrcode(opcoes);
-        {#        window.print();#}
+                image: null
+            };
+
+            $(renderizar_em).qrcode(opcoes);
+        }
+
+        gerar_qr(url_validacao, "#codigo_qr");
+
     </script>
 {% endif %}
 
 {% block js_app %}
 {% endblock %}
+
 </body>
 </html>

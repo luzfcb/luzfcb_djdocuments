@@ -13,11 +13,13 @@ from django.contrib.auth.models import AnonymousUser
 from django.core import signing
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.http import HttpResponse
+from django.template.defaultfilters import urlize
 from django.views import generic
 from luzfcb_dj_simplelock.views import LuzfcbLockMixin
 # from phantom_pdf import render_to_pdf
 from simple_history.views import HistoryRecordListViewMixin, RevertFromHistoryRecordViewMixin
 
+from luzfcb_djdocuments.templatetags.luzfcb_djdocuments_tags import absolute_uri
 from luzfcb_djdocuments.views.mixins import (
     AjaxFormPostMixin,
     AuditavelViewMixin,
@@ -29,7 +31,7 @@ from luzfcb_djdocuments.views.mixins import (
 
 from ..forms import AssinarDocumento, DocumentoEditarForm, DocumentoRevertForm, DocumetoValidarForm
 from ..models import Documento
-from ..utils import add_querystrings_to_url
+from ..utils import add_querystrings_to_url, make_absolute_paths
 from ..utils.module_loading import get_real_user_model_class
 
 # Get an instance of a logger
@@ -349,33 +351,49 @@ class AssinarDocumentoView2(generic.UpdateView):
 class ImprimirView(DocumentoDetailView):
     template_name = 'luzfcb_djdocuments/documento_print_novo.html'
 
-    def render_to_response(self, context, **response_kwargs):
-        """
-        Returns a response, using the `response_class` for this
-        view, with a template rendered with the given context.
-
-        If any keyword arguments are provided, they will be
-        passed to the constructor of the response class.
-        """
-
+    def get(self, *args, **kwargs):
+        original_response = super(ImprimirView, self).get(*args, **kwargs)
         if self.request.GET.get('pdf'):
+            import pdfkit
 
-            # return render_to_pdf(self.request, 'saida', format='A4', orientation='portrait')
-            print('teste')
-        else:
-            response_kwargs.setdefault('content_type', self.content_type)
-            return self.response_class(
-                request=self.request,
-                template=self.get_template_names(),
-                context=context,
-                using=self.template_engine,
-                **response_kwargs
-            )
+            url = urlize(absolute_uri(self.request.resolver_match.url_name, request=self.request))
+            a = url
+            return pdfkit.from_url(url, 'novo_arquivo.pdf')
+
+        return original_response
+
+    # def render_to_response(self, context, **response_kwargs):
+    #     """
+    #     Returns a response, using the `response_class` for this
+    #     view, with a template rendered with the given context.
+    #
+    #     If any keyword arguments are provided, they will be
+    #     passed to the constructor of the response class.
+    #     """
+    #
+    #     if self.request.GET.get('pdf'):
+    #
+    #         # return render_to_pdf(self.request, 'saida', format='A4', orientation='portrait')
+    #         print('teste')
+    #     else:
+    #         import pdfkit
+    #
+    #         webkit = WKHtmlToPDFGenerator()
+    #
+    #         return convert_html_to_pdf(request=self.request, context=self.get_context_data())
+    #         # response_kwargs.setdefault('content_type', self.content_type)
+    #         # return self.response_class(
+    #         #     request=self.request,
+    #         #     template=self.get_template_names(),
+    #         #     context=context,
+    #         #     using=self.template_engine,
+    #         #     **response_kwargs
+    #         # )
 
     def get_context_data(self, **kwargs):
         context = super(ImprimirView, self).get_context_data(**kwargs)
         context.update({
-            'disableTable': True
+            'disableTable': False
         })
         return context
 
