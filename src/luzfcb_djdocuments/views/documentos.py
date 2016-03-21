@@ -12,6 +12,8 @@ from django.contrib import messages
 from django.contrib.auth.models import AnonymousUser
 from django.core import signing
 from django.core.urlresolvers import reverse, reverse_lazy
+from django.http.response import HttpResponseRedirect
+from django.shortcuts import redirect, render
 from django.http import HttpResponse
 from django.template.defaultfilters import urlize
 from django.views import generic
@@ -435,24 +437,25 @@ class DocumentoEditor(LoginRequiredMixin,
 from ..forms import CriarDocumentoForm
 
 
-def create_from_template(current_user, pk_documento):
-    template_documento = Documento.objects.get(pk=pk_documento)
+def create_from_template(current_user, documento_template):
+    # template_documento = Documento.objects.get(pk=documento_template.pk)
 
     document_kwargs = {
-        'cabecalho': template_documento.cabecalho,
-        'titulo': template_documento.titulo,
-        'conteudo': template_documento.conteudo,
-        'rodape': template_documento.rodape,
+        'cabecalho': documento_template.cabecalho,
+        'titulo': documento_template.titulo,
+        'conteudo': documento_template.conteudo,
+        'rodape': documento_template.rodape,
         'criado_por': current_user,
         'modificado_por': current_user
     }
 
     documento_novo = Documento(**document_kwargs)
+    documento_novo.save()
 
     return documento_novo
 
 
-class DocumentoCriar(generic.FormView):
+class DocumentoCriar(generic.CreateView):
     template_name = 'luzfcb_djdocuments/documento_create2.html'
     form_class = CriarDocumentoForm
     default_template_pk = 5
@@ -468,3 +471,22 @@ class DocumentoCriar(generic.FormView):
         initial = super(DocumentoCriar, self).get_initial()
         initial.update({'template_documento': self.default_template_pk})
         return initial
+
+
+def criar_documento(request):
+    if request.method == 'POST':
+        form = CriarDocumentoForm(request.POST)
+
+        if form.is_valid():
+            template_selecionado = form.cleaned_data['template_documento']
+            documento_novo = create_from_template(request.user, template_selecionado)
+
+            editar_url = reverse('documentos:editar', kwargs={'pk': documento_novo.pk})
+            return redirect(editar_url, permanent=True)
+        else:
+            return render(request, 'luzfcb_djdocuments/documento_create2.html',
+                          context={'form': form}
+                          )
+    else:
+        context = {'form': CriarDocumentoForm()}
+        return render(request, 'luzfcb_djdocuments/documento_create2.html', context=context)

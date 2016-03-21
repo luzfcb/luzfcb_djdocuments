@@ -13,15 +13,17 @@ from .settings import USER_MODEL
 from .utils import identificador
 
 
-class DocumentoManager(models.Manager):
-    def get_queryset(self):
-        return super(DocumentoManager, self).get_queryset().filter(esta_ativo=True, eh_template=False)
-
+class DocumentoQuerySet(models.QuerySet):
     def inativos(self):
-        return super(DocumentoManager, self).get_queryset().filter(esta_ativo=False)
+        return self.filter(esta_ativo=False)
 
     def assinados(self):
-        return super(DocumentoManager, self).get_queryset().filter(esta_assinado=True)
+        return self.filter(esta_assinado=True, esta_ativo=True)
+
+
+class DocumentoManager(models.Manager):
+    def get_queryset(self):
+        return DocumentoQuerySet(model=self.model, using=self._db).filter(esta_ativo=True, eh_template=False)
 
 
 @python_2_unicode_compatible
@@ -196,9 +198,6 @@ class Documento(models.Model):
 class DocumentoTemplateManager(models.Manager):
     def get_queryset(self):
         return super(DocumentoTemplateManager, self).get_queryset().filter(esta_ativo=True, eh_template=True)
-
-    def inativos(self):
-        return super(DocumentoTemplateManager, self).get_queryset().filter(esta_ativo=False)
 
 
 class DocumentoTemplate(Documento):
