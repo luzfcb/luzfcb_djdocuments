@@ -14,6 +14,14 @@ from .forms import DocumentoEditarForm
 
 @admin.register(models.Documento)
 class DocumentoAdmin(SimpleHistoryAdmin):
+    def get_queryset(self, request):
+        qs = self.model.admin_objects.get_queryset()
+        # qs = models.DocumentoAdminManager().get_queryset()
+        ordering = self.ordering or ()  # otherwise we might try to *None, which is bad ;)
+        if ordering:
+            qs = qs.order_by(*ordering)
+        return qs
+
     # form = DocumentoEditarForm
     list_display = (
         # 'criado_em', 'criado_por', 'versao_numero', 'assinatura_hash', 'visualizar_versao'
@@ -68,9 +76,6 @@ class DocumentoAdmin(SimpleHistoryAdmin):
 class DocumentoTemplateAdmin(DocumentoAdmin):
     objects = models.DocumentoTemplateManager()
     readonly_fields = DocumentoAdmin.readonly_fields + ('eh_template',)
-
-    class Meta:
-        proxy = True
 
     # def get_form(self, request, obj=None, *args, **kwargs):
     #     form = super(DocumentoTemplateAdmin, self).get_form(request, *args, **kwargs)

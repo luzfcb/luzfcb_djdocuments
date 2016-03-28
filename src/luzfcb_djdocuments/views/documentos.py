@@ -19,7 +19,7 @@ from django.template.defaultfilters import urlize
 from django.views import generic
 from luzfcb_dj_simplelock.views import LuzfcbLockMixin
 # from phantom_pdf import render_to_pdf
-from simple_history.views import HistoryRecordListViewMixin, RevertFromHistoryRecordViewMixin
+# from simple_history.views import HistoryRecordListViewMixin, RevertFromHistoryRecordViewMixin
 
 from luzfcb_djdocuments.templatetags.luzfcb_djdocuments_tags import absolute_uri
 from luzfcb_djdocuments.views.mixins import (
@@ -208,13 +208,15 @@ class DocumentoDetailView(NextURLMixin, PopupMixin, generic.DetailView):
         return context
 
 
-class DocumentoHistoryView(HistoryRecordListViewMixin, NextURLMixin, PopupMixin, generic.DetailView):
+# class DocumentoHistoryView(HistoryRecordListViewMixin, NextURLMixin, PopupMixin, generic.DetailView):
+class DocumentoHistoryView(NextURLMixin, PopupMixin, generic.DetailView):
     template_name = 'luzfcb_djdocuments/documento_detail_with_versions.html'
     model = Documento
     history_records_paginate_by = 2
 
 
-class DocumentoRevertView(RevertFromHistoryRecordViewMixin, NextURLMixin, AuditavelViewMixin, generic.UpdateView):
+# class DocumentoRevertView(RevertFromHistoryRecordViewMixin, NextURLMixin, AuditavelViewMixin, generic.UpdateView):
+class DocumentoRevertView(NextURLMixin, AuditavelViewMixin, generic.UpdateView):
     template_name = 'luzfcb_djdocuments/documento_revert.html'
     model = Documento
     form_class = DocumentoRevertForm
@@ -432,6 +434,7 @@ class DocumentoEditor(LoginRequiredMixin,
 
     def post(self, request, *args, **kwargs):
         return super(DocumentoEditor, self).post(request, *args, **kwargs)
+
 
 
 from ..forms import CriarDocumentoForm

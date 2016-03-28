@@ -15,7 +15,7 @@ from django.utils.translation import ugettext_lazy as _
 try:
     from test_app.tests.samples_html import BIG_SAMPLE_HTML, CABECALHO, RODAPE, TITULO
 except ImportError:
-    BIG_SAMPLE_HTML = CABECALHO = RODAPE = TITULO = ''
+    BIG_SAMPLE_HTML = CABECALHO = RODAPE = TITULO = ' '
 
 from .models import Documento
 from .utils.module_loading import get_real_user_model_class
@@ -318,9 +318,9 @@ class RemoverAssinaturaDocumento(AssinarDocumentoHelperFormMixin, forms.ModelFor
 from .templatetags.luzfcb_djdocuments_tags import remover_tags_html
 
 
-class TemplareModelChoiceField(forms.ModelChoiceField):
+class TemplateModelChoiceField(forms.ModelChoiceField):
     def label_from_instance(self, obj):
-        return remover_tags_html(obj.titulo)
+        return remover_tags_html(obj.tipo_documento)
 
 
 from .models import DocumentoTemplate
@@ -328,8 +328,8 @@ from .models import DocumentoTemplate
 
 class CriarDocumentoForm(forms.Form):
     # titulo = forms.CharField(max_length=500)
-    template_documento = TemplareModelChoiceField(
-        queryset=DocumentoTemplate.objects.all(),
+    template_documento = TemplateModelChoiceField(
+        queryset=Documento.admin_objects.filter(eh_template=True).all(),
         # widget=autocomplete.ModelSelect2(url='documentos:user-autocomplete')
         widget=forms.RadioSelect,
         empty_label=None

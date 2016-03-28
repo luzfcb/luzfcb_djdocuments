@@ -26,6 +26,19 @@ class DocumentoManager(models.Manager):
         return DocumentoQuerySet(model=self.model, using=self._db).filter(esta_ativo=True, eh_template=False)
 
 
+class DocumentoAdminManager(models.Manager):
+    def get_queryset(self):
+        return DocumentoQuerySet(model=self.model, using=self._db)
+
+
+@python_2_unicode_compatible
+class TipoDocumento(models.Model):
+    descricao = models.CharField(max_length=255, blank=True)
+
+    def __str__(self):
+        return '{}'.format(self.descricao)
+
+
 @python_2_unicode_compatible
 class Documento(models.Model):
     cabecalho = models.TextField(blank=True)
@@ -35,6 +48,15 @@ class Documento(models.Model):
 
     eh_template = models.BooleanField(default=False, editable=True)
     versao_numero = models.IntegerField(default=1, auto_created=True, editable=False)
+
+    # tipo_documento = models.CharField(max_length=255, blank=True)
+
+    modelo_documento = models.ForeignKey('self',
+                                         related_name='%(class)s_documentos',
+                                         null=True,
+                                         blank=True,
+                                         on_delete=models.SET_NULL,
+                                         limit_choices_to={'eh_template': True})
 
     # fields para auditoria
     criado_em = models.DateTimeField(default=timezone.now, blank=True, editable=False)
@@ -79,6 +101,7 @@ class Documento(models.Model):
 
     versoes = HistoricalRecords()
     objects = DocumentoManager()
+    admin_objects = DocumentoAdminManager()
 
     @property
     def assinatura_hash_upper_limpo(self):
