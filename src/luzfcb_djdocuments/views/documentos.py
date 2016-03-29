@@ -17,6 +17,7 @@ from django.shortcuts import redirect, render
 from django.http import HttpResponse
 from django.template.defaultfilters import urlize
 from django.views import generic
+from django.views.generic.detail import SingleObjectMixin
 from luzfcb_dj_simplelock.views import LuzfcbLockMixin
 # from phantom_pdf import render_to_pdf
 # from simple_history.views import HistoryRecordListViewMixin, RevertFromHistoryRecordViewMixin
@@ -436,7 +437,6 @@ class DocumentoEditor(LoginRequiredMixin,
         return super(DocumentoEditor, self).post(request, *args, **kwargs)
 
 
-
 from ..forms import CriarDocumentoForm
 
 
@@ -458,10 +458,10 @@ def create_from_template(current_user, documento_template):
     return documento_novo
 
 
-class DocumentoCriar(generic.CreateView):
+class DocumentoCriar(generic.FormView):
     template_name = 'luzfcb_djdocuments/documento_create2.html'
     form_class = CriarDocumentoForm
-    default_template_pk = 5
+    default_selected_document_template_pk = None
 
     def form_valid(self, form):
         template_selecionado = form.cleaned_data['template_documento']
@@ -472,24 +472,10 @@ class DocumentoCriar(generic.CreateView):
 
     def get_initial(self):
         initial = super(DocumentoCriar, self).get_initial()
-        initial.update({'template_documento': self.default_template_pk})
+        default_document_template = self.get_default_selected_document_template_pk()
+        if default_document_template:
+            initial.update({'template_documento': default_document_template})
         return initial
 
-
-def criar_documento(request):
-    if request.method == 'POST':
-        form = CriarDocumentoForm(request.POST)
-
-        if form.is_valid():
-            template_selecionado = form.cleaned_data['template_documento']
-            documento_novo = create_from_template(request.user, template_selecionado)
-
-            editar_url = reverse('documentos:editar', kwargs={'pk': documento_novo.pk})
-            return redirect(editar_url, permanent=True)
-        else:
-            return render(request, 'luzfcb_djdocuments/documento_create2.html',
-                          context={'form': form}
-                          )
-    else:
-        context = {'form': CriarDocumentoForm()}
-        return render(request, 'luzfcb_djdocuments/documento_create2.html', context=context)
+    def get_default_selected_document_template_pk(self):
+        return self.default_selected_document_template_pk

@@ -39,6 +39,7 @@ class TipoDocumento(models.Model):
         return '{}'.format(self.descricao)
 
 
+
 @python_2_unicode_compatible
 class Documento(models.Model):
     cabecalho = models.TextField(blank=True)
@@ -49,14 +50,15 @@ class Documento(models.Model):
     eh_template = models.BooleanField(default=False, editable=True)
     versao_numero = models.IntegerField(default=1, auto_created=True, editable=False)
 
-    # tipo_documento = models.CharField(max_length=255, blank=True)
+    tipo_documento = models.CharField(max_length=255, blank=True)
+    tipo_documento_descricao = models.TextField(blank=True)
 
-    modelo_documento = models.ForeignKey('self',
-                                         related_name='%(class)s_documentos',
-                                         null=True,
-                                         blank=True,
-                                         on_delete=models.SET_NULL,
-                                         limit_choices_to={'eh_template': True})
+    # modelo_documento = models.ForeignKey('self',
+    #                                      related_name='%(class)s_documentos',
+    #                                      null=True,
+    #                                      blank=True,
+    #                                      on_delete=models.SET_NULL,
+    #                                      limit_choices_to={'eh_template': True})
 
     # fields para auditoria
     criado_em = models.DateTimeField(default=timezone.now, blank=True, editable=False)
@@ -142,6 +144,13 @@ class Documento(models.Model):
     @_history_user.setter
     def _history_user(self, value):
         self.modificado_por = value
+
+
+    @property
+    def identificador_documento(self):
+        if not self.pk:
+            return None
+        return identificador.document_number(self.pk)
 
     @property
     def identificador_versao(self):

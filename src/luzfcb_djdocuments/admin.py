@@ -16,8 +16,7 @@ from .forms import DocumentoEditarForm
 class DocumentoAdmin(SimpleHistoryAdmin):
     def get_queryset(self, request):
         qs = self.model.admin_objects.get_queryset()
-        # qs = models.DocumentoAdminManager().get_queryset()
-        ordering = self.ordering or ()  # otherwise we might try to *None, which is bad ;)
+        ordering = self.ordering or ()
         if ordering:
             qs = qs.order_by(*ordering)
         return qs
@@ -25,12 +24,12 @@ class DocumentoAdmin(SimpleHistoryAdmin):
     # form = DocumentoEditarForm
     list_display = (
         # 'criado_em', 'criado_por', 'versao_numero', 'assinatura_hash', 'visualizar_versao'
-        'identificador_versao', 'esta_assinado', 'assinatura_hash', 'criado_em', 'visualizar_titulo', 'criado_por',
+        'identificador_documento', 'pk', 'versao_numero', 'identificador_versao', 'visualizar_versao', 'eh_template', 'esta_assinado', 'assinatura_hash', 'criado_por', 'criado_em', 'visualizar_titulo',
         'modificado_em',
         'modificado_por', 'revertido_em', 'revertido_por',
-        'revertido_da_versao', 'esta_ativo', 'esta_bloqueado', 'versao_numero', 'visualizar_versao',
+        'revertido_da_versao', 'esta_ativo', 'esta_bloqueado',
         'assinado_em', 'assinado_por', 'assinatura_removida_em', 'assinatura_removida_por',
-        'eh_template'
+
     )
 
     readonly_fields = (

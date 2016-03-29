@@ -1,14 +1,15 @@
-{% extends "luzfcb_djdocuments/documento_assinar_base.html" %}
+{% extends "luzfcb_djdocuments/documento_criar_documento_base.html" %}
 {% load spurl %}
 {% load crispy_forms_tags %}
 
+{% block box_title %}Selecione um dos modelos abaixo para criar um novo documento{% endblock box_title %}
 {% block conteudo_app %}
     {% if form %}
         {#        {% crispy form %}#}
         <form action="{% url 'documentos:create' %}" method="post">
             {% csrf_token %}
             {{ form }}
-            <input type="submit" value="salvar">
+            <input type="submit" value="criar">
 
         </form>
     {% endif %}
