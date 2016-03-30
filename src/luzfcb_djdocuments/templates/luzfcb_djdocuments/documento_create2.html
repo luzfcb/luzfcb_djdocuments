@@ -6,7 +6,9 @@
 {% block conteudo_app %}
     {% if form %}
         {#        {% crispy form %}#}
-        <form action="{% url 'documentos:create' %}" method="post">
+        {% url 'documentos:create' as base_document_create_url %}
+        {% spurl base=base_document_create_url add_query="{{ vinculate_view_kwarg }}" add_query="{{ vinculate_value_kwarg }}" as document_create_url %}
+        <form action="{{ document_create_url }}" method="post">
             {% csrf_token %}
             {{ form }}
             <input type="submit" value="criar">

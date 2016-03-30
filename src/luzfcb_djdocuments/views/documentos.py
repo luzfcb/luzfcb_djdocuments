@@ -9,14 +9,22 @@ from braces.views import LoginRequiredMixin
 from captcha.helpers import captcha_image_url
 from captcha.models import CaptchaStore
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import AnonymousUser
 from django.core import signing
+from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse, reverse_lazy
-from django.http.response import HttpResponseRedirect
+from django.db import models
+from django.db.utils import IntegrityError
+from django.http.response import HttpResponseRedirect, Http404
 from django.shortcuts import redirect, render
 from django.http import HttpResponse
 from django.template.defaultfilters import urlize
+from django.utils import six
+from django.utils.decorators import method_decorator
+
 from django.views import generic
+from django.views.decorators.cache import never_cache
 from django.views.generic.detail import SingleObjectMixin
 from luzfcb_dj_simplelock.views import LuzfcbLockMixin
 # from phantom_pdf import render_to_pdf
@@ -29,8 +37,8 @@ from luzfcb_djdocuments.views.mixins import (
     CopyDocumentContentMixin,
     DocumentoAssinadoRedirectMixin,
     NextURLMixin,
-    PopupMixin
-)
+    PopupMixin,
+    SingleDocumentObjectMixin)
 
 from ..forms import AssinarDocumento, DocumentoEditarForm, DocumentoRevertForm, DocumetoValidarForm
 from ..models import Documento
@@ -462,13 +470,25 @@ class DocumentoCriar(generic.FormView):
     template_name = 'luzfcb_djdocuments/documento_create2.html'
     form_class = CriarDocumentoForm
     default_selected_document_template_pk = None
+    vinculate_view_field = 'v'
+    vinculate_value_field = 'to'
+    vinculate_view_name = None
+    vinculate_value = None
+    document_pk_url_kwarg = 'document_pk'
 
     def form_valid(self, form):
+        self.get_vinculate_parameters()
         template_selecionado = form.cleaned_data['template_documento']
         documento_novo = create_from_template(self.request.user, template_selecionado)
-
-        editar_url = reverse('documentos:editar', kwargs={'pk': documento_novo.pk})
-        return redirect(editar_url, permanent=True)
+        # vinculate_view_name = self.request.GET.get(self.vinculate_view_field, None)
+        # vinculate_value = self.request.GET.get(self.vinculate_value_field, None)
+        if self.vinculate_view_name and self.vinculate_value:
+            viculate_url = reverse(self.vinculate_view_name, kwargs={'document_pk': documento_novo.pk,
+                                                                'pk': self.vinculate_value})
+            return redirect(viculate_url, permanent=True)
+        else:
+            editar_url = reverse('documentos:editar', kwargs={'pk': documento_novo.pk})
+            return redirect(editar_url, permanent=True)
 
     def get_initial(self):
         initial = super(DocumentoCriar, self).get_initial()
@@ -479,3 +499,98 @@ class DocumentoCriar(generic.FormView):
 
     def get_default_selected_document_template_pk(self):
         return self.default_selected_document_template_pk
+
+    def get_vinculate_parameters(self):
+
+        clean_vinculate_view_name = self.request.GET.get(self.vinculate_view_field, None)
+        if isinstance(clean_vinculate_view_name, six.string_types):
+            clean_vinculate_view_name = clean_vinculate_view_name.strip("'").strip('"')
+        self.vinculate_view_name = clean_vinculate_view_name
+        self.vinculate_value = self.request.GET.get(self.vinculate_value_field, None)
+
+    def get_context_data(self, **kwargs):
+        context = super(DocumentoCriar, self).get_context_data(**kwargs)
+        self.get_vinculate_parameters()
+
+        if self.vinculate_view_name and self.vinculate_value:
+            context['vinculate_view_kwarg'] = '{}={}'.format(self.vinculate_view_field, self.vinculate_view_name)
+            context['vinculate_value_kwarg'] = '{}={}'.format(self.vinculate_value_field, self.vinculate_value)
+        return context
+
+
+class VincularDocumentoBaseView(SingleDocumentObjectMixin, SingleObjectMixin, generic.View):
+    model = None
+    documents_field_name = None
+
+    document_edit_named_view = 'documentos:editar'
+
+    @method_decorator(never_cache)
+    @method_decorator(login_required)
+    def dispatch(self, request, *args, **kwargs):
+        return super(VincularDocumentoBaseView, self).dispatch(request, *args, **kwargs)
+
+    def get_documents_field_name(self):
+        if self.documents_field_name is None:
+            raise ImproperlyConfigured(
+                '{0} is missing an documents_field_name. '
+                'Define '
+                '{0}.documents_field_name or override '
+                '{0}.get_documents_field_name(). '.format(
+                    self.__class__.__name__)
+            )
+        return self.documents_field_name
+
+    def get(self, request, *args, **kwargs):
+        self.documents_field_name = self.get_documents_field_name()
+
+        self.object = self.get_object()
+        self.document_object = self.get_document_object()
+
+        self.vinculate()
+        editar_url = reverse(self.document_edit_named_view, kwargs={'pk': self.document_object.pk})
+        return redirect(editar_url, permanent=True)
+
+    def vinculate(self):
+        document_field = getattr(self.object, self.documents_field_name)
+        if not document_field.filter(id=self.document_object.pk).count():
+            try:
+                document_field.add(self.document_object)
+            except IntegrityError as e:
+                logger.error(e)
+            else:
+                self.object.save()
+                return True
+        return False
+
+
+    # kwargs_names = ['atendimento_numero', ]
+    # kwargs_have_name = False
+    # @never_cache
+    # @login_required
+    # def dispatch(self, request, *args, **kwargs):
+    #     return super(VincularDocumentoTarefa, self).dispatch(request, *args, **kwargs)
+    #
+    #
+    # def get(self, request, *args, **kwargs):
+    #     ret = super(VincularDocumentoTarefa, self).get(request, *args, **kwargs)
+    #
+    #     tarefa = self.model.objects.get(id=self.kwargs.get('tarefa_id'))
+    #     document = self.get_document_object()
+    #     getattr()
+    #
+    #     if not tarefa.documentos.filter(id=document_id).count():
+    #         try:
+    #             tarefa.documentos.add(document_id)
+    #         except IntegrityError as e:
+    #             logger.error(e)
+    #         else:
+    #             tarefa.save()
+    #
+    #     d = {}
+    #     for key in self.kwargs_names:
+    #         d[key] = self.kwargs.get(key)
+    #
+    #     if self.kwargs_have_name:
+    #         return redirect(self.to_view, **d)
+    #     else:
+    #         return redirect(self.to_view, *d.values())
