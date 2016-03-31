@@ -16,6 +16,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.db import models
 from django.db.utils import IntegrityError
+from django.db import transaction
 from django.http.response import HttpResponseRedirect, Http404
 from django.shortcuts import redirect, render
 from django.http import HttpResponse
@@ -430,6 +431,11 @@ class DocumentoEditor(LoginRequiredMixin,
     form_class = DocumentoEditarForm
     success_url = reverse_lazy('documentos:list')
 
+    @method_decorator(never_cache)
+    @method_decorator(login_required)
+    def dispatch(self, request, *args, **kwargs):
+        return super(DocumentoEditor, self).dispatch(request, *args, **kwargs)
+
     def get_lock_url_to_redirect_if_locked(self):
         return reverse('documentos:detail', kwargs={'pk': self.object.pk})
 
@@ -482,6 +488,7 @@ class DocumentoCriar(generic.FormView):
         documento_novo = create_from_template(self.request.user, template_selecionado)
         # vinculate_view_name = self.request.GET.get(self.vinculate_view_field, None)
         # vinculate_value = self.request.GET.get(self.vinculate_value_field, None)
+
         if self.vinculate_view_name and self.vinculate_value:
             viculate_url = reverse(self.vinculate_view_name, kwargs={'document_pk': documento_novo.pk,
                                                                 'pk': self.vinculate_value})
@@ -552,14 +559,16 @@ class VincularDocumentoBaseView(SingleDocumentObjectMixin, SingleObjectMixin, ge
 
     def vinculate(self):
         document_field = getattr(self.object, self.documents_field_name)
-        if not document_field.filter(id=self.document_object.pk).count():
-            try:
-                document_field.add(self.document_object)
-            except IntegrityError as e:
-                logger.error(e)
-            else:
-                self.object.save()
-                return True
+
+        with transaction.atomic():
+            if not document_field.filter(id=self.document_object.pk).count():
+                try:
+                    document_field.add(self.document_object)
+                except IntegrityError as e:
+                    logger.error(e)
+                else:
+                    self.object.save()
+                    return True
         return False
 
 
