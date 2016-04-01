@@ -263,6 +263,11 @@ class DocumentoValidacaoView(generic.FormView):
         super(DocumentoValidacaoView, self).__init__(*args, **kwargs)
         self.documento_instance = None
 
+    @method_decorator(never_cache)
+    @method_decorator(login_required)
+    def dispatch(self, request, *args, **kwargs):
+        return super(DocumentoValidacaoView, self).dispatch(request, *args, **kwargs)
+
     def get(self, request, *args, **kwargs):
         if self.request.is_ajax() and request.GET and 'refresh_captcha' in request.GET:
             to_json_responce = dict()
@@ -312,6 +317,11 @@ class AssinarDocumentoView(DocumentoAssinadoRedirectMixin, AuditavelViewMixin, g
 
     success_url = reverse_lazy('documentos:list')
 
+    @method_decorator(never_cache)
+    @method_decorator(login_required)
+    def dispatch(self, request, *args, **kwargs):
+        return super(AssinarDocumentoView, self).dispatch(request, *args, **kwargs)
+
     def get_initial(self):
         initial = super(AssinarDocumentoView, self).get_initial()
         # copia o dicionario, para evitar mudar acidentalmente um dicionario mutavel
@@ -345,21 +355,6 @@ class AssinarDocumentoView(DocumentoAssinadoRedirectMixin, AuditavelViewMixin, g
     def get_success_url(self):
         detail_url = reverse('documentos:validar-detail', kwargs={'pk': self.object.pk})
         return detail_url
-
-
-class AssinarDocumentoView2(generic.UpdateView):
-    template_name = 'luzfcb_djdocuments/documento_assinar.html'
-    form_class = AssinarDocumento
-    model = Documento
-    # fields = ('conteudo', )
-
-    success_url = reverse_lazy('documentos:list')
-
-    def get_form_kwargs(self):
-        kwargs = super(AssinarDocumentoView2, self).get_form_kwargs()
-        current_logged_user = self.request.user
-        kwargs['current_logged_user'] = current_logged_user
-        return kwargs
 
 
 class ImprimirView(DocumentoDetailView):
