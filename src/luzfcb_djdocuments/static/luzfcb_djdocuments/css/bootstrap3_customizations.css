@@ -1,0 +1,28 @@
+.navbar-inverse {
+    background-color: #444444;
+    border-color: #2E2E2E;
+}
+.navbar-brand {
+    float: left;
+    height: 50px;
+    padding: 15px 15px;
+    /*font-size: 23px;*/
+    line-height: 20px;
+    font-size: 2.3em;
+    font-family: 'Aclonica', serif;
+}
+
+.navbar-inverse .navbar-brand {
+    color: #F3F3F3;
+}
+
+.panel-green {
+    border-color: #009500;
+}
+
+.panel-green>.panel-heading {
+    color: #fff;
+    border-color: #009500;
+    background: #009500 linear-gradient(to bottom, #00a600 0%, #008a00 100%);
+}
+

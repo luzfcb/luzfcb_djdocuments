@@ -14,7 +14,7 @@ class UserAutocomplete(autocomplete.Select2QuerySetView):
         if not self.request.user.is_authenticated():
             return USER_MODEL.objects.none()
 
-        qs = USER_MODEL.objects.all()
+        qs = USER_MODEL.objects.all().order_by('first_name', 'last_name')
 
         if self.q:
             qs = qs.filter(Q(first_name__icontains=self.q) | Q(last_name__icontains=self.q))

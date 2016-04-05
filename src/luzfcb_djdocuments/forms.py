@@ -234,12 +234,14 @@ class UserModelChoiceField(forms.ModelChoiceField):
 
 class AssinarDocumento(AssinarDocumentoHelperFormMixin, forms.ModelForm):
     assinado_por = UserModelChoiceField(
+        label="Assinante",
         queryset=get_real_user_model_class().objects.all().order_by('username'),
-        widget=autocomplete.ModelSelect2(url='documentos:user-autocomplete')
+        widget=autocomplete.ModelSelect2(url='documentos:user-autocomplete', attrs={'class': 'form-control'}),
+
     )
 
-    password = forms.CharField(label="Sua senha",
-                               widget=forms.PasswordInput)
+    password = forms.CharField(label="Senha",
+                               widget=forms.PasswordInput(attrs={'class': 'form-control'}))
 
     error_messages = {
         'invalid_login': _("Please enter a correct %(username)s and password. "
@@ -329,9 +331,11 @@ from .models import DocumentoTemplate
 class CriarDocumentoForm(forms.Form):
     # titulo = forms.CharField(max_length=500)
     template_documento = TemplateModelChoiceField(
-        label='',
+        label='Modelo',
         queryset=Documento.admin_objects.filter(eh_template=True).all(),
         # widget=autocomplete.ModelSelect2(url='documentos:user-autocomplete')
         widget=forms.RadioSelect,
         empty_label=None
     )
+
+
