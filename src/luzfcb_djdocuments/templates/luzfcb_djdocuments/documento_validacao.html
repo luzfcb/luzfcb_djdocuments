@@ -9,10 +9,10 @@
         <div class="panel panel-info">
             <div class="panel-heading">Validar Documento</div>
             <div class="panel-body">
-                <form class="form-horizontal" action="{% url 'documentos:validar' %}" method="post">
+                <form class="form-horizontal" action="{% url 'documentos:validar' %}" method="post" id="validate_form">
                     <fieldset>
-                        <legend>Tem certeza que deseja assinar o documento "{{ object.titulo|remover_tags_html }}"
-                            número: {{ object.identificador_versao }} ?</legend>
+                        <legend>Digite o código CRC que consta no documento que você quer validar?
+                        </legend>
                         {% csrf_token %}
                         {% if form.errors %}
                             <div class="form-group">
@@ -21,7 +21,7 @@
                                         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                                             <span aria-hidden="true">&times;</span>
                                         </button>
-                                        Nome de usuário ou senha inválido, corrija-os e tente novamente.
+                                        Documento não é válido ou o código CRC é incorreto
                                     </div>
                                 </div>
                             </div>
@@ -33,21 +33,22 @@
                             <div class="col-sm-10">
                                 {{ form.assinatura_hash }}
                                 <span id="helpBlock2"
-                                      class="help-block">Selecione o usuário que irá assinar o documento</span>
+                                      class="help-block">Digite o código CRC que está na parte de baixo do documento</span>
                             </div>
+
                         </div>
                         <div class="form-group">
                             <label for="{{ form.captcha.id_for_label }}"
                                    class="col-sm-2 control-label">{{ form.captcha.label }}</label>
                             <div class="col-sm-10">
                                 {{ form.captcha }}
-                                <span id="helpBlock2" class="help-block">Digite a senha do usuário selecionado</span>
+                                <span id="helpBlock2" class="help-block"></span>
                             </div>
 
                         </div>
                         <div class="form-group">
                             <div class="col-sm-offset-2 col-sm-10">
-                                <a class="btn btn-mini" onclick="refresh_captcha()"><i class="icon-refresh"></i> Refresh</a>
+                                <a class="btn btn-mini" onclick="refresh_captcha()"><i class="icon-refresh"></i> trocar imagem</a>
                                 <button type="submit" class="btn btn-success">Verificar validade do Documento</button>
                             </div>
                         </div>
@@ -68,7 +69,7 @@
     {% if form.media %}
         {{ form.media }}
     {% endif %}
-
+    <script src="{% static 'luzfcb_djdocuments/js/vendor/autotab/1.9.2/jquery.autotab.js' %}"></script>
     <script>
         function refresh_captcha() {
             $.getJSON($(this).data('url'), {'refresh_captcha': 1}, function (json) {
@@ -77,9 +78,19 @@
                 $('#id_captcha_1').val('');
             });
         }
+{#        $('input[type=text]:visible').autotab();#}
+        var inputs = $('input[type=text]:visible');
+        $(inputs).each(function (index, element) {
+            if($(element).attr('pattern') !== undefined){
+                $(element).autotab('filter', { format: 'custom',  pattern: '[^0-9a-zA-Z]', uppercase: true });
+            }else {
+                $(element).autotab();
+            }
+        });
+
 
     </script>
-    <script src="{% static 'luzfcb_djdocuments/js/vendor/parsley/2.3.5/parsley.min.js' %}"></script>
+    {#    <script src="{% static 'luzfcb_djdocuments/js/vendor/parsley/2.3.5/parsley.min.js' %}"></script>#}
 {% endblock js_app %}
 
 

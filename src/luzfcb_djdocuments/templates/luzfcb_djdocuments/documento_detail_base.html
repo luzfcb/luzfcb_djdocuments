@@ -1,63 +1,14 @@
-{% extends "luzfcb_djdocuments/base.html" %}
+{% extends "luzfcb_djdocuments/bootstrap3/base.html" %}
 
+{% block title %}SOLAR - Defensoria Pública do Estado do Tocantins{% endblock title %}
 
-{% block css_app %}
-    <style>
-        body {
-            background: rgb(204, 204, 204);
-        }
+{% block project_name %}SOLAR{% endblock project_name %}
 
-        article {
-            background: white;
-            width: 21cm;
-        {#            height: 29.7cm;#} display: block;
-            margin: 0 auto 0.5cm;
-            box-shadow: 0 0 0.5cm rgba(0, 0, 0, 0.5);
+{% block conteudo_app %}
 
-            padding: 30px;
-        {#            font-size: 11pt;#}{#            font-family: Arial;#}
-            text-justify: distribute;
-            line-height: 22pt;
-        }
-
-        @media print {
-            body, article[size="A4"] {
-                margin: 0;
-                box-shadow: 0;
-                background: transparent;
-            }
-
-        }
-
-        .no-print {
-            display: block;
-        }
-
-        @media print {
-            .cke_pagebreak {
-                display: block;
-                page-break-before: always;
-            }
-        }
-    </style>
-{% endblock css_app %}
-
-
-
-{% block titulo %}
-    Detalhes Documento
-{% endblock titulo %}
-
-<article>
-
-    {% block conteudo_app %}
-
-    {% endblock conteudo_app %}
-</article>
-
-{% block js_app %}
-    {{ block.super }}
-    {% if form.media %}
-        {{ form.media }}
-    {% endif %}
-{% endblock %}
+    <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+            {% block form_section %}{% endblock %}
+        </div>
+    </div>
+{% endblock conteudo_app %}

@@ -140,7 +140,7 @@ class SplitWidget2(widgets.MultiWidget):
 
         for max_length in self.split_guide:
             at = attrs.copy()
-            pattern = r'^[A-Za-z0-9]{{{minlength},{maxlength}}}$'.format(minlength=max_length, maxlength=max_length)
+            pattern = r'^[A-Za-z0-9]{{{minlength},{maxlength}}}'.format(minlength=max_length, maxlength=max_length)
 
             at.update({
                 'maxlength': max_length,
@@ -184,7 +184,7 @@ class SplitedHashField3(forms.MultiValueField):
                     r'^[A-Za-z0-9]{{{minlength},{maxlength}}}$'.format(minlength=max_length, maxlength=max_length))
             fields.append(forms.RegexField(regex=regexes[max_length], max_length=max_length, min_length=max_length))
 
-        self.widget = SplitWidget2(split_guide=self.split_guide, merge_last=False)
+        self.widget = SplitWidget2(split_guide=self.split_guide, merge_last=False, attrs={'class': 'auto_next'})
         super(SplitedHashField3, self).__init__(fields, *args, **kwargs)
         print('')
 

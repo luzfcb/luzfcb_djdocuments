@@ -306,6 +306,44 @@ class DocumentoDetailValidarView(DocumentoDetailView):
     template_name = 'luzfcb_djdocuments/documento_validacao_detail.html'
 
 
+    def get_context_data(self, **kwargs):
+        # http://stackoverflow.com/a/7389616/2975300
+        context = super(DocumentoDetailValidarView, self).get_context_data(**kwargs)
+        import pyqrcode
+        from ..templatetags.luzfcb_djdocuments_tags import absolute_uri
+        from io import BytesIO
+        import base64
+        from urlobject import URLObject
+
+        url_validar = reverse('documentos:validar')
+        querystring = "{}={}".format('h', self.object.assinatura_hash_upper_limpo)
+        url_com_querystring = URLObject(url_validar).with_query(querystring)
+        url = absolute_uri(url_com_querystring, self.request)
+
+        codigo_qr = pyqrcode.create(url)
+        image_output = BytesIO()
+        codigo_qr.png(image_output, scale=4 )
+        encoded_image = base64.b64encode(image_output.getvalue()).decode('utf-8').replace('\n', '')
+
+
+
+        """
+                {% url 'documentos:validar' as validar_url_view %}
+                {% spurl base=validar_url_view query="h={{ object.assinatura_hash_upper_limpo }}" as validar_url %}
+                "{{ validar_url|absolute_uri:request }}"
+
+        """
+        codigo_qr = "data:image/png;base64,/{}s".format(encoded_image)
+        img_tag = '<img src="{}s">'.format(codigo_qr)
+        context.update(
+            {
+                'codigo_qr': codigo_qr,
+                'img_tag': img_tag
+            }
+        )
+        return context
+
+
 class PDFViewer(generic.TemplateView):
     template_name = 'luzfcb_djdocuments/pdf_viewer.html'
 

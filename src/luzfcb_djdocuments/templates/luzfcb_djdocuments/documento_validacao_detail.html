@@ -1,0 +1,289 @@
+{% extends "luzfcb_djdocuments/bootstrap3/base.html" %}
+{% load staticfiles %}
+{% load spurl %}
+{% load luzfcb_djdocuments_tags %}
+
+{% block extra_head_css %}
+    <link href="{% static 'luzfcb_djdocuments/css/luzfcb_page_style.css' %}"
+          rel="stylesheet">
+    <link href="{% static 'luzfcb_djdocuments/css/luzfcb_document_format_styles_print.css' %}"
+          rel="stylesheet">
+    <style>
+        @media screen {
+            #conteudo {
+                padding-top: 20em !important;
+                padding-bottom: 20em !important;
+            }
+        }
+
+        {#        @media print {#}
+        {#            html { width: 21cm !important;}#}
+        {#            a[href]:after {#}
+        {#                content: "" !important;#}
+        {#            }#}
+        {##}
+        {#            #conteudo {#}
+        {#                padding-top: 0em !important;#}
+        {#                padding-bottom: 0em !important;#}
+        {#            }#}
+        {#        }#}
+        @media print {
+            a[href]:after {
+                content: "" !important;
+            }
+            body {
+                display: inline ;
+                background: white;
+                font-size: 10pt;
+                margin: 0
+            }
+
+            #sidebar {
+                display: none
+            }
+
+            #header {
+                height: 75px
+            }
+
+            #content {
+                margin-left: 0;
+                float: none;
+                width: auto
+            }
+
+            .demo .red {
+                color: black;
+                font-weight: bold
+            }
+
+            #content a {
+                font-weight: bold;
+                color: #000066;
+                text-decoration: underline
+            }
+
+            #content {
+                margin-left: 0;
+                float: none;
+                width: auto
+            }
+
+            #footer, .ad {
+                display: none
+            }
+
+            h1, h2, h3, h4, h5, h6 {
+                page-break-after: avoid;
+                page-break-inside: avoid
+            }
+
+            h3 {
+                margin-left: 10px;
+                margin-bottom: 0px;
+                padding-bottom: 0px
+            }
+
+            blockquote, table, pre {
+                page-break-inside: avoid
+            }
+
+            ul, ol, dl {
+                page-break-before: avoid
+            }
+
+            img.centered {
+                display: block;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            img.right {
+                padding: 4px;
+                margin: 0 0 2px 7px;
+                display: inline;
+            }
+
+            img.left {
+                padding: 4px;
+                margin: 0 7px 2px 0;
+                display: inline;
+            }
+
+            .right {
+                float: right;
+            }
+
+            .left {
+                float: left
+            }
+
+            img {
+                page-break-inside: avoid;
+                page-break-after: avoid;
+            }
+        }
+
+
+    </style>
+{% endblock %}
+
+{% block title %}{{ object.titulo|remover_tags_html|slugify|slice:":200" }}_
+    {{ object.identificador_versao }}{% endblock title %}
+
+{% block project_name %}SOLAR{% endblock project_name %}
+
+{% block conteudo_app %}
+
+    <div class="row center-block" id="conteudo">
+        <div class="a4-pagina">
+
+            <div align="center">
+                {{ object.cabecalho|safe }}
+            </div>
+            {{ object.titulo|safe }}
+            <hr style="border:none; padding:0; margin:5px 2px 0 2px; border-top:medium double #333">
+
+            {% if object %}
+                <div class="documento-conteudo">
+                    {{ object.conteudo|safe }}
+                </div>
+            {% else %}
+                Nada para mostrar
+            {% endif %}
+
+
+
+            {% if object.esta_assinado %}
+                {% url 'documentos:validar' as validar_url_view %}
+                {% spurl base=validar_url_view query="h={{ object.assinatura_hash_upper_limpo }}" as validar_url %}
+                <hr>
+                <table>
+                    <tbody>
+                    <tr>
+                        <td>
+
+                        </td>
+                        <td>
+                            <p style="margin:0;text-align: left; font-size:11pt;font-family: Times New Roman;">
+                                Documento assinado eletronicamente por
+                                <b>{{ object.assinado_por.get_full_name }}</b>,
+                                em {{ object.assinado_em|date:"d/m/Y H:m:s" }}, conforme art. 1º, III,
+                                "b", da Lei 11.419/2006.</p>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <hr>
+                <table>
+                    <tbody>
+                    <tr>
+                        <td style="width: 200px; height: 105px">
+                            <a id="url_validacao" class="hidden-print-href"
+                               href="{{ validar_url|absolute_uri:request }}">
+                                <div id="codigo_qr" style="alignment: center; display: block;">
+                                    {{ img_tag|safe }}
+                                </div>
+                                <p class="hidden-print">Verifique a Validade</p>
+                            </a>
+
+                        </td>
+                        <td>
+                            <p style="margin:4;text-align: left; font-size:11pt;font-family: Times New Roman;">
+                                A autenticidade do documento pode ser conferida no site
+                                {{ validar_url_view|absolute_uri:request|urlize }} informando o código
+                                verificador <b>{{ object.assinatura_hash_upper_limpo }}</b>.</p>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <hr style="border:none; padding:0; margin:5px 2px 0 2px; border-top:medium double #333">
+                <table border="0" cellpadding="2" cellspacing="0" style="width:100%">
+                    <tbody>
+                    <tr>
+                        <td></td>
+                        <td style="text-align:right">{{ object.identificador_versao }} - Página [page] de [toPage]
+                    </tr>
+                    </tbody>
+                </table>
+            {% endif %}
+        </div>
+    </div>
+{% endblock conteudo_app %}
+
+{% block js_app %}
+    {{ block.super }}
+
+    <script src="{% static 'luzfcb_djdocuments/js/vendor/qrcode/0.12.0/jquery.qrcode.min.js' %}"></script>
+
+    {% if object.esta_assinado %}
+        <script>
+            var url_validacao = $("#url_validacao").attr("href");
+
+            function gerar_qr(dado, renderizar_em) {
+                var opcoes = {
+                    // render method: 'canvas', 'image' or 'div'
+                    render: 'image',
+
+                    // version range somewhere in 1 .. 40
+                    minVersion: 1,
+                    maxVersion: 40,
+
+                    // error correction level: 'L', 'M', 'Q' or 'H'
+                    ecLevel: 'H',
+
+                    // offset in pixel if drawn onto existing canvas
+                    left: 0,
+                    top: 0,
+
+                    // size in pixel
+                    size: 110,
+
+                    // code color or image element
+                    fill: '#000',
+
+                    // background color or image element, null for transparent background
+                    background: null,
+
+                    // content
+                    text: dado,
+
+                    // corner radius relative to module width: 0.0 .. 0.5
+                    radius: 0.0,
+
+                    // quiet zone in modules
+                    quiet: 0,
+
+                    // modes
+                    // 0: normal
+                    // 1: label strip
+                    // 2: label box
+                    // 3: image strip
+                    // 4: image box
+                    mode: 2,
+
+                    mSize: 0.1,
+                    mPosX: 0.5,
+                    mPosY: 0.5,
+
+                    label: 'DPE-TO',
+                    fontname: 'sans',
+                    fontcolor: '#ff8300',
+
+                    image: null
+                };
+
+                $(renderizar_em).qrcode(opcoes);
+            }
+
+{#            gerar_qr(url_validacao, "#codigo_qr");#}
+
+        </script>
+    {% endif %}
+
+
+
+
+{% endblock js_app %}
+
+
