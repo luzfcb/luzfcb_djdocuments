@@ -11,7 +11,7 @@
     <style>
         @media screen {
             #conteudo {
-                padding-top: 20em !important;
+                padding-top: 5em !important;
                 padding-bottom: 20em !important;
             }
         }
@@ -31,100 +31,100 @@
             a[href]:after {
                 content: "" !important;
             }
-            body {
-                display: inline ;
-                background: white;
-                font-size: 10pt;
-                margin: 0
-            }
-
-            #sidebar {
-                display: none
-            }
-
-            #header {
-                height: 75px
-            }
-
-            #content {
-                margin-left: 0;
-                float: none;
-                width: auto
-            }
-
-            .demo .red {
-                color: black;
-                font-weight: bold
-            }
-
-            #content a {
-                font-weight: bold;
-                color: #000066;
-                text-decoration: underline
-            }
-
-            #content {
-                margin-left: 0;
-                float: none;
-                width: auto
-            }
-
-            #footer, .ad {
-                display: none
-            }
-
-            h1, h2, h3, h4, h5, h6 {
-                page-break-after: avoid;
-                page-break-inside: avoid
-            }
-
-            h3 {
-                margin-left: 10px;
-                margin-bottom: 0px;
-                padding-bottom: 0px
-            }
-
-            blockquote, table, pre {
-                page-break-inside: avoid
-            }
-
-            ul, ol, dl {
-                page-break-before: avoid
-            }
-
-            img.centered {
-                display: block;
-                margin-left: auto;
-                margin-right: auto;
-            }
-
-            img.right {
-                padding: 4px;
-                margin: 0 0 2px 7px;
-                display: inline;
-            }
-
-            img.left {
-                padding: 4px;
-                margin: 0 7px 2px 0;
-                display: inline;
-            }
-
-            .right {
-                float: right;
-            }
-
-            .left {
-                float: left
-            }
-
-            img {
-                page-break-inside: avoid;
-                page-break-after: avoid;
-            }
-        }
-
-
+{#            body {#}
+{#                display: inline ;#}
+{#                background: white;#}
+{#                font-size: 10pt;#}
+{#                margin: 0#}
+{#            }#}
+{##}
+{#            #sidebar {#}
+{#                display: none#}
+{#            }#}
+{##}
+{#            #header {#}
+{#                height: 75px#}
+{#            }#}
+{##}
+{#            #content {#}
+{#                margin-left: 0;#}
+{#                float: none;#}
+{#                width: auto#}
+{#            }#}
+{##}
+{#            .demo .red {#}
+{#                color: black;#}
+{#                font-weight: bold#}
+{#            }#}
+{##}
+{#            #content a {#}
+{#                font-weight: bold;#}
+{#                color: #000066;#}
+{#                text-decoration: underline#}
+{#            }#}
+{##}
+{#            #content {#}
+{#                margin-left: 0;#}
+{#                float: none;#}
+{#                width: auto#}
+{#            }#}
+{##}
+{#            #footer, .ad {#}
+{#                display: none#}
+{#            }#}
+{##}
+{#            h1, h2, h3, h4, h5, h6 {#}
+{#                page-break-after: avoid;#}
+{#                page-break-inside: avoid#}
+{#            }#}
+{##}
+{#            h3 {#}
+{#                margin-left: 10px;#}
+{#                margin-bottom: 0px;#}
+{#                padding-bottom: 0px#}
+{#            }#}
+{##}
+{#            blockquote, table, pre {#}
+{#                page-break-inside: avoid#}
+{#            }#}
+{##}
+{#            ul, ol, dl {#}
+{#                page-break-before: avoid#}
+{#            }#}
+{##}
+{#            img.centered {#}
+{#                display: block;#}
+{#                margin-left: auto;#}
+{#                margin-right: auto;#}
+{#            }#}
+{##}
+{#            img.right {#}
+{#                padding: 4px;#}
+{#                margin: 0 0 2px 7px;#}
+{#                display: inline;#}
+{#            }#}
+{##}
+{#            img.left {#}
+{#                padding: 4px;#}
+{#                margin: 0 7px 2px 0;#}
+{#                display: inline;#}
+{#            }#}
+{##}
+{#            .right {#}
+{#                float: right;#}
+{#            }#}
+{##}
+{#            .left {#}
+{#                float: left#}
+{#            }#}
+{##}
+{#            img {#}
+{#                page-break-inside: avoid;#}
+{#                page-break-after: avoid;#}
+{#            }#}
+{#        }#}
+{##}
+{##}
     </style>
 {% endblock %}
 
@@ -135,7 +135,7 @@
 
 {% block conteudo_app %}
 
-    <div class="row center-block" id="conteudo">
+    <div class="row center-block conteudo" id="conteudo">
         <div class="a4-pagina">
 
             <div align="center">
@@ -182,7 +182,7 @@
                             <a id="url_validacao" class="hidden-print-href"
                                href="{{ validar_url|absolute_uri:request }}">
                                 <div id="codigo_qr" style="alignment: center; display: block;">
-                                    {{ img_tag|safe }}
+                                    {{ qr_code_validation_html_img_tag|safe }}
                                 </div>
                                 <p class="hidden-print">Verifique a Validade</p>
                             </a>

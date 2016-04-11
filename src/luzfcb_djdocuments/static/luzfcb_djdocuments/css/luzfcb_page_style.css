@@ -12,20 +12,24 @@
 }
 
 .a4-pagina {
-
     background: white !important;
     width: 21cm !important;
     /*height: 29.7cm;*/
     display: block !important;
-    /*margin: 0 auto 0.5cm;*/
     box-shadow: 0 0 0.5cm rgba(0, 0, 0, 0.5) !important;
-    /*padding: 30px;*/
+    padding-top: 2cm;
+    padding-left: 2cm;
+    padding-right: 2cm;
+    padding-bottom: 2cm;
     /*font-size: 11pt;*/
     /*line-height: 22pt;*/
 }
 
-.conteudo {
-    padding-bottom: 20em !important;
+@media screen {
+    .conteudo {
+        padding-top: 5em !important;
+        padding-bottom: 20em !important;
+    }
 }
 
 @media print {
@@ -48,5 +52,10 @@
         background: transparent !important;
         display: block !important;
         box-shadow: none !important;
+        padding: 0 !important;
+    }
+
+    .conteudo {
+        padding: 0 !important;
     }
 }

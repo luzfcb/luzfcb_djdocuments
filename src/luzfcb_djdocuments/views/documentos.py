@@ -5,6 +5,8 @@ import json
 # import the logging library
 import logging
 
+import pyqrcode
+from urlobject import URLObject
 from braces.views import LoginRequiredMixin
 from captcha.helpers import captcha_image_url
 from captcha.models import CaptchaStore
@@ -45,6 +47,7 @@ from ..forms import AssinarDocumento, DocumentoEditarForm, DocumentoRevertForm, 
 from ..models import Documento
 from ..utils import add_querystrings_to_url, make_absolute_paths
 from ..utils.module_loading import get_real_user_model_class
+from ..templatetags.luzfcb_djdocuments_tags import absolute_uri
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -302,43 +305,38 @@ class DocumentoValidacaoView(generic.FormView):
         return super(DocumentoValidacaoView, self).form_valid(form)
 
 
+def png_as_base64_str(qr_code, scale=3, module_color=(0, 0, 0, 255),
+                      background=(255, 255, 255, 255), quiet_zone=4):
+    import io
+    import base64
+    with io.BytesIO() as virtual_file:
+        qr_code.png(file=virtual_file, scale=scale, module_color=module_color,
+                    background=background, quiet_zone=quiet_zone)
+        image_as_str = base64.b64encode(virtual_file.getvalue()).decode("ascii")
+    return image_as_str
+
+
 class DocumentoDetailValidarView(DocumentoDetailView):
     template_name = 'luzfcb_djdocuments/documento_validacao_detail.html'
-
 
     def get_context_data(self, **kwargs):
         # http://stackoverflow.com/a/7389616/2975300
         context = super(DocumentoDetailValidarView, self).get_context_data(**kwargs)
-        import pyqrcode
-        from ..templatetags.luzfcb_djdocuments_tags import absolute_uri
-        from io import BytesIO
-        import base64
-        from urlobject import URLObject
 
+        # possivel candidato para cache
         url_validar = reverse('documentos:validar')
         querystring = "{}={}".format('h', self.object.assinatura_hash_upper_limpo)
         url_com_querystring = URLObject(url_validar).with_query(querystring)
         url = absolute_uri(url_com_querystring, self.request)
 
         codigo_qr = pyqrcode.create(url)
-        image_output = BytesIO()
-        codigo_qr.png(image_output, scale=4 )
-        encoded_image = base64.b64encode(image_output.getvalue()).decode('utf-8').replace('\n', '')
+        encoded_image = png_as_base64_str(codigo_qr, 2)
 
-
-
-        """
-                {% url 'documentos:validar' as validar_url_view %}
-                {% spurl base=validar_url_view query="h={{ object.assinatura_hash_upper_limpo }}" as validar_url %}
-                "{{ validar_url|absolute_uri:request }}"
-
-        """
-        codigo_qr = "data:image/png;base64,/{}s".format(encoded_image)
-        img_tag = '<img src="{}s">'.format(codigo_qr)
+        img_tag = "<img src=data:image/png;base64,{}>".format(encoded_image)
+        #
         context.update(
             {
-                'codigo_qr': codigo_qr,
-                'img_tag': img_tag
+                'qr_code_validation_html_img_tag': img_tag
             }
         )
         return context
@@ -524,7 +522,7 @@ class DocumentoCriar(generic.FormView):
 
         if self.vinculate_view_name and self.vinculate_value:
             viculate_url = reverse(self.vinculate_view_name, kwargs={'document_pk': documento_novo.pk,
-                                                                'pk': self.vinculate_value})
+                                                                     'pk': self.vinculate_value})
             return redirect(viculate_url, permanent=True)
         else:
             editar_url = reverse('documentos:editar', kwargs={'pk': documento_novo.pk})
@@ -605,34 +603,34 @@ class VincularDocumentoBaseView(SingleDocumentObjectMixin, SingleObjectMixin, ge
         return False
 
 
-    # kwargs_names = ['atendimento_numero', ]
-    # kwargs_have_name = False
-    # @never_cache
-    # @login_required
-    # def dispatch(self, request, *args, **kwargs):
-    #     return super(VincularDocumentoTarefa, self).dispatch(request, *args, **kwargs)
-    #
-    #
-    # def get(self, request, *args, **kwargs):
-    #     ret = super(VincularDocumentoTarefa, self).get(request, *args, **kwargs)
-    #
-    #     tarefa = self.model.objects.get(id=self.kwargs.get('tarefa_id'))
-    #     document = self.get_document_object()
-    #     getattr()
-    #
-    #     if not tarefa.documentos.filter(id=document_id).count():
-    #         try:
-    #             tarefa.documentos.add(document_id)
-    #         except IntegrityError as e:
-    #             logger.error(e)
-    #         else:
-    #             tarefa.save()
-    #
-    #     d = {}
-    #     for key in self.kwargs_names:
-    #         d[key] = self.kwargs.get(key)
-    #
-    #     if self.kwargs_have_name:
-    #         return redirect(self.to_view, **d)
-    #     else:
-    #         return redirect(self.to_view, *d.values())
+        # kwargs_names = ['atendimento_numero', ]
+        # kwargs_have_name = False
+        # @never_cache
+        # @login_required
+        # def dispatch(self, request, *args, **kwargs):
+        #     return super(VincularDocumentoTarefa, self).dispatch(request, *args, **kwargs)
+        #
+        #
+        # def get(self, request, *args, **kwargs):
+        #     ret = super(VincularDocumentoTarefa, self).get(request, *args, **kwargs)
+        #
+        #     tarefa = self.model.objects.get(id=self.kwargs.get('tarefa_id'))
+        #     document = self.get_document_object()
+        #     getattr()
+        #
+        #     if not tarefa.documentos.filter(id=document_id).count():
+        #         try:
+        #             tarefa.documentos.add(document_id)
+        #         except IntegrityError as e:
+        #             logger.error(e)
+        #         else:
+        #             tarefa.save()
+        #
+        #     d = {}
+        #     for key in self.kwargs_names:
+        #         d[key] = self.kwargs.get(key)
+        #
+        #     if self.kwargs_have_name:
+        #         return redirect(self.to_view, **d)
+        #     else:
+        #         return redirect(self.to_view, *d.values())

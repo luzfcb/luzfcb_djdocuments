@@ -12,7 +12,7 @@ bleach==1.4.2
 -e git+https://github.com/luzfcb/django-simple-history.git@wip-generic-views2#egg=django-simple-history
 -e git+https://github.com/luzfcb/luzfcb_dj_simplelock.git@master#egg=luzfcb_dj_simplelock
 -e git+https://github.com/maraujop/django-crispy-forms.git@dev#egg=django-crispy-forms
-
+-e git+https://github.com/luzfcb/django-wkhtmltopdf.git@master#egg=django-wkhtmltopdf
 
 # development dependencies
 django-debug-toolbar==1.4
