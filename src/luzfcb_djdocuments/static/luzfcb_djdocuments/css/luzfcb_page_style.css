@@ -1,5 +1,6 @@
 .body {
-    background: rgb(204, 204, 204) !important;
+    /*background: rgb(204, 204, 204) !important;*/
+    background-color: rgba(0, 0, 0, 0.15) !important;
     font-family: "Times New Roman";
 }
 

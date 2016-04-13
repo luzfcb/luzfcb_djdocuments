@@ -7,6 +7,10 @@ body {
     text-align: justify;
 }
 
+p {
+    text-indent: 40px !important;
+}
+
 p.Tabela_Texto_8 {
     font-size: 8pt;
     font-family: Times New Roman;

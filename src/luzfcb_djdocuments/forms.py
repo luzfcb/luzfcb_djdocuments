@@ -331,7 +331,7 @@ from .models import DocumentoTemplate
 class CriarDocumentoForm(forms.Form):
     # titulo = forms.CharField(max_length=500)
     template_documento = TemplateModelChoiceField(
-        label='Modelo',
+        label='Tipo de Documento',
         queryset=Documento.admin_objects.filter(eh_template=True).all(),
         # widget=autocomplete.ModelSelect2(url='documentos:user-autocomplete')
         widget=forms.RadioSelect,

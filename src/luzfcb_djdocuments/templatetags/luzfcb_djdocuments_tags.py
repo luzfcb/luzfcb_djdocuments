@@ -9,7 +9,7 @@ from django.template.defaultfilters import striptags
 
 from simple_history.forms import new_readonly_form_class
 
-from ..utils import identificador
+from ..utils import identificador, split_utils
 
 register = template.Library()
 
@@ -38,6 +38,11 @@ def as_form_media(model_instance):
 def identificador_versao(model_instance):
     if model_instance:
         return identificador.document(model_instance.pk, model_instance.versao_numero)
+
+
+@register.filter
+def dividir_a_cada(string, step=5, char=' - '):
+    return split_utils.insert_char_each(string=string, char=char, step=step)
 
 
 @register.filter

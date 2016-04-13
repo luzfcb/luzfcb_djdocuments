@@ -1,0 +1,17 @@
+{% extends "luzfcb_djdocuments/documento_validacao_detail.html" %}
+{% load staticfiles %}
+{% load spurl %}
+{% load luzfcb_djdocuments_tags %}
+{% block extra_head_css %}
+    {{ block.super }}
+    <style>
+        @media print {
+            .conteudo {
+                padding-top: 0.5cm !important;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block corpo %}{% endblock corpo %}
+{% block rodape %}{% endblock rodape %}

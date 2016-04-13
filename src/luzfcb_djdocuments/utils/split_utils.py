@@ -81,3 +81,27 @@ def gsplit(string_to_split, split_guide, merge_last=True):
         else:
             l.append(string_to_split[i:])
     return l
+
+
+def insert_char_each(string, char='-', step=1):
+    """
+    Generate a new string with inserted char each N characters of string
+
+    >>> s = "1234567890123"
+    >>> insert_char_each(s)
+    '1-2-3-4-5-6-7-8-9-0-1-2-3'
+    >>> insert_char_each(s, char='*')
+    '1*2*3*4*5*6*7*8*9*0*1*2*3'
+    >>> insert_char_each(s, char='*', step=4)
+    '1234*5678*9012*3'
+    >>>
+    """
+    out_string = ''
+    previous_idx = 0
+
+    for current_idx in range(step, len(string), step):
+        out_string += string[previous_idx:current_idx] + char
+        previous_idx = current_idx
+
+    out_string += string[previous_idx:]
+    return out_string

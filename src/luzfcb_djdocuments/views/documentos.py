@@ -42,6 +42,7 @@ from luzfcb_djdocuments.views.mixins import (
     NextURLMixin,
     PopupMixin,
     SingleDocumentObjectMixin)
+from wkhtmltopdf.views import PDFRenderMixin
 
 from ..forms import AssinarDocumento, DocumentoEditarForm, DocumentoRevertForm, DocumetoValidarForm
 from ..models import Documento
@@ -316,8 +317,22 @@ def png_as_base64_str(qr_code, scale=3, module_color=(0, 0, 0, 255),
     return image_as_str
 
 
-class DocumentoDetailValidarView(DocumentoDetailView):
+class DocumentoDetailValidarView(PDFRenderMixin, DocumentoDetailView):
     template_name = 'luzfcb_djdocuments/documento_validacao_detail.html'
+
+    pdf_template_name = 'luzfcb_djdocuments/pdf/corpo.html'
+    pdf_header_template = 'luzfcb_djdocuments/pdf/cabecalho.html'
+    pdf_footer_template = 'luzfcb_djdocuments/pdf/rodape.html'
+
+    show_content_in_browser = True
+    cmd_options = {
+        'print-media-type': True,
+
+        # 'margin-left': '0mm',
+        # 'margin-right': '0mm',
+
+        'page-size': 'A4'
+    }
 
     def get_context_data(self, **kwargs):
         # http://stackoverflow.com/a/7389616/2975300
@@ -340,6 +355,9 @@ class DocumentoDetailValidarView(DocumentoDetailView):
             }
         )
         return context
+
+    def render_to_response(self, context, **response_kwargs):
+        return super(DocumentoDetailValidarView, self).render_to_response(context, **response_kwargs)
 
 
 class PDFViewer(generic.TemplateView):
