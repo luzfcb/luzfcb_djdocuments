@@ -62,10 +62,6 @@ urlpatterns = [
         documentos_views.DocumentoDetailValidarView.as_view(),
         name='validar-detail'
         ),
-    url(r'^imprimir/(?P<pk>\d+)/$',
-        documentos_views.ImprimirView.as_view(),
-        name='imprimir'
-        ),
     url(r'^pdf-file/$',
         documentos_views.PDFViewer.as_view(),
         name='pdf_view'

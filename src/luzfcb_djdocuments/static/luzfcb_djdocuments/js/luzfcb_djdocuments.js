@@ -29,7 +29,8 @@ function inserirApos(caracter, strOriginal, strParaInserir) {
     var idx = String.prototype.indexOf.call(strOriginal, caracter);
     if (idx == strOriginal.length) {
         return strOriginal + strParaInserir;
-    } else {
+    }
+    else {
         idx = idx + 1;
         return (strOriginal.slice(0, idx) + strParaInserir + strOriginal.slice(idx + Math.abs(0)));
     }
@@ -40,7 +41,8 @@ function inserirAntes(caracter, strOriginal, strParaInserir) {
     var idx = String.prototype.indexOf.call(strOriginal, caracter);
     if (idx == strOriginal.length || idx < 0) {
         return strParaInserir + strOriginal;
-    } else {
+    }
+    else {
         return (strOriginal.slice(0, idx) + strParaInserir + strOriginal.slice(idx + Math.abs(0)));
     }
 }
@@ -76,10 +78,12 @@ jQuery(document).ready(function ($) {
             if (!contem(url_to_open, 'popup=')) {
                 if (contem(url_to_open, '?')) {
                     url_to_open = inserirApos('?', url_to_open, "popup=1&");
-                } else {
+                }
+                else {
                     if (contem(url_to_open, '#')) {
                         url_to_open = inserirAntes('#', url_to_open, "?popup=1");
-                    } else {
+                    }
+                    else {
                         url_to_open = url_to_open + "?popup=1";
                     }
                 }
@@ -118,8 +122,11 @@ jQuery(document).ready(function ($) {
             //    "left = 490," +
             //    "top=300");
 
-            LoadModalDiv(popUpObj);
-            autoHideModalDivIfPopUPClosed(popUpObj);
+            if ($(this).hasClass('.nolock') === false) {
+
+                LoadModalDiv(popUpObj);
+                autoHideModalDivIfPopUPClosed(popUpObj);
+            }
         }
         return false;
 
@@ -433,14 +440,16 @@ function HideModalDiv(param) {
     if (typeof(module) != 'undefined' && module.exports) {
         // Publish as node.js module
         module.exports = uuid;
-    } else if (typeof define === 'function' && define.amd) {
+    }
+    else if (typeof define === 'function' && define.amd) {
         // Publish as AMD module
         define(function () {
             return uuid;
         });
 
 
-    } else {
+    }
+    else {
         // Publish as global (in browsers)
         var _previousRoot = _global.uuid;
 

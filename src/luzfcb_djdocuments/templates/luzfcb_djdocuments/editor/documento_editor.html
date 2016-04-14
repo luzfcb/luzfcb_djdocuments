@@ -71,7 +71,7 @@
                             </button>
                             {% if object %}
                                 <a class="btn btn-default djpopup2" type="button"
-                                   href="{% url 'documentos:imprimir' pk=object.pk %}">
+                                   href="{% url 'documentos:validar-detail' pk=object.pk %}">
                                     <em class="glyphicon glyphicon-print"></em>Imprimir
                                 </a>
                                 {% url 'documentos:list' as documento_list_url %}
