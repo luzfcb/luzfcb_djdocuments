@@ -1,6 +1,9 @@
+body{
+    background-color: rgb(228, 228, 228) !important;
+}
 .body {
     /*background: rgb(204, 204, 204) !important;*/
-    background-color: rgba(0, 0, 0, 0.15) !important;
+    background-color: rgb(228, 228, 228) !important;
     font-family: "Times New Roman";
 }
 
@@ -14,23 +17,23 @@
 
 .a4-pagina {
     background: white !important;
-    width: 21cm !important;
-    /*height: 29.7cm;*/
+    width: 210mm !important;
+    /*height: 297mm !important;*/
     display: block !important;
     box-shadow: 0 0 0.5cm rgba(0, 0, 0, 0.5) !important;
-    padding-top: 2cm;
-    padding-left: 2cm;
-    padding-right: 2cm;
-    padding-bottom: 2cm;
+    /*padding-top: 5mm;*/
+    /*padding-left: 5mm;*/
+    /*padding-right: 5mm;*/
+    /*padding-bottom: 5mm;*/
     /*font-size: 11pt;*/
     /*line-height: 22pt;*/
 }
 
 @media screen {
-    .conteudo {
-        padding-top: 5em !important;
-        padding-bottom: 20em !important;
-    }
+    /*.conteudo {*/
+        /*padding-top: 5em !important;*/
+        /*padding-bottom: 20em !important;*/
+    /*}*/
 }
 
 @media print {
@@ -50,6 +53,7 @@
     }
 
     .a4-pagina {
+        /*width: 100% !important;*/
         background: transparent !important;
         display: block !important;
         box-shadow: none !important;

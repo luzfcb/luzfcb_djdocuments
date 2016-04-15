@@ -5,6 +5,8 @@ import json
 # import the logging library
 import logging
 
+from django.views.generic.base import ContextMixin
+
 import pyqrcode
 from urlobject import URLObject
 from braces.views import LoginRequiredMixin
@@ -22,7 +24,7 @@ from django.db import transaction
 from django.http.response import HttpResponseRedirect, Http404
 from django.shortcuts import redirect, render
 from django.http import HttpResponse
-from django.template.defaultfilters import urlize, slugify
+from django.template.defaultfilters import urlize
 from django.utils import six
 from django.utils.decorators import method_decorator
 
@@ -48,7 +50,7 @@ from ..forms import AssinarDocumento, DocumentoEditarForm, DocumentoRevertForm, 
 from ..models import Documento
 from ..utils import add_querystrings_to_url, make_absolute_paths
 from ..utils.module_loading import get_real_user_model_class
-from ..templatetags.luzfcb_djdocuments_tags import absolute_uri, remover_tags_html
+from ..templatetags.luzfcb_djdocuments_tags import absolute_uri
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -317,6 +319,30 @@ def png_as_base64_str(qr_code, scale=3, module_color=(0, 0, 0, 255),
     return image_as_str
 
 
+class TestePDF(PDFRenderMixin, generic.TemplateView):
+    template_name = 'luzfcb_djdocuments/test_templates/base_pdf.html'
+
+    pdf_template_name = 'luzfcb_djdocuments/test_templates/corpo.html'
+    pdf_header_template = 'luzfcb_djdocuments/test_templates/cabecalho.html'
+    pdf_footer_template = 'luzfcb_djdocuments/test_templates/rodape.html'
+
+    show_content_in_browser = True
+    cmd_options = {
+        'print-media-type': True,
+
+        # 'margin-top': '8.0mm',
+        'margin-top': '0mm',
+        'margin-left': '0mm',
+        'margin-right': '0mm',
+        'margin-bottom': '20cm',
+        # 'page-width': '210mm',
+        # 'page-height': '297mm',
+        # 'viewport-size': '210mmX297mm',
+        # 'orientation': 'Landscape',
+        'page-size': 'A4'
+    }
+
+
 class DocumentoDetailValidarView(PDFRenderMixin, DocumentoDetailView):
     template_name = 'luzfcb_djdocuments/documento_validacao_detail.html'
 
@@ -324,27 +350,25 @@ class DocumentoDetailValidarView(PDFRenderMixin, DocumentoDetailView):
     pdf_header_template = 'luzfcb_djdocuments/pdf/cabecalho.html'
     pdf_footer_template = 'luzfcb_djdocuments/pdf/rodape.html'
 
-    show_content_in_browser = False
+    show_content_in_browser = True
     cmd_options = {
         'print-media-type': True,
 
-        # 'margin-left': '0mm',
-        # 'margin-right': '0mm',
-
+        #  'margin-top': '10mm',
+        'margin-left': '1.5mm',
+        'margin-right': '6.5mm',
+        # 'page-width': '210mm',
+        # 'page-height': '297mm',
+        # 'viewport-size': '210mmX297mm',
+        # 'orientation': 'Landscape',
         'page-size': 'A4'
     }
-
-    def get_filename(self):
-        a = "{}_{}.pdf"
-
-        return a.format(slugify(remover_tags_html(self.object.titulo)), self.object.identificador_versao)
 
     def get_context_data(self, **kwargs):
         # http://stackoverflow.com/a/7389616/2975300
         context = super(DocumentoDetailValidarView, self).get_context_data(**kwargs)
 
         # possivel candidato para cache
-        # url = urlize(absolute_uri(self.request.resolver_match.url_name, request=self.request))
         url_validar = reverse('documentos:validar')
         querystring = "{}={}".format('h', self.object.assinatura_hash_upper_limpo)
         url_com_querystring = URLObject(url_validar).with_query(querystring)
@@ -364,10 +388,6 @@ class DocumentoDetailValidarView(PDFRenderMixin, DocumentoDetailView):
 
     def render_to_response(self, context, **response_kwargs):
         return super(DocumentoDetailValidarView, self).render_to_response(context, **response_kwargs)
-
-    @method_decorator(never_cache)
-    def dispatch(self, request, *args, **kwargs):
-        return super(DocumentoDetailValidarView, self).dispatch(request, *args, **kwargs)
 
 
 class PDFViewer(generic.TemplateView):
@@ -419,6 +439,56 @@ class AssinarDocumentoView(DocumentoAssinadoRedirectMixin, AuditavelViewMixin, g
     def get_success_url(self):
         detail_url = reverse('documentos:validar-detail', kwargs={'pk': self.object.pk})
         return detail_url
+
+
+class ImprimirView(DocumentoDetailView):
+    template_name = 'luzfcb_djdocuments/documento_print_novo.html'
+
+    def get(self, *args, **kwargs):
+        original_response = super(ImprimirView, self).get(*args, **kwargs)
+        if self.request.GET.get('pdf'):
+            import pdfkit
+
+            url = urlize(absolute_uri(self.request.resolver_match.url_name, request=self.request))
+            a = url
+            return pdfkit.from_url(url, 'novo_arquivo.pdf')
+
+        return original_response
+
+    # def render_to_response(self, context, **response_kwargs):
+    #     """
+    #     Returns a response, using the `response_class` for this
+    #     view, with a template rendered with the given context.
+    #
+    #     If any keyword arguments are provided, they will be
+    #     passed to the constructor of the response class.
+    #     """
+    #
+    #     if self.request.GET.get('pdf'):
+    #
+    #         # return render_to_pdf(self.request, 'saida', format='A4', orientation='portrait')
+    #         print('teste')
+    #     else:
+    #         import pdfkit
+    #
+    #         webkit = WKHtmlToPDFGenerator()
+    #
+    #         return convert_html_to_pdf(request=self.request, context=self.get_context_data())
+    #         # response_kwargs.setdefault('content_type', self.content_type)
+    #         # return self.response_class(
+    #         #     request=self.request,
+    #         #     template=self.get_template_names(),
+    #         #     context=context,
+    #         #     using=self.template_engine,
+    #         #     **response_kwargs
+    #         # )
+
+    def get_context_data(self, **kwargs):
+        context = super(ImprimirView, self).get_context_data(**kwargs)
+        context.update({
+            'disableTable': False
+        })
+        return context
 
 
 class DocumentoEditor(LoginRequiredMixin,

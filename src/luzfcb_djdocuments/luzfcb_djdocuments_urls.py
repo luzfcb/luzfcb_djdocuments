@@ -70,6 +70,10 @@ urlpatterns = [
         luzfcb_djdocuments.views.autocompletes.UserAutocomplete.as_view(),
         name='user-autocomplete'
         ),
+    url(r'^pdf/$',
+        luzfcb_djdocuments.views.documentos.TestePDF.as_view(),
+        name='pdf-teste'
+        ),
 ]
 
 if DJANGO_DOCUMENTOS_ENABLE_GENERAL_DASHBOARD:
