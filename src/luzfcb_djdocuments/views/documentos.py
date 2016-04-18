@@ -355,8 +355,10 @@ class DocumentoDetailValidarView(PDFRenderMixin, DocumentoDetailView):
         'print-media-type': True,
 
         #  'margin-top': '10mm',
-        'margin-left': '1.5mm',
-        'margin-right': '6.5mm',
+        # 'margin-left': '1.5mm',
+        'margin-left': '1.0mm',
+        # 'margin-right': '6.5mm',
+        'margin-right': '1.0mm',
         # 'page-width': '210mm',
         # 'page-height': '297mm',
         # 'viewport-size': '210mmX297mm',

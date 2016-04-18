@@ -13,15 +13,27 @@ body {
     }
 }
 
-/*.a4-pagina .documento-conteudo p {*/
-    /*text-indent: 40px;*/
+/*.documento .documento-conteudo p {*/
+/*text-indent: 40px;*/
 /*}*/
 
-/*.a4-pagina .documento-conteudo p > img {*/
-    /*margin-left: -40px;*/
+/*.documento .documento-conteudo p > img {*/
+/*margin-left: -40px;*/
 /*}*/
+.documento-rodape > hr {
+    margin-top: 3px;
+    margin-bottom: 3px;
+}
 
-.a4-pagina p.Tabela_Texto_8 {
+.documento-rodape hr.borda-dupla, .documento-cabecalho hr.borda-dupla {
+    border: none;
+    padding: 0;
+    margin: 5px 2px 0 2px;
+    border-top: medium double #333
+
+}
+
+.documento p.Tabela_Texto_8 {
     font-size: 8pt;
     font-family: Times New Roman;
     text-align: left;
@@ -29,7 +41,7 @@ body {
     margin: 0 3pt 0 3pt;
 }
 
-.a4-pagina p.Tabela_Texto_Alinhado_Direita {
+.documento p.Tabela_Texto_Alinhado_Direita {
     font-size: 11pt;
     font-family: Times New Roman;
     text-align: right;
@@ -37,7 +49,7 @@ body {
     margin: 0 3pt 0 3pt;
 }
 
-.a4-pagina p.Tabela_Texto_Alinhado_Esquerda {
+.documento p.Tabela_Texto_Alinhado_Esquerda {
     font-size: 11pt;
     font-family: Times New Roman;
     text-align: left;
@@ -45,7 +57,7 @@ body {
     margin: 0 3pt 0 3pt;
 }
 
-.a4-pagina p.Tabela_Texto_Centralizado {
+.documento p.Tabela_Texto_Centralizado {
     font-size: 11pt;
     font-family: Times New Roman;
     text-align: center;
@@ -53,7 +65,7 @@ body {
     margin: 0 3pt 0;
 }
 
-.a4-pagina p.Tachado {
+.documento p.Tachado {
     font-size: 11pt;
     font-family: Times New Roman;
     text-indent: 1.18in;
@@ -62,7 +74,7 @@ body {
     text-decoration: line-through;
 }
 
-.a4-pagina p.Texto_Alinhado_Direita {
+.documento p.Texto_Alinhado_Direita {
     font-size: 12pt;
     font-family: Times New Roman;
     text-align: right;
@@ -70,7 +82,7 @@ body {
     margin: 6pt;
 }
 
-.a4-pagina p.Texto_Alinhado_Esquerda {
+.documento p.Texto_Alinhado_Esquerda {
     font-size: 12pt;
     font-family: Times New Roman;
     text-align: left;
@@ -78,7 +90,7 @@ body {
     margin: 6pt;
 }
 
-.a4-pagina p.Texto_Alinhado_Esquerda_Espaçamento_Simples {
+.documento p.Texto_Alinhado_Esquerda_Espaçamento_Simples {
     font-size: 12pt;
     font-family: Times New Roman;
     text-align: left;
@@ -86,7 +98,7 @@ body {
     margin: 0;
 }
 
-.a4-pagina p.Texto_Centralizado {
+.documento p.Texto_Centralizado {
     font-size: 12pt;
     font-family: Times New Roman;
     text-align: center;
@@ -94,7 +106,7 @@ body {
     margin: 6pt;
 }
 
-.a4-pagina p.Texto_Centralizado_Maiusculas {
+.documento p.Texto_Centralizado_Maiusculas {
     font-weight: bold;
     font-size: 13pt;
     font-family: Times New Roman;
@@ -103,7 +115,7 @@ body {
     word-wrap: inherit;
 }
 
-.a4-pagina p.Texto_Citação {
+.documento p.Texto_Citação {
     font-size: 10pt;
     font-family: Times New Roman;
     word-wrap: inherit;
@@ -111,7 +123,7 @@ body {
     text-align: justify;
 }
 
-.a4-pagina p.Texto_Ementa {
+.documento p.Texto_Ementa {
     font-size: 10pt;
     font-family: Times New Roman;
     text-align: justify;
@@ -119,7 +131,7 @@ body {
     margin: 4pt 0 4pt 3.14in;
 }
 
-.a4-pagina p.Texto_Justificado {
+.documento p.Texto_Justificado {
     font-size: 12pt;
     font-family: Times New Roman;
     text-align: justify;
@@ -128,7 +140,7 @@ body {
     margin: 6pt;
 }
 
-.a4-pagina p.Texto_Justificado_Recuo_Primeira_Linha {
+.documento p.Texto_Justificado_Recuo_Primeira_Linha {
     font-size: 12pt;
     font-family: Times New Roman;
     text-indent: 1.18in;
@@ -137,7 +149,7 @@ body {
     margin: 6pt;
 }
 
-.a4-pagina p.Texto_Mono_Espaçado {
+.documento p.Texto_Mono_Espaçado {
     font-size: 8pt;
     font-family: Courier New;
     text-align: left;
