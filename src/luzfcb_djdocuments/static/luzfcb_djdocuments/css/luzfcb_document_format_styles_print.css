@@ -11,16 +11,27 @@ body {
     a[href]:after {
         content: "" !important;
     }
+
+    body {
+        padding-top: 0;
+    }
 }
 
-/*.documento .documento-conteudo p {*/
-/*text-indent: 40px;*/
-/*}*/
+.codigo-qr {
+    alignment: center;
+    display: block;
+    margin-right: 25px;
+}
 
-/*.documento .documento-conteudo p > img {*/
-/*margin-left: -40px;*/
-/*}*/
-.documento-rodape > hr {
+.documento .documento-conteudo p {
+    text-indent: 40px;
+}
+
+.documento .documento-conteudo p img, hr {
+    margin-left: -40px;
+}
+
+.documento-rodape hr.assinantes-borda {
     margin-top: 3px;
     margin-bottom: 3px;
 }
@@ -156,6 +167,19 @@ body {
     white-space: pre;
     word-wrap: inherit;
     margin: 2pt;
+}
+
+.documento blockquote {
+      border: none;
+}
+
+.documento blockquote p {
+    font-size: 10pt;
+    font-family: Times New Roman;
+    word-wrap: inherit;
+    margin: 4pt 0 4pt 1.18in;
+    text-align: justify;
+    border: none;
 }
 
 /*@media print {*/

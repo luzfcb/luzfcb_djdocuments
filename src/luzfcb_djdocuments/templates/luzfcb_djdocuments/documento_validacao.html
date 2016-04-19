@@ -48,7 +48,8 @@
                         </div>
                         <div class="form-group">
                             <div class="col-sm-offset-2 col-sm-10">
-                                <a class="btn btn-mini" onclick="refresh_captcha()"><i class="icon-refresh"></i> trocar imagem</a>
+                                <a class="btn btn-mini" onclick="refresh_captcha()"><i class="icon-refresh"></i> trocar
+                                    imagem</a>
                                 <button type="submit" class="btn btn-success">Verificar validade do Documento</button>
                             </div>
                         </div>
@@ -78,14 +79,113 @@
                 $('#id_captcha_1').val('');
             });
         }
-{#        $('input[type=text]:visible').autotab();#}
+        {#        $('input[type=text]:visible').autotab();#}
         var inputs = $('input[type=text]:visible');
         $(inputs).each(function (index, element) {
-            if($(element).attr('pattern') !== undefined){
-                $(element).autotab('filter', { format: 'custom',  pattern: '[^0-9a-zA-Z]', uppercase: true });
-            }else {
+            if ($(element).attr('pattern') !== undefined) {
+                $(element).autotab('filter', {format: 'custom', pattern: '[^0-9a-zA-Z]', uppercase: true});
+            }
+            else {
                 $(element).autotab();
             }
+        });
+
+        /**
+         * PasteHopAcross jquery plugin
+         * Paste across multiple inputs plugin,
+         * inspired by http://jsfiddle.net/D7jVR/
+         */
+        (function ($) {
+            jQuery.fn.pastehopacross = function (opts) {
+                var focus_on_next_input = true;
+                if (!opts) {
+                    opts = {}
+                }
+                if (!opts.regexRemove) {
+                    opts.regexRemove = false;
+                }
+                if (!opts.inputs) {
+                    opts.inputs = [];
+                }
+                if (opts.inputs.length == 0) {
+                    //return
+                    return $(this);
+                }
+                if (!opts.next_input) {
+                    focus_on_next_input = false
+                }
+
+                if (!opts.first_maxlength) {
+                    opts.first_maxlength = $(this).attr('maxlength');
+                    if (!opts.first_maxlength) {
+                        return $(this);
+                    }
+                }
+                var max_chars = 0;
+                $(opts.inputs).each(function (index) {
+                    max_chars += parseInt($(this).attr('maxlength'), 10);
+                });
+
+
+                $(this).on('paste', function () {
+
+                    //remove maxlength attribute
+                    $(this).removeAttr('maxlength');
+                    $(this).one("input.fromPaste", function () {
+                        var $firstBox = $(this);
+
+                        var pastedValue = $(this).val();
+                        if (opts.regexRemove) {
+                            pastedValue = pastedValue.replace(opts.regexRemove, "");
+                        }
+
+                        var str_pv = pastedValue;
+                        $(opts.inputs).each(function () {
+                            var pv = str_pv.split('');
+                            var maxlength;
+                            if ($firstBox.get(0) == this) {
+                                maxlength = opts.first_maxlength;
+                            }
+                            else {
+                                maxlength = $(this).attr('maxlength');
+                            }
+                            if (maxlength == undefined) {
+                                //paste them all!
+                                maxlength = pv.length;
+                            }
+                            //clear the value
+                            $(this).val('');
+                            var nwval = '';
+                            for (var i = 0; i < maxlength; ++i) {
+                                if (typeof(pv[i]) != 'undefined') {
+                                    nwval += pv[i];
+                                }
+                            }
+                            $(this).val(nwval);
+                            //remove everything from earlier
+                            str_pv = str_pv.substring(maxlength);
+                        });
+
+                        //restore maxlength attribute
+                        $(this).attr('maxlength', opts.first_maxlength);
+                        $(this).focus()
+                    });
+
+                    setTimeout(function () {
+                        if (focus_on_next_input === true) {
+                            opts.next_input.first().focus();
+                        }
+                    }, 100);
+                });
+
+
+                return $(this);
+            }
+        })(jQuery);
+        $('input[name="assinatura_hash_0"]').pastehopacross({
+            regexRemove: /[^\w]/g,
+            inputs: $('input[name^="assinatura_hash"]'),
+            next_input: $('#id_captcha_1')
         });
 
 

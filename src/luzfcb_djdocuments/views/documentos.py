@@ -354,11 +354,14 @@ class DocumentoDetailValidarView(PDFRenderMixin, DocumentoDetailView):
     cmd_options = {
         'print-media-type': True,
 
-        #  'margin-top': '10mm',
+        # 'margin-top': '57.5mm',
+        'margin-top': '61.5mm',
         # 'margin-left': '1.5mm',
         'margin-left': '1.0mm',
         # 'margin-right': '6.5mm',
-        'margin-right': '1.0mm',
+        'margin-right': '3.5mm',
+        # 'margin-bottom': '45.5mm',
+        'margin-bottom': '47.5mm',
         # 'page-width': '210mm',
         # 'page-height': '297mm',
         # 'viewport-size': '210mmX297mm',

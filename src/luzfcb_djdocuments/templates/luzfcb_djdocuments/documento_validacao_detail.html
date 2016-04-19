@@ -45,6 +45,7 @@
             .has-spinner.btn-large.active .spinner {
                 width: 19px;
             }
+
             .documento-conteudo
         }
 
@@ -102,57 +103,65 @@
 
                 {% block rodape %}
                     <div class="documento-rodape">
-                        {% url 'documentos:validar' as validar_url_view %}
-                        {% spurl base=validar_url_view query="h={{ object.assinatura_hash_upper_limpo }}" as validar_url %}
-                        <hr>
-                        <table>
-                            <tbody>
-                            <tr>
-                                <td>
+                        {% if object.esta_assinado %}
+                            {% url 'documentos:validar' as validar_url_view %}
+                            {% spurl base=validar_url_view query="h={{ object.assinatura_hash_upper_limpo }}" as validar_url %}
+                            <hr class="assinantes-borda">
+                            <table>
+                                <tbody>
+                                <tr>
+                                    <td>
 
-                                </td>
-                                <td>
-                                    <p style="margin:0;text-align: left; font-size:11pt;font-family: Times New Roman;">
+                                    </td>
+                                    <td>
+                                        <p style="margin:0;text-align: left; font-size:11pt;font-family: Times New Roman;">
+                                            {% if object.esta_assinado %}
+                                                Documento assinado eletronicamente por
+                                                <b>{{ object.assinado_por.get_full_name }}</b>,
+                                                em {{ object.assinado_em|date:"d/m/Y H:m:s" }}, conforme art. 1º, III,
+                                                "b", da Lei 11.419/2006.</p>
+                                            {% endif %}
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                            <hr class="assinantes-borda">
+                            <table>
+                                <tbody>
+                                <tr>
+                                    {#                                    <td style="width: 200px; height: 105px">#}
+                                    <td>
                                         {% if object.esta_assinado %}
-                                            Documento assinado eletronicamente por
-                                            <b>{{ object.assinado_por.get_full_name }}</b>,
-                                            em {{ object.assinado_em|date:"d/m/Y H:m:s" }}, conforme art. 1º, III,
-                                            "b", da Lei 11.419/2006.</p>
+                                            <a id="url_validacao" class="hidden-print-href"
+                                               href="{{ validar_url|absolute_uri:request }}">
+                                                <div id="codigo_qr" class="codigo-qr">
+                                                    {{ qr_code_validation_html_img_tag|safe }}
+                                                </div>
+                                                <p class="hidden-print">Verifique a Validade</p>
+                                            </a>
                                         {% endif %}
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-                        <hr>
-                        <table>
-                            <tbody>
-                            <tr>
-                                <td style="width: 200px; height: 105px">
-                                    {% if object.esta_assinado %}
-                                        <a id="url_validacao" class="hidden-print-href"
-                                           href="{{ validar_url|absolute_uri:request }}">
-                                            <div id="codigo_qr" style="alignment: center; display: block;">
-                                                {{ qr_code_validation_html_img_tag|safe }}
-                                            </div>
-                                            <p class="hidden-print">Verifique a Validade</p>
-                                        </a>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <p style="margin:4;text-align: left; font-size:11pt;font-family: Times New Roman;">
-                                        {% if object.esta_assinado %}
+                                    </td>
+                                    <td>
+                                        <p style="margin:4;text-align: left; font-size:11pt;font-family: Times New Roman;">
+                                            {% if object.esta_assinado %}
 
 
-                                            A autenticidade do documento pode ser conferida no site
-                                            {{ validar_url_view|absolute_uri:request|urlize }} informando o código
-                                            verificador:
-                                            <span><br/><b>{{ object.assinatura_hash_upper_limpo|dividir_a_cada:10 }}</b></span>
-                                        {% endif %}
-                                    </p>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
+                                                A autenticidade do documento pode ser conferida no site
+                                                {{ validar_url_view|absolute_uri:request|urlize }} informando o código
+                                                verificador:
+                                                <div style="text-align: center;">
+                                                    <span><b>{{ object.assinatura_hash_upper_limpo|dividir_a_cada:10 }}</b></span>
+                                                </div>
+                                            {% endif %}
+                                        </p>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        {% else %}
+                            Este documento ainda não foi assinado.
+                        {% endif %}
+
                         <hr class="borda-dupla">
                         <table border="0" cellpadding="2" cellspacing="0" style="width:100%">
                             <tbody>
@@ -166,6 +175,7 @@
                             </tr>
                             </tbody>
                         </table>
+
                     </div>
                 {% endblock rodape %}
             </div>
