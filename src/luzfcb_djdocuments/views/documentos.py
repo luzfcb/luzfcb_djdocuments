@@ -362,6 +362,7 @@ class DocumentoDetailValidarView(PDFRenderMixin, DocumentoDetailView):
         'margin-right': '3.5mm',
         # 'margin-bottom': '45.5mm',
         'margin-bottom': '47.5mm',
+        # 'margin-bottom': '87.5mm',
         # 'page-width': '210mm',
         # 'page-height': '297mm',
         # 'viewport-size': '210mmX297mm',
@@ -380,7 +381,7 @@ class DocumentoDetailValidarView(PDFRenderMixin, DocumentoDetailView):
         url = absolute_uri(url_com_querystring, self.request)
 
         codigo_qr = pyqrcode.create(url)
-        encoded_image = png_as_base64_str(codigo_qr, 2)
+        encoded_image = png_as_base64_str(qr_code=codigo_qr, scale=2)
 
         img_tag = "<img src=data:image/png;base64,{}>".format(encoded_image)
         #

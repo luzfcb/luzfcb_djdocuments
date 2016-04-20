@@ -14,6 +14,7 @@ body {
 
     body {
         padding-top: 0;
+        margin-top: 0;
     }
 }
 
@@ -21,6 +22,10 @@ body {
     alignment: center;
     display: block;
     margin-right: 25px;
+}
+
+.documento .documento-conteudo {
+    padding-top: 20px;
 }
 
 .documento .documento-conteudo p {
@@ -170,7 +175,7 @@ body {
 }
 
 .documento blockquote {
-      border: none;
+    border: none;
 }
 
 .documento blockquote p {
