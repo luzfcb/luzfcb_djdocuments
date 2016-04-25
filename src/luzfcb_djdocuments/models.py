@@ -39,7 +39,6 @@ class TipoDocumento(models.Model):
         return '{}'.format(self.descricao)
 
 
-
 @python_2_unicode_compatible
 class Documento(models.Model):
     cabecalho = models.TextField(blank=True)
@@ -48,6 +47,8 @@ class Documento(models.Model):
     rodape = models.TextField(blank=True)
 
     eh_template = models.BooleanField(default=False, editable=True)
+    template_descricao = models.TextField(blank=True)
+
     versao_numero = models.IntegerField(default=1, auto_created=True, editable=False)
 
     tipo_documento = models.CharField(max_length=255, blank=True)
@@ -144,7 +145,6 @@ class Documento(models.Model):
     @_history_user.setter
     def _history_user(self, value):
         self.modificado_por = value
-
 
     @property
     def identificador_documento(self):

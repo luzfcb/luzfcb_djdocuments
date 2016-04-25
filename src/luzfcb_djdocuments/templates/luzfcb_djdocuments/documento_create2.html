@@ -27,17 +27,33 @@
                                 </div>
                             </div>
                         {% endif %}
+
                         <div class="form-group">
-                            <label for="{{ form.template_documento.id_for_label }}"
-                                   class="col-sm-2 control-label">{{ form.template_documento.label }}:</label>
+                            <label for="{{ form.tipo_documento.id_for_label }}"
+                                   class="col-sm-2 control-label">{{ form.tipo_documento.label }}:</label>
                             <div class="col-sm-10">
-                                {% for opcao in form.template_documento %}
-                                    <div class="radio">
-                                        {{ opcao }}
-                                    </div>
-                                {% endfor %}
+                                {{ form.tipo_documento }}
+{#                                {% for opcao in form.tipo_documento %}#}
+{#                                    <div class="radio">#}
+{#                                        {{ opcao }}#}
+{#                                    </div>#}
+{#                                {% endfor %}#}
                             </div>
                         </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.modelo_documento.id_for_label }}"
+                                   class="col-sm-2 control-label">{{ form.modelo_documento.label }}:</label>
+                            <div class="col-sm-10">
+                                {{ form.modelo_documento }}
+{#                                {% for opcao in form.modelo_documento %}#}
+{#                                    <div class="radio">#}
+{#                                        {{ opcao }}#}
+{#                                    </div>#}
+{#                                {% endfor %}#}
+                            </div>
+                        </div>
+
 
                         <div class="form-group">
                             <div class="col-sm-offset-2 col-sm-10">

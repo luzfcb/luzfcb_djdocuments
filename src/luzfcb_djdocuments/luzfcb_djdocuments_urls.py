@@ -70,6 +70,10 @@ urlpatterns = [
         luzfcb_djdocuments.views.autocompletes.UserAutocomplete.as_view(),
         name='user-autocomplete'
         ),
+    url(r'^documento-criarautocomplete/$',
+        luzfcb_djdocuments.views.autocompletes.DocumentoCriarAutocomplete.as_view(),
+        name='documentocriar-autocomplete'
+        ),
     url(r'^pdf/$',
         luzfcb_djdocuments.views.documentos.TestePDF.as_view(),
         name='pdf-teste'

@@ -26,6 +26,9 @@ class DocumentoAdmin(SimpleHistoryAdmin):
         # 'criado_em', 'criado_por', 'versao_numero', 'assinatura_hash', 'visualizar_versao'
         'identificador_documento', 'pk', 'versao_numero', 'identificador_versao', 'visualizar_versao', 'eh_template', 'esta_assinado', 'assinatura_hash', 'criado_por', 'criado_em', 'visualizar_titulo',
         'modificado_em',
+        'tipo_documento',
+        'tipo_documento_descricao',
+        'template_descricao',
         'modificado_por', 'revertido_em', 'revertido_por',
         'revertido_da_versao', 'esta_ativo', 'esta_bloqueado',
         'assinado_em', 'assinado_por', 'assinatura_removida_em', 'assinatura_removida_por',
