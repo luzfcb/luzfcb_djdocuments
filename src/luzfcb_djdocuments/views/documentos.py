@@ -547,6 +547,7 @@ def create_from_template(current_user, documento_template):
         'titulo': documento_template.titulo,
         'conteudo': documento_template.conteudo,
         'rodape': documento_template.rodape,
+        'tipo_documento': documento_template.tipo_documento,
         'criado_por': current_user,
         'modificado_por': current_user
     }

@@ -322,7 +322,7 @@ from .templatetags.luzfcb_djdocuments_tags import remover_tags_html
 
 class TipoDocumentoTemplateModelChoiceField(forms.ModelChoiceField):
     def label_from_instance(self, obj):
-        return remover_tags_html(obj.tipo_documento)
+        return obj.titulo
 
 class ModeloDocumentoTemplateModelChoiceField(forms.ModelChoiceField):
     def label_from_instance(self, obj):
@@ -331,16 +331,17 @@ class ModeloDocumentoTemplateModelChoiceField(forms.ModelChoiceField):
         return a
 
 
-from .models import DocumentoTemplate
+from .models import DocumentoTemplate, TipoDocumento
 
 
 class CriarDocumentoForm(forms.Form):
     # titulo = forms.CharField(max_length=500)
     tipo_documento = TipoDocumentoTemplateModelChoiceField(
         label='Tipo de Documento',
+        # to_field_name='tipo_documento',
         # queryset=Documento.admin_objects.filter(eh_template=True).all(),
         #queryset=Documento.admin_objects.filter(eh_template=True).exclude(tipo_documento__isnull=True).exclude(tipo_documento=""),
-        queryset=Documento.admin_objects.filter(eh_template=True),
+        queryset=TipoDocumento.objects.all(),
         #widget=autocomplete.ModelSelect2(url='documentos:documentocriar-autocomplete', forward='modelo_documento'),
         # widget=forms.RadioSelect,
         empty_label=None

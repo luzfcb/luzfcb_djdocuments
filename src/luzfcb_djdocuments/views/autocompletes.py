@@ -55,7 +55,6 @@ class DocumentoTemplateAutocomplete(autocomplete.Select2QuerySetView):
 
 
 class DocumentoCriarAutocomplete(autocomplete.Select2QuerySetView):
-
     @method_decorator(never_cache)
     def dispatch(self, request, *args, **kwargs):
         return super(DocumentoCriarAutocomplete, self).dispatch(request, *args, **kwargs)
@@ -66,12 +65,12 @@ class DocumentoCriarAutocomplete(autocomplete.Select2QuerySetView):
             return Documento.admin_objects.none()
 
         print('forwarded: ', self.forwarded)
-        modelo_documento = self.forwarded.get('modelo_documento', None)
+        tipo_documento = self.forwarded.get('tipo_documento', None)
 
-        qs = Documento.admin_objects.all()
+        qs = Documento.admin_objects.filter(eh_template=True)
 
-        if modelo_documento:
-            qs = qs.filter(modelo_documento=modelo_documento)
+        if tipo_documento:
+            qs = qs.filter(tipo_documento_id=tipo_documento)
 
         # if self.q:
         #     qs = qs.filter(Q(first_name__icontains=self.q) | Q(last_name__icontains=self.q))

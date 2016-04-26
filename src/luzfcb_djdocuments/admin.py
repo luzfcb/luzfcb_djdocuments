@@ -24,10 +24,12 @@ class DocumentoAdmin(SimpleHistoryAdmin):
     # form = DocumentoEditarForm
     list_display = (
         # 'criado_em', 'criado_por', 'versao_numero', 'assinatura_hash', 'visualizar_versao'
-        'identificador_documento', 'pk', 'versao_numero', 'identificador_versao', 'visualizar_versao', 'eh_template', 'esta_assinado', 'assinatura_hash', 'criado_por', 'criado_em', 'visualizar_titulo',
+        'identificador_documento', 'pk', 'versao_numero', 'identificador_versao', 'visualizar_versao', 'eh_template',
+        'esta_assinado', 'assinatura_hash', 'criado_por', 'criado_em', 'visualizar_titulo',
         'modificado_em',
         'tipo_documento',
-        'tipo_documento_descricao',
+        # 'tipo_documento__titulo',
+        # 'tipo_documento__descricao',
         'template_descricao',
         'modificado_por', 'revertido_em', 'revertido_por',
         'revertido_da_versao', 'esta_ativo', 'esta_bloqueado',
@@ -91,3 +93,8 @@ class DocumentoTemplateAdmin(DocumentoAdmin):
         if not obj.eh_template:
             obj.eh_template = True
         super(DocumentoTemplateAdmin, self).save_model(request, obj, form, change)
+
+
+@admin.register(models.TipoDocumento)
+class TipoDocumentoAdmin(admin.ModelAdmin):
+    pass

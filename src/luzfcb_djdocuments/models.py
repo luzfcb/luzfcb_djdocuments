@@ -33,7 +33,8 @@ class DocumentoAdminManager(models.Manager):
 
 @python_2_unicode_compatible
 class TipoDocumento(models.Model):
-    descricao = models.CharField(max_length=255, blank=True)
+    titulo = models.CharField(max_length=255, blank=True)
+    descricao = models.TextField(max_length=255, blank=True)
 
     def __str__(self):
         return '{}'.format(self.descricao)
@@ -51,8 +52,9 @@ class Documento(models.Model):
 
     versao_numero = models.IntegerField(default=1, auto_created=True, editable=False)
 
-    tipo_documento = models.CharField(max_length=255, blank=True)
-    tipo_documento_descricao = models.TextField(blank=True)
+    # tipo_documento = models.CharField(max_length=255, blank=True)
+    tipo_documento = models.ForeignKey(TipoDocumento, null=True, on_delete=models.SET_NULL, verbose_name='Tipo do Documento')
+    # tipo_documento_descricao = models.TextField(blank=True)
 
     # modelo_documento = models.ForeignKey('self',
     #                                      related_name='%(class)s_documentos',
