@@ -344,7 +344,7 @@ class CriarDocumentoForm(forms.Form):
         queryset=TipoDocumento.objects.all(),
         #widget=autocomplete.ModelSelect2(url='documentos:documentocriar-autocomplete', forward='modelo_documento'),
         # widget=forms.RadioSelect,
-        empty_label=None
+        # empty_label=None
     )
     modelo_documento = ModeloDocumentoTemplateModelChoiceField(
         label='Modelo de Documento',
@@ -353,6 +353,6 @@ class CriarDocumentoForm(forms.Form):
         widget=autocomplete.ModelSelect2(url='documentos:documentocriar-autocomplete', forward=('tipo_documento', )),
         # widget=forms.RadioSelect,
         # empty_label=True
-    )
 
+    )
 

@@ -570,8 +570,8 @@ class DocumentoCriar(generic.FormView):
 
     def form_valid(self, form):
         self.get_vinculate_parameters()
-        template_selecionado = form.cleaned_data['template_documento']
-        documento_novo = create_from_template(self.request.user, template_selecionado)
+        modelo_documento = form.cleaned_data['modelo_documento']
+        documento_novo = create_from_template(self.request.user, modelo_documento)
         # vinculate_view_name = self.request.GET.get(self.vinculate_view_field, None)
         # vinculate_value = self.request.GET.get(self.vinculate_value_field, None)
 
@@ -587,7 +587,7 @@ class DocumentoCriar(generic.FormView):
         initial = super(DocumentoCriar, self).get_initial()
         default_document_template = self.get_default_selected_document_template_pk()
         if default_document_template:
-            initial.update({'template_documento': default_document_template})
+            initial.update({'modelo_documento': default_document_template})
         return initial
 
     def get_default_selected_document_template_pk(self):

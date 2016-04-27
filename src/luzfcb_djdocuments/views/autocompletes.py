@@ -70,7 +70,10 @@ class DocumentoCriarAutocomplete(autocomplete.Select2QuerySetView):
         qs = Documento.admin_objects.filter(eh_template=True)
 
         if tipo_documento:
-            qs = qs.filter(tipo_documento_id=tipo_documento)
+            qs = qs.filter(tipo_documento_id=tipo_documento, template_descricao__icontains=self.q)
+
+        else:
+            qs = Documento.admin_objects.none()
 
         # if self.q:
         #     qs = qs.filter(Q(first_name__icontains=self.q) | Q(last_name__icontains=self.q))
@@ -80,5 +83,6 @@ class DocumentoCriarAutocomplete(autocomplete.Select2QuerySetView):
         return qs
 
     def get_result_label(self, result):
-        a = remover_tags_html(result.titulo)
+        a = remover_tags_html(result.template_descricao)
         return a
+
