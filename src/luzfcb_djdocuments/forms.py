@@ -19,7 +19,7 @@ except ImportError:
 
 from .models import Documento
 from .utils.module_loading import get_real_user_model_class
-from .widgets import SplitedHashField3
+from .widgets import SplitedHashField3, ModelSelect2ForwardExtras
 
 
 class ProdutoForm(forms.ModelForm):
@@ -324,6 +324,7 @@ class TipoDocumentoTemplateModelChoiceField(forms.ModelChoiceField):
     def label_from_instance(self, obj):
         return obj.titulo
 
+
 class ModeloDocumentoTemplateModelChoiceField(forms.ModelChoiceField):
     def label_from_instance(self, obj):
         a = remover_tags_html(obj.titulo or 'Descricao modelo: {}'.format(obj.pk))
@@ -331,28 +332,45 @@ class ModeloDocumentoTemplateModelChoiceField(forms.ModelChoiceField):
         return a
 
 
-from .models import DocumentoTemplate, TipoDocumento
+from .models import TipoDocumento
 
 
 class CriarDocumentoForm(forms.Form):
     # titulo = forms.CharField(max_length=500)
     tipo_documento = TipoDocumentoTemplateModelChoiceField(
         label='Tipo de Documento',
-        # to_field_name='tipo_documento',
-        # queryset=Documento.admin_objects.filter(eh_template=True).all(),
-        #queryset=Documento.admin_objects.filter(eh_template=True).exclude(tipo_documento__isnull=True).exclude(tipo_documento=""),
         queryset=TipoDocumento.objects.all(),
-        #widget=autocomplete.ModelSelect2(url='documentos:documentocriar-autocomplete', forward='modelo_documento'),
-        # widget=forms.RadioSelect,
-        # empty_label=None
+
     )
     modelo_documento = ModeloDocumentoTemplateModelChoiceField(
         label='Modelo de Documento',
-        # queryset=Documento.admin_objects.filter(eh_template=True).all(),
         queryset=Documento.admin_objects.all(),
-        widget=autocomplete.ModelSelect2(url='documentos:documentocriar-autocomplete', forward=('tipo_documento', )),
-        # widget=forms.RadioSelect,
-        # empty_label=True
+        widget=ModelSelect2ForwardExtras(url='documentos:documentocriar-autocomplete',
+                                         forward=('tipo_documento',),
+                                         clear_on_change=('tipo_documento',)
+                                         ),
 
     )
 
+
+class CriarModeloDocumentoForm(forms.Form):
+    # titulo = forms.CharField(max_length=500)
+    tipo_documento = TipoDocumentoTemplateModelChoiceField(
+        label='Tipo de Documento',
+        queryset=TipoDocumento.objects.all(),
+
+    )
+    modelo_documento = ModeloDocumentoTemplateModelChoiceField(
+        label='Modelo de Documento2',
+        queryset=Documento.admin_objects.all(),
+        # widget=autocomplete.ModelSelect2(url='documentos:documentocriar-autocomplete',
+        #                                  forward=('tipo_documento',),
+        #                                  #clear_on_change=('tipo_documento',)
+        #                                  ),
+
+    )
+
+    template_descricao = forms.CharField(
+        label='Descrição do Modelo',
+        widget=forms.Textarea
+    )

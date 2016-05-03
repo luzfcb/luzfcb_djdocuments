@@ -53,7 +53,8 @@ class Documento(models.Model):
     versao_numero = models.IntegerField(default=1, auto_created=True, editable=False)
 
     # tipo_documento = models.CharField(max_length=255, blank=True)
-    tipo_documento = models.ForeignKey(TipoDocumento, null=True, on_delete=models.SET_NULL, verbose_name='Tipo do Documento')
+    tipo_documento = models.ForeignKey(TipoDocumento, null=True, on_delete=models.SET_NULL,
+                                       verbose_name='Tipo do Documento')
     # tipo_documento_descricao = models.TextField(blank=True)
 
     # modelo_documento = models.ForeignKey('self',
@@ -239,3 +240,15 @@ class DocumentoTemplate(Documento):
 
     class Meta:
         proxy = True
+
+
+class Assinante(models.Model):
+    assinatura_hash = models.TextField(blank=True, editable=False, unique=True, null=True)
+    # assinatura_salto = models.TextField(blank=True, editable=False, unique=True, null=True)
+
+    esta_assinado = models.BooleanField(default=False, editable=True)
+    assinado_em = models.DateTimeField(blank=True, null=True, editable=False)
+    assinado_por = models.ForeignKey(to=USER_MODEL,
+                                     related_name="%(app_label)s_%(class)s_assinado_por",
+                                     null=True,
+                                     blank=True, on_delete=models.SET_NULL, editable=False)

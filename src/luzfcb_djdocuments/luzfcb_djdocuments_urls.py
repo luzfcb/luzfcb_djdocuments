@@ -30,6 +30,11 @@ urlpatterns = [
         # documentos_views.criar_documento,
         name='create'
         ),
+    url(r'^d/create-template/$',
+        documentos_views.DocumentoModeloCriar.as_view(),
+        # documentos_views.criar_documento,
+        name='create-template'
+        ),
     url(r'^detail/(?P<pk>\d+)/$',
         documentos_views.DocumentoDetailView.as_view(),
         name='detail'

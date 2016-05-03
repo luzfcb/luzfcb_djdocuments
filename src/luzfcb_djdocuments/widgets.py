@@ -9,6 +9,7 @@ from django import forms
 from django.core.validators import RegexValidator
 from django.forms import widgets
 from django.utils.translation import ugettext
+from dal import autocomplete
 
 from .utils.split_utils import gsplit
 
@@ -221,3 +222,34 @@ class SplitedHashField3(forms.MultiValueField):
 
     def compress(self, data_list):
         return ''.join(data_list)
+
+
+class ForwardExtrasMixin(object):
+    def __init__(self, url=None, forward=None, clear_on_change=None, *args, **kwargs):
+        self.clear_on_change = clear_on_change
+        super(ForwardExtrasMixin, self).__init__(url, forward, *args, **kwargs)
+
+    def build_attrs(self, *args, **kwargs):
+        attrs = super(ForwardExtrasMixin, self).build_attrs(*args, **kwargs)
+
+        if self.clear_on_change is not None and self.forward is not None:
+            values = set(self.clear_on_change).intersection(self.forward)
+            if values:
+                attrs.setdefault('data-autocomplete-light-clear-on-change',
+                                 ','.join(values))
+        return attrs
+
+    class Media:
+        """Automatically include static files for the admin."""
+
+        js = (
+            'autocomplete_light/select2-clear-on-change.js',
+        )
+
+
+class ModelSelect2ForwardExtras(ForwardExtrasMixin, autocomplete.ModelSelect2):
+    pass
+
+
+class ModelSelect2MultipleForwardExtras(ForwardExtrasMixin, autocomplete.ModelSelect2Multiple):
+    pass

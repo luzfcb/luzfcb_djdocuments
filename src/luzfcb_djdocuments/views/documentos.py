@@ -46,7 +46,8 @@ from luzfcb_djdocuments.views.mixins import (
     SingleDocumentObjectMixin)
 from wkhtmltopdf.views import PDFRenderMixin
 
-from ..forms import AssinarDocumento, DocumentoEditarForm, DocumentoRevertForm, DocumetoValidarForm
+from ..forms import AssinarDocumento, DocumentoEditarForm, DocumentoRevertForm, DocumetoValidarForm, \
+    CriarModeloDocumentoForm
 from ..models import Documento
 from ..utils import add_querystrings_to_url, make_absolute_paths
 from ..utils.module_loading import get_real_user_model_class
@@ -461,34 +462,6 @@ class ImprimirView(DocumentoDetailView):
 
         return original_response
 
-    # def render_to_response(self, context, **response_kwargs):
-    #     """
-    #     Returns a response, using the `response_class` for this
-    #     view, with a template rendered with the given context.
-    #
-    #     If any keyword arguments are provided, they will be
-    #     passed to the constructor of the response class.
-    #     """
-    #
-    #     if self.request.GET.get('pdf'):
-    #
-    #         # return render_to_pdf(self.request, 'saida', format='A4', orientation='portrait')
-    #         print('teste')
-    #     else:
-    #         import pdfkit
-    #
-    #         webkit = WKHtmlToPDFGenerator()
-    #
-    #         return convert_html_to_pdf(request=self.request, context=self.get_context_data())
-    #         # response_kwargs.setdefault('content_type', self.content_type)
-    #         # return self.response_class(
-    #         #     request=self.request,
-    #         #     template=self.get_template_names(),
-    #         #     context=context,
-    #         #     using=self.template_engine,
-    #         #     **response_kwargs
-    #         # )
-
     def get_context_data(self, **kwargs):
         context = super(ImprimirView, self).get_context_data(**kwargs)
         context.update({
@@ -588,6 +561,21 @@ class DocumentoCriar(generic.FormView):
         default_document_template = self.get_default_selected_document_template_pk()
         if default_document_template:
             initial.update({'modelo_documento': default_document_template})
+        else:
+            document_pk_modelo = self.request.GET.get(self.document_pk_url_kwarg)
+
+            if document_pk_modelo:
+                try:
+
+                    documento_modelo = Documento.objects.get(pk=document_pk_modelo)
+                except Documento.DoesNotExist:
+                    pass
+                else:
+                    print(documento_modelo)
+                    initial.update({
+                        'tipo_documento': documento_modelo.tipo_documento,
+                        'modelo_documento': documento_modelo.pk
+                    })
         return initial
 
     def get_default_selected_document_template_pk(self):
@@ -609,6 +597,10 @@ class DocumentoCriar(generic.FormView):
             context['vinculate_view_kwarg'] = '{}={}'.format(self.vinculate_view_field, self.vinculate_view_name)
             context['vinculate_value_kwarg'] = '{}={}'.format(self.vinculate_value_field, self.vinculate_value)
         return context
+
+
+class DocumentoModeloCriar(DocumentoCriar):
+    form_class = CriarModeloDocumentoForm
 
 
 class VincularDocumentoBaseView(SingleDocumentObjectMixin, SingleObjectMixin, generic.View):
