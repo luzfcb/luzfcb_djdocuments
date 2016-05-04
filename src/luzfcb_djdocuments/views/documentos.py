@@ -271,7 +271,6 @@ class DocumentoValidacaoView(generic.FormView):
         self.documento_instance = None
 
     @method_decorator(never_cache)
-    @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
         return super(DocumentoValidacaoView, self).dispatch(request, *args, **kwargs)
 
