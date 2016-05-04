@@ -417,7 +417,6 @@ class AssinarDocumentoView(DocumentoAssinadoRedirectMixin, AuditavelViewMixin, g
         initial = super(AssinarDocumentoView, self).get_initial()
         # copia o dicionario, para evitar mudar acidentalmente um dicionario mutavel
         initial = initial.copy()
-        USER_MODEL.objects.get(id=2)
         user = getattr(self.request, 'user', None)
         if user and user.is_authenticated():
             initial.update({
