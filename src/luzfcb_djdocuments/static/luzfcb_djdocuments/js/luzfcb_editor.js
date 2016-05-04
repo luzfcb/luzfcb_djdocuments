@@ -306,9 +306,20 @@
 
 
     init_page_scripts();
-    Pace.on('hide', function () {
-        //inicia os scripts basicos da pagina
-
+    // Pace.on('hide', function () {
+    //     //inicia os scripts basicos da pagina
+    //
+    //     $main_div.fadeIn("fast");
+    //     corrigir_padding_conteudo();
+    //     for (var instance in CKEDITOR.instances) {
+    //         if (CKEDITOR.instances.hasOwnProperty(instance)) {
+    //             //instance.editor.fire( 'click' );
+    //             CKEDITOR.instances[instance].execCommand('autogrow');
+    //         }
+    //
+    //     }
+    // });
+    function startall() {
         $main_div.fadeIn("fast");
         corrigir_padding_conteudo();
         for (var instance in CKEDITOR.instances) {
@@ -318,8 +329,9 @@
             }
 
         }
-    });
+    }
 
+    luzfcb.editor.startall = startall;
 
 })(window, jQuery, Pace, humane, window.luzfcb || (window.luzfcb = {}));
 

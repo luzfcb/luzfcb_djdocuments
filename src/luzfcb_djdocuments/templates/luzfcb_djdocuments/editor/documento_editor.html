@@ -13,7 +13,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/themes/blue/pace-theme-loading-bar.css"
           rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/pace.min.js"
-            data-pace-options='{ "ajax": true , "restartOnRequestAfter": false, "document": true}'></script>
+            data-pace-options='{ "ajax": true , "restartOnRequestAfter": false, "document": true, "startOnPageLoad": false}'></script>
 
 
     <link href="https://cdnjs.cloudflare.com/ajax/libs/humane-js/3.2.2/themes/jackedup.min.css"
@@ -51,6 +51,14 @@
             crossorigin="anonymous"></script>
     <script src="{% static "luzfcb_djdocuments/js/vendor/ckeditor/4.5.7/ckeditor-full-min/ckeditor.js" %}"></script>
     <script src="{% static "luzfcb_dj_simplelock/js/jquery_csrftoken.js" %}"></script>
+    <script>
+        (function () {
+            console.log("iniciando Pace");
+            Pace.start();
+            console.log("talvez tenha iniciado");
+        })();
+
+    </script>
 
 </head>
 
@@ -78,7 +86,8 @@
                                 {% url 'documentos:assinar' object.pk as documento_assinar_url %}
                                 {% spurl base=documento_assinar_url add_query="next={{ documento_list_url }}" as documento_assinar_url_com_parametros %}
                                 <a href="{{ documento_assinar_url_com_parametros }}"
-                                   class="btn btn-default" {% if object.esta_assinado %}disabled="disabled" {% endif %}><em class="glyphicon glyphicon-pencil"></em>Assinar</a>
+                                   class="btn btn-default" {% if object.esta_assinado %}disabled="disabled" {% endif %}><em
+                                        class="glyphicon glyphicon-pencil"></em>Assinar</a>
 
                             {% endif %}
                         </div>
@@ -151,9 +160,13 @@
         {% if debug %}
             window.luzfcb.editor.debug = true;
         {% endif %}
-
     })(window, jQuery);
 
+    Pace.on('hide', function () {
+        //inicia os scripts basicos da pagina
+        window.luzfcb.editor.startall();
+
+    });
 
 </script>
 <script src="{% static "luzfcb_djdocuments/js/luzfcb_editor.js" %}"></script>
