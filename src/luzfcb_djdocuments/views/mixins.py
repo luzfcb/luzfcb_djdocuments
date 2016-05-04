@@ -244,7 +244,7 @@ class DocumentoAssinadoRedirectMixin(object):
         ret = super(DocumentoAssinadoRedirectMixin, self).get(request, *args, **kwargs)
         if self.object and self.object.esta_ativo:
             if self.object.esta_assinado:
-                detail_url = reverse('documentos:detail', kwargs={'pk': self.object.pk})
+                detail_url = reverse('documentos:validar-detail', kwargs={'pk': self.object.pk})
                 messages.add_message(request, messages.INFO,
                                      'Documentos assinados só podem ser visualizados - {}'.format(
                                          self.__class__.__name__))

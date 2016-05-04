@@ -108,7 +108,8 @@
             window.addEventListener('resize.corrigir_padding_conteudo', corrigir_padding_conteudo, false);
             //evento executado ao sair da pagina/fechar a pagina ou janela
             window.addEventListener('beforeunload', antes_de_sair_da_pagina, false);
-        } else {
+        }
+        else {
             window.attachEvent('onbeforeunload', antes_de_sair_da_pagina);
             window.attachEvent('resize.corrigir_padding_conteudo', corrigir_padding_conteudo);
         }
@@ -162,9 +163,16 @@
         toolbar_Basic: [
             {
                 name: 'basicstyles',
-                items: ['Find', 'Replace', '-', 'RemoveFormat', 'Bold', 'Italic', 'Underline', 'Strike', 'Maiuscula', 'Minuscula', 'TextColor', 'BGColor']},
-            {name: 'clipboard', items: ['Cut', 'Copy', 'PasteFromWord', 'PasteText', '-', 'Undo', 'Redo', 'ShowBlocks']},
-            {name: 'paragraph', items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', 'base64image', '-', 'Blockquote']},
+                items: ['Find', 'Replace', '-', 'RemoveFormat', 'Bold', 'Italic', 'Underline', 'Strike', 'Maiuscula', 'Minuscula', 'TextColor', 'BGColor']
+            },
+            {
+                name: 'clipboard',
+                items: ['Cut', 'Copy', 'PasteFromWord', 'PasteText', '-', 'Undo', 'Redo', 'ShowBlocks']
+            },
+            {
+                name: 'paragraph',
+                items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', 'base64image', '-', 'Blockquote']
+            },
             {name: 'insert', items: ['Table', 'SpecialChar', 'HorizontalRule', 'Extenso']},
             {name: 'document', items: ['Source', 'Zoom']},
             {name: 'styles', items: ['Styles']}
@@ -180,7 +188,6 @@
 
 
     };
-
 
 
     function init_page_scripts() {
@@ -297,12 +304,11 @@
 
     });
 
-    //inicia os scripts basicos da pagina
-    init_page_scripts();
 
     //
     Pace.on('hide', function () {
-
+        //inicia os scripts basicos da pagina
+        init_page_scripts();
         $main_div.fadeIn("fast");
         corrigir_padding_conteudo();
         for (var instance in CKEDITOR.instances) {
