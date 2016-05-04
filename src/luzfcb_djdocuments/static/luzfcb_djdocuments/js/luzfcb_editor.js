@@ -305,10 +305,10 @@
     });
 
 
-    //
+    init_page_scripts();
     Pace.on('hide', function () {
         //inicia os scripts basicos da pagina
-        init_page_scripts();
+
         $main_div.fadeIn("fast");
         corrigir_padding_conteudo();
         for (var instance in CKEDITOR.instances) {
