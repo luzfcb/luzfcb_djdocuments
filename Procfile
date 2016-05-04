@@ -1,1 +1,1 @@
-web: python manage.py collectstatic --noinput;  gunicorn --chdir tests test_project.wsgi --log-file -
+web: python manage.py collectstatic -c --noinput;  gunicorn --chdir tests test_project.wsgi --log-file -
