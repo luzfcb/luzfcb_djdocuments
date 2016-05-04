@@ -13,10 +13,14 @@ bleach==1.4.2
 -e git+https://github.com/luzfcb/luzfcb_dj_simplelock.git@master#egg=luzfcb_dj_simplelock
 -e git+https://github.com/maraujop/django-crispy-forms.git@dev#egg=django-crispy-forms
 -e git+https://github.com/luzfcb/django-wkhtmltopdf.git@master#egg=django-wkhtmltopdf
+-e git+https://github.com/luzfcb/pyqrcode.git@base64_png#egg=PyQRCode
 
 # development dependencies
+gunicorn
+dj-database-url
+whitenoise
 django-debug-toolbar==1.4
 splinter==0.7.3
-PyVirtualDisplay==0.1.5
+PyVirtualDisplay==0.2
 # end development dependencies
 

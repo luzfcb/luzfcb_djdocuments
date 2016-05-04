@@ -49,6 +49,7 @@ LUZFCB_DJDOCUMENTS_APPS = [
     'dal',
     'dal_select2',
     'bootstrap_pagination',
+    'wkhtmltopdf',
     # end dependencies
 
     # development dependencies
@@ -147,6 +148,7 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
+STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static_collected')
@@ -157,6 +159,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'users_mediafiles')
 
 FONT_DIR = os.path.join(
     os.path.dirname(BASE_DIR), 'tests', 'test_project', 'contrib', 'fonts')
+
+# WKHTMLTOPDF_CMD = os.path.join(ROOT_PATH, 'binarios_executaveis', 'wkhtmltox', 'bin', 'wkhtmltopdf')
 
 # django-simple-captcha config
 CAPTCHA_FONT_PATH = (
@@ -171,3 +175,8 @@ CAPTCHA_CHALLENGE_FUNCT = 'captcha.helpers.math_challenge'
 # CAPTCHA_CHALLENGE_FUNCT = 'captcha.helpers.word_challenge'
 CAPTCHA_WORDS_DICTIONARY = '/usr/share/dict/brazilian'
 # end django-simple-captcha config
+
+# Update database configuration with $DATABASE_URL.
+import dj_database_url
+db_from_env = dj_database_url.config(conn_max_age=500)
+DATABASES['default'].update(db_from_env)
