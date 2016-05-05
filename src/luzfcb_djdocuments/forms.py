@@ -27,6 +27,23 @@ class ProdutoForm(forms.ModelForm):
                                     widget=forms.TextInput(attrs={'class': 'form-control'}))
 
 
+class BootstrapFormInputMixin(object):
+    def __init__(self, *args, **kwargs):
+        super(BootstrapFormInputMixin, self).__init__(*args, **kwargs)
+        for field_name in self.fields:
+            field = self.fields.get(field_name)
+            current_class_attr = field.widget.attrs.get('class', None)
+            new_class_to_append = 'form-control'
+            if current_class_attr:
+                field.widget.attrs.update({
+                    'class': '{} {}'.format(current_class_attr, new_class_to_append)
+                })
+            else:
+                field.widget.attrs.update({
+                    'class': '{}'.format(new_class_to_append)
+                })
+
+
 class SaveHelper(FormHelper):
     def __init__(self, form=None):
         super(SaveHelper, self).__init__(form)
@@ -335,8 +352,9 @@ class ModeloDocumentoTemplateModelChoiceField(forms.ModelChoiceField):
 from .models import TipoDocumento
 
 
-class CriarDocumentoForm(forms.Form):
-    # titulo = forms.CharField(max_length=500)
+class CriarDocumentoForm(BootstrapFormInputMixin, forms.Form):
+    # titulo = forms.CharField(max_length=500)]
+
     tipo_documento = TipoDocumentoTemplateModelChoiceField(
         label='Tipo de Documento',
         queryset=TipoDocumento.objects.all(),
@@ -349,6 +367,12 @@ class CriarDocumentoForm(forms.Form):
                                          forward=('tipo_documento',),
                                          clear_on_change=('tipo_documento',)
                                          ),
+
+    )
+
+    assunto = forms.CharField(
+        label='Assunto do Documento',
+        max_length=70,
 
     )
 
