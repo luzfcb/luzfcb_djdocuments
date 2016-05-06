@@ -40,9 +40,39 @@ class TipoDocumento(models.Model):
         return '{}'.format(self.descricao)
 
 
+class Assinatura(models.Model):
+    documento = models.ForeignKey(to='Documento',
+                                  related_name="%(app_label)s_%(class)s_documento",
+                                  null=True,
+                                  blank=True,
+                                  on_delete=models.SET_NULL,
+                                  editable=False
+                                  )
+
+    assinado_por = models.ForeignKey(to=USER_MODEL,
+                                     related_name="%(app_label)s_%(class)s_assinado_por",
+                                     null=True,
+                                     blank=True,
+                                     on_delete=models.SET_NULL,
+                                     editable=False
+                                     )
+
+    assinatura_hash = models.TextField(blank=True, editable=False, unique=True, null=True)
+    # assinatura_salto = models.TextField(blank=True, editable=False, unique=True, null=True)
+
+    esta_assinado = models.BooleanField(default=False, editable=True)
+    assinado_em = models.DateTimeField(blank=True, null=True, editable=False)
+
+
 @python_2_unicode_compatible
 class Documento(models.Model):
     assunto = models.CharField(max_length=255, blank=True)
+    assinantes = models.ManyToManyField(to=USER_MODEL,
+                                        related_name="%(app_label)s_%(class)s_assinantes",
+                                        blank=True,
+                                        editable=False,
+                                        through='Assinatura'
+                                        )
 
     cabecalho = models.TextField(blank=True)
     titulo = models.TextField(blank=True)
@@ -242,15 +272,3 @@ class DocumentoTemplate(Documento):
 
     class Meta:
         proxy = True
-
-
-# class Assinante(models.Model):
-#     assinatura_hash = models.TextField(blank=True, editable=False, unique=True, null=True)
-#     # assinatura_salto = models.TextField(blank=True, editable=False, unique=True, null=True)
-#
-#     esta_assinado = models.BooleanField(default=False, editable=True)
-#     assinado_em = models.DateTimeField(blank=True, null=True, editable=False)
-#     assinado_por = models.ForeignKey(to=USER_MODEL,
-#                                      related_name="%(app_label)s_%(class)s_assinado_por",
-#                                      null=True,
-#                                      blank=True, on_delete=models.SET_NULL, editable=False)

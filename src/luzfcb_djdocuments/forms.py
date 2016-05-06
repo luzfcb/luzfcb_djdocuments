@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, print_function, unicode_literals
+from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
 
 # import autocomplete_light
 from captcha.fields import CaptchaField
@@ -246,19 +246,38 @@ class AssinarDocumentoHelperFormMixin(object):
 
 class UserModelChoiceField(forms.ModelChoiceField):
     def label_from_instance(self, obj):
-        return obj.get_full_name().title()
+        return '{} ({})'.format(obj.get_full_name().title(), getattr(obj, obj.USERNAME_FIELD))
+
+
+class UserModelMultipleChoiceField(forms.ModelMultipleChoiceField):
+    def label_from_instance(self, obj):
+        return '{} ({})'.format(obj.get_full_name().title(), getattr(obj, obj.USERNAME_FIELD))
 
 
 class AssinarDocumento(AssinarDocumentoHelperFormMixin, forms.ModelForm):
     assinado_por = UserModelChoiceField(
         label="Assinante",
+        help_text="Selecione o usuário que irá assinar o documento",
         queryset=get_real_user_model_class().objects.all().order_by('username'),
         widget=autocomplete.ModelSelect2(url='documentos:user-autocomplete', attrs={'class': 'form-control'}),
 
     )
 
     password = forms.CharField(label="Senha",
+                               help_text="Digite a senha do usuário selecionado",
                                widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+
+    incluir_assinantes = UserModelMultipleChoiceField(
+        required=False,
+        label="Incluir assinantes e notificar",
+        help_text="Incluir assinantes e notificar",
+        queryset=get_real_user_model_class().objects.all().order_by('username'),
+        widget=autocomplete.ModelSelect2Multiple(url='documentos:user-autocomplete',
+                                                 attrs={'class': 'form-control'},
+                                                 forward=('assinado_por',),
+                                                 ),
+
+    )
 
     error_messages = {
         'invalid_login': _("Please enter a correct %(username)s and password. "
@@ -295,6 +314,7 @@ class AssinarDocumento(AssinarDocumentoHelperFormMixin, forms.ModelForm):
             assinado_por=self.cleaned_data.get('assinado_por'),
             current_logged_user=self.current_logged_user
         )
+        print(self.cleaned_data.get('incluir_assinantes'))
         return documento
 
 
@@ -377,7 +397,7 @@ class CriarDocumentoForm(BootstrapFormInputMixin, forms.Form):
     )
 
 
-class CriarModeloDocumentoForm(forms.Form):
+class CriarModeloDocumentoForm(BootstrapFormInputMixin, forms.Form):
     # titulo = forms.CharField(max_length=500)
     tipo_documento = TipoDocumentoTemplateModelChoiceField(
         label='Tipo de Documento',

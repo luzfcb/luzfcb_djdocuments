@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
+
 from dal import autocomplete
 from django.db.models.query_utils import Q
 from django.utils.decorators import method_decorator
@@ -15,20 +18,25 @@ class UserAutocomplete(autocomplete.Select2QuerySetView):
 
     def get_queryset(self):
         # Don't forget to filter out results depending on the visitor !
-        if not self.request.user.is_authenticated():
-            return USER_MODEL.objects.none()
+        # if not self.request.user.is_authenticated():
+        #     return USER_MODEL.objects.none()
+
+        assinado_por = self.forwarded.get('assinado_por', None)
 
         qs = USER_MODEL.objects.all().order_by('first_name', 'last_name')
 
         if self.q:
             qs = qs.filter(Q(first_name__icontains=self.q) | Q(last_name__icontains=self.q))
 
+        if assinado_por:
+            qs = qs.exclude(id=assinado_por)
             # qs = qs.annotate(full_name=Concat('first_name', Value(' '), 'last_name', output_field=CharField()))
             # qs = qs.filter(full_name__icontains=self.q)
         return qs
 
     def get_result_label(self, result):
-        return result.get_full_name().title()
+        name, user_name = result.get_full_name().title(), getattr(result, result.USERNAME_FIELD)
+        return '{} ({})'.format(name, user_name)
 
 
 class DocumentoTemplateAutocomplete(autocomplete.Select2QuerySetView):
@@ -64,7 +72,6 @@ class DocumentoCriarAutocomplete(autocomplete.Select2QuerySetView):
         if not self.request.user.is_authenticated():
             return Documento.admin_objects.none()
 
-        print('forwarded: ', self.forwarded)
         tipo_documento = self.forwarded.get('tipo_documento', None)
 
         qs = Documento.admin_objects.filter(eh_template=True)
