@@ -1,10 +1,17 @@
 language: python
 python: '3.5'
 sudo: false
+services:
+  - postgresql
+
+addons:
+  postgresql: "9.4"
+
 env:
   global:
     - LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
     - SEGFAULT_SIGNALS=all
+    - DATABASE_URL="postgres://localhost/bancoteste"
   matrix:
 #    - TOXENV=check
 #    - TOXENV=docs
@@ -38,12 +45,17 @@ before_install:
   - python --version
   - uname -a
   - lsb_release -a
+
 install:
   - pip install tox
   - virtualenv --version
   - easy_install --version
   - pip --version
   - tox --version
+
+before_script:
+  - psql -c 'create database bancoteste;' -U postgres
+
 script:
   - tox -v
 after_failure:

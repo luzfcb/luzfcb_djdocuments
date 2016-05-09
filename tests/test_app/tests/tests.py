@@ -28,7 +28,7 @@ class TestViewEditarDocumento(SplinterStaticLiveServerTestCase):
             'criado_por': self.user1,
             'modificado_por': self.user1
         }
-        self.editar_documento_view_name = 'documentos:update2'
+        self.editar_documento_view_name = 'documentos:editar'
 
         self.documento1 = Documento.objects.create(**self.document1_data)
         self.login_as(username=self.user1_data['username'], password=self.user1_data['password'])
