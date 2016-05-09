@@ -15,23 +15,20 @@ from django.contrib.auth.models import AnonymousUser
 from django.core import signing
 from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse, reverse_lazy
-from django.db import models, transaction
+from django.db import transaction
 from django.db.utils import IntegrityError
 from django.http import HttpResponse
-from django.http.response import Http404, HttpResponseRedirect
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect
 from django.template.defaultfilters import urlize
 from django.utils import six
 from django.utils.decorators import method_decorator
 from django.views import generic
 from django.views.decorators.cache import never_cache
-from django.views.generic.base import ContextMixin
 from django.views.generic.detail import SingleObjectMixin
 from luzfcb_dj_simplelock.views import LuzfcbLockMixin
 from urlobject import URLObject
 from wkhtmltopdf.views import PDFRenderMixin
 
-from luzfcb_djdocuments.templatetags.luzfcb_djdocuments_tags import absolute_uri
 from luzfcb_djdocuments.views.mixins import (
     AjaxFormPostMixin,
     AuditavelViewMixin,
@@ -52,7 +49,7 @@ from ..forms import (
 )
 from ..models import Documento
 from ..templatetags.luzfcb_djdocuments_tags import absolute_uri
-from ..utils import add_querystrings_to_url, make_absolute_paths
+from ..utils import add_querystrings_to_url
 from ..utils.module_loading import get_real_user_model_class
 
 # from phantom_pdf import render_to_pdf
@@ -461,7 +458,6 @@ class ImprimirView(DocumentoDetailView):
             import pdfkit
 
             url = urlize(absolute_uri(self.request.resolver_match.url_name, request=self.request))
-            a = url
             return pdfkit.from_url(url, 'novo_arquivo.pdf')
 
         return original_response
