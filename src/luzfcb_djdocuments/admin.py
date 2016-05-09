@@ -13,7 +13,6 @@ from .templatetags.luzfcb_djdocuments_tags import remover_tags_html
 
 @admin.register(models.Documento)
 class DocumentoAdmin(SimpleHistoryAdmin):
-
     def get_queryset(self, request):
         qs = self.model.admin_objects.get_queryset()
         ordering = self.ordering or ()
@@ -98,3 +97,26 @@ class DocumentoTemplateAdmin(DocumentoAdmin):
 @admin.register(models.TipoDocumento)
 class TipoDocumentoAdmin(admin.ModelAdmin):
     pass
+
+
+@admin.register(models.Assinatura)
+class AssinaturaDocumentoAdmin(admin.ModelAdmin):
+    list_display = (
+        'documento',
+        'assinado_por',
+        'versao_numero',
+        'assinatura_hash',
+        'assinado_em',
+        'esta_assinado'
+
+    )
+
+    readonly_fields = (
+        'documento',
+        'assinado_por',
+        'versao_numero',
+        'assinatura_hash',
+        'assinado_em',
+        'esta_assinado'
+
+    )

@@ -15,11 +15,23 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
+            name='Assinatura',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('versao_numero', models.IntegerField(null=True, editable=False)),
+                ('assinatura_hash', models.TextField(unique=True, null=True, editable=False, blank=True)),
+                ('esta_assinado', models.BooleanField(default=False)),
+                ('assinado_em', models.DateTimeField(null=True, editable=False, blank=True)),
+                ('assinado_por', models.ForeignKey(related_name='luzfcb_djdocuments_assinatura_assinado_por', on_delete=django.db.models.deletion.SET_NULL, blank=True, editable=False, to=settings.AUTH_USER_MODEL, null=True)),
+            ],
+        ),
+        migrations.CreateModel(
             name='Documento',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('revertido_da_versao', models.IntegerField(default=None, editable=False, null=True, auto_created=True, blank=True)),
                 ('versao_numero', models.IntegerField(default=1, editable=False, auto_created=True)),
+                ('assunto', models.CharField(max_length=255, blank=True)),
                 ('cabecalho', models.TextField(blank=True)),
                 ('titulo', models.TextField(blank=True)),
                 ('conteudo', models.TextField(blank=True)),
@@ -37,6 +49,7 @@ class Migration(migrations.Migration):
                 ('assinado_em', models.DateTimeField(null=True, editable=False, blank=True)),
                 ('assinatura_removida_em', models.DateTimeField(null=True, editable=False, blank=True)),
                 ('assinado_por', models.ForeignKey(related_name='luzfcb_djdocuments_documento_assinado_por', on_delete=django.db.models.deletion.SET_NULL, blank=True, editable=False, to=settings.AUTH_USER_MODEL, null=True)),
+                ('assinantes', models.ManyToManyField(related_name='luzfcb_djdocuments_documento_assinantes', editable=False, to=settings.AUTH_USER_MODEL, through='luzfcb_djdocuments.Assinatura', blank=True)),
                 ('assinatura_removida_por', models.ForeignKey(related_name='luzfcb_djdocuments_documento_assinatura_removida_por', on_delete=django.db.models.deletion.SET_NULL, blank=True, editable=False, to=settings.AUTH_USER_MODEL, null=True)),
                 ('bloqueado_por', models.ForeignKey(related_name='luzfcb_djdocuments_documento_bloqueado_por', on_delete=django.db.models.deletion.SET_NULL, blank=True, editable=False, to=settings.AUTH_USER_MODEL, null=True)),
                 ('criado_por', models.ForeignKey(related_name='luzfcb_djdocuments_documento_criado_por', on_delete=django.db.models.deletion.SET_NULL, blank=True, editable=False, to=settings.AUTH_USER_MODEL, null=True)),
@@ -56,6 +69,7 @@ class Migration(migrations.Migration):
                 ('id', models.IntegerField(verbose_name='ID', db_index=True, auto_created=True, blank=True)),
                 ('revertido_da_versao', models.IntegerField(default=None, editable=False, null=True, auto_created=True, blank=True)),
                 ('versao_numero', models.IntegerField(default=1, editable=False, auto_created=True)),
+                ('assunto', models.CharField(max_length=255, blank=True)),
                 ('cabecalho', models.TextField(blank=True)),
                 ('titulo', models.TextField(blank=True)),
                 ('conteudo', models.TextField(blank=True)),
@@ -107,6 +121,11 @@ class Migration(migrations.Migration):
             name='tipo_documento',
             field=models.ForeignKey(on_delete=django.db.models.deletion.SET_NULL, verbose_name='Tipo do Documento', to='luzfcb_djdocuments.TipoDocumento', null=True),
         ),
+        migrations.AddField(
+            model_name='assinatura',
+            name='documento',
+            field=models.ForeignKey(related_name='luzfcb_djdocuments_assinatura_documento', on_delete=django.db.models.deletion.SET_NULL, blank=True, editable=False, to='luzfcb_djdocuments.Documento', null=True),
+        ),
         migrations.CreateModel(
             name='DocumentoTemplate',
             fields=[
@@ -115,5 +134,9 @@ class Migration(migrations.Migration):
                 'proxy': True,
             },
             bases=('luzfcb_djdocuments.documento',),
+        ),
+        migrations.AlterUniqueTogether(
+            name='assinatura',
+            unique_together=set([('documento', 'assinado_por', 'versao_numero')]),
         ),
     ]

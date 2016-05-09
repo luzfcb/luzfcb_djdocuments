@@ -11,7 +11,7 @@ from django import forms
 from django.contrib.auth.hashers import check_password
 from django.utils.translation import ugettext_lazy as _
 
-from .models import Documento, TipoDocumento
+from .models import Documento, TipoDocumento, Assinatura
 from .templatetags.luzfcb_djdocuments_tags import remover_tags_html
 from .utils.module_loading import get_real_user_model_class
 from .widgets import ModelSelect2ForwardExtras, SplitedHashField3
@@ -29,7 +29,6 @@ class ProdutoForm(forms.ModelForm):
 
 
 class BootstrapFormInputMixin(object):
-
     def __init__(self, *args, **kwargs):
         super(BootstrapFormInputMixin, self).__init__(*args, **kwargs)
         for field_name in self.fields:
@@ -47,7 +46,6 @@ class BootstrapFormInputMixin(object):
 
 
 class SaveHelper(FormHelper):
-
     def __init__(self, form=None):
         super(SaveHelper, self).__init__(form)
         self.layout.append(Submit(name='save', value='Salvar'))
@@ -58,14 +56,12 @@ class SaveHelper(FormHelper):
 
 
 class SaveHelperFormMixin(object):
-
     def __init__(self, *args, **kwargs):
         super(SaveHelperFormMixin, self).__init__(*args, **kwargs)
         self.helper = SaveHelper(self)
 
 
 class RevertHelper(FormHelper):
-
     def __init__(self, form=None):
         super(RevertHelper, self).__init__(form)
         self.layout.append(Submit(name='revert', value='Reverter'))
@@ -74,7 +70,6 @@ class RevertHelper(FormHelper):
 
 
 class RevertHelperFormMixin(object):
-
     def __init__(self, *args, **kwargs):
         super(RevertHelperFormMixin, self).__init__(*args, **kwargs)
         self.helper = RevertHelper(self)
@@ -121,7 +116,6 @@ class DocumentoFormUpdate(SaveHelperFormMixin, forms.ModelForm):
 
 
 class CkeditorWidgetNew(forms.Textarea):
-
     def __init__(self, attrs=None):
         # Use slightly better defaults than HTML's 20x2 box
         default_attrs = {'data-djckeditor': 'true'}
@@ -163,14 +157,12 @@ class DocumentoEditarForm(SaveHelperFormMixin, forms.ModelForm):
 
 
 class DocumentoRevertForm(RevertHelperFormMixin, forms.ModelForm):
-
     class Meta:
         model = Documento
         fields = '__all__'
 
 
 class ValidarHelper(FormHelper):
-
     def __init__(self, form=None):
         super(ValidarHelper, self).__init__(form)
         self.layout.append(
@@ -187,7 +179,6 @@ class ValidarHelper(FormHelper):
 
 
 class ValidarHelperFormMixin(object):
-
     def __init__(self, *args, **kwargs):
         super(ValidarHelperFormMixin, self).__init__(*args, **kwargs)
         self.helper = ValidarHelper(self)
@@ -233,7 +224,6 @@ class DocumetoValidarForm(ValidarHelperFormMixin, forms.Form):
 # DocumetoValidarForm = parsleyfy(DocumetoValidarForm22)
 
 class AssinarDocumentoHelper(FormHelper):
-
     def __init__(self, form=None):
         super(AssinarDocumentoHelper, self).__init__(form)
         # self.layout.append(
@@ -250,20 +240,17 @@ class AssinarDocumentoHelper(FormHelper):
 
 
 class AssinarDocumentoHelperFormMixin(object):
-
     def __init__(self, *args, **kwargs):
         super(AssinarDocumentoHelperFormMixin, self).__init__(*args, **kwargs)
         self.helper = AssinarDocumentoHelper(self)
 
 
 class UserModelChoiceField(forms.ModelChoiceField):
-
     def label_from_instance(self, obj):
         return '{} ({})'.format(obj.get_full_name().title(), getattr(obj, obj.USERNAME_FIELD))
 
 
 class UserModelMultipleChoiceField(forms.ModelMultipleChoiceField):
-
     def label_from_instance(self, obj):
         return '{} ({})'.format(obj.get_full_name().title(), getattr(obj, obj.USERNAME_FIELD))
 
@@ -324,6 +311,46 @@ class AssinarDocumento(AssinarDocumentoHelperFormMixin, forms.ModelForm):
 
     def save(self, commit=True):
         documento = super(AssinarDocumento, self).save(False)
+        assinado_por = self.cleaned_data.get('assinado_por')
+        usuarios_assinantes = self.cleaned_data.get('incluir_assinantes')
+
+        # cria ou obten instancia de Assinatura para o usuario selecionado em  assinado_por
+        obj, created = Assinatura.objects.get_or_create(documento=documento,
+                                                        assinado_por=assinado_por,
+                                                        versao_numero=documento.versao_numero,
+                                                        defaults={
+                                                            'documento': documento,
+                                                            'assinado_por': assinado_por,
+                                                            'versao_numero': documento.versao_numero
+                                                        }
+                                                        )
+        if created:
+            print("criado : {}".format(obj.assinado_por.username))
+        else:
+            print("obtido")
+
+        if not obj.esta_assinado:
+            obj.assinar_documento()
+
+        # cria assinatura
+        for usuario_assinante in usuarios_assinantes:
+            # Assinatura.objects.get
+            obj, created = Assinatura.objects.get_or_create(documento=documento,
+                                                            assinado_por=usuario_assinante,
+                                                            versao_numero=documento.versao_numero,
+                                                            defaults={
+                                                                'documento': documento,
+                                                                'assinado_por': usuario_assinante,
+                                                                'versao_numero': documento.versao_numero,
+                                                                'esta_assinado': False
+                                                            }
+                                                            )
+            if created:
+                print("criado : {}".format(obj.assinado_por.username))
+                # notificar usuario
+            else:
+                print("obtido")
+
         documento.assinar_documento(
             assinado_por=self.cleaned_data.get('assinado_por'),
             current_logged_user=self.current_logged_user
@@ -369,13 +396,11 @@ class RemoverAssinaturaDocumento(AssinarDocumentoHelperFormMixin, forms.ModelFor
 
 
 class TipoDocumentoTemplateModelChoiceField(forms.ModelChoiceField):
-
     def label_from_instance(self, obj):
         return obj.titulo
 
 
 class ModeloDocumentoTemplateModelChoiceField(forms.ModelChoiceField):
-
     def label_from_instance(self, obj):
         a = remover_tags_html(obj.titulo or 'Descricao modelo: {}'.format(obj.pk))
         print('ModeloDocumentoTemplateModelChoiceField:', a)

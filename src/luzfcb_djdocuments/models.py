@@ -14,7 +14,6 @@ from .utils import identificador
 
 
 class DocumentoQuerySet(models.QuerySet):
-
     def inativos(self):
         return self.filter(esta_ativo=False)
 
@@ -23,13 +22,11 @@ class DocumentoQuerySet(models.QuerySet):
 
 
 class DocumentoManager(models.Manager):
-
     def get_queryset(self):
         return DocumentoQuerySet(model=self.model, using=self._db).filter(esta_ativo=True, eh_template=False)
 
 
 class DocumentoAdminManager(models.Manager):
-
     def get_queryset(self):
         return DocumentoQuerySet(model=self.model, using=self._db)
 
@@ -59,12 +56,45 @@ class Assinatura(models.Model):
                                      on_delete=models.SET_NULL,
                                      editable=False
                                      )
-
+    # criado_em = models.DateTimeField(default=timezone.now, blank=True, editable=False)
+    versao_numero = models.IntegerField(editable=False, null=True)
     assinatura_hash = models.TextField(blank=True, editable=False, unique=True, null=True)
     # assinatura_salto = models.TextField(blank=True, editable=False, unique=True, null=True)
 
     esta_assinado = models.BooleanField(default=False, editable=True)
+
     assinado_em = models.DateTimeField(blank=True, null=True, editable=False)
+
+    class Meta:
+        unique_together = ('documento', 'assinado_por', 'versao_numero')
+
+    def save(self, *args, **kwargs):
+        if self.documento and not self.versao_numero:
+            self.versao_numero = self.documento.versao_numero
+
+        super(Assinatura, self).save(*args, **kwargs)
+
+    def assinar_documento(self, password=None):
+        # if current_logged_user:
+        #     self.assinado_por = current_logged_user
+        try:
+            self.assinado_em = timezone.now()
+            self.esta_assinado = True
+            # self.assinatura_salto = get_random_string(length=8, allowed_chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
+
+            para_hash = '{username}-{conteudo}-{versao}-{assinado_em}'.format(  # username=self.assinado_por.username,
+                username=self.assinado_por.username,
+                conteudo=self.documento.conteudo,
+                versao=self.versao_numero,
+                assinado_em=self.assinado_em.strftime("%Y-%m-%d %H:%M:%S.%f")
+            )
+            password_hasher = SHA1PasswordHasher()
+            self.assinatura_hash = password_hasher.encode(para_hash, 'djdocumentos')
+            # self.assinatura_hash = password_hasher.encode(para_hash, self.assinatura_salto)
+        except Exception as e:
+
+            print('deu pau aqui: ', e)
+        self.save()
 
 
 @python_2_unicode_compatible
@@ -128,6 +158,8 @@ class Documento(models.Model):
     # assinatura_salto = models.TextField(blank=True, editable=False, unique=True, null=True)
 
     esta_assinado = models.BooleanField(default=False, editable=True)
+    # esta_assinatura_pendente = models.NullBooleanField(default=None, editable=True)
+
     assinado_em = models.DateTimeField(blank=True, null=True, editable=False)
     assinado_por = models.ForeignKey(to=USER_MODEL,
                                      related_name="%(app_label)s_%(class)s_assinado_por",
@@ -266,7 +298,6 @@ class Documento(models.Model):
 
 
 class DocumentoTemplateManager(models.Manager):
-
     def get_queryset(self):
         return super(DocumentoTemplateManager, self).get_queryset().filter(esta_ativo=True, eh_template=True)
 
