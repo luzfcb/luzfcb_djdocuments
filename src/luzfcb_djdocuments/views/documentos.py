@@ -5,10 +5,7 @@ import json
 # import the logging library
 import logging
 
-from django.views.generic.base import ContextMixin
-
 import pyqrcode
-from urlobject import URLObject
 from braces.views import LoginRequiredMixin
 from captcha.helpers import captcha_image_url
 from captcha.models import CaptchaStore
@@ -18,22 +15,21 @@ from django.contrib.auth.models import AnonymousUser
 from django.core import signing
 from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse, reverse_lazy
-from django.db import models
+from django.db import models, transaction
 from django.db.utils import IntegrityError
-from django.db import transaction
-from django.http.response import HttpResponseRedirect, Http404
-from django.shortcuts import redirect, render
 from django.http import HttpResponse
+from django.http.response import Http404, HttpResponseRedirect
+from django.shortcuts import redirect, render
 from django.template.defaultfilters import urlize
 from django.utils import six
 from django.utils.decorators import method_decorator
-
 from django.views import generic
 from django.views.decorators.cache import never_cache
+from django.views.generic.base import ContextMixin
 from django.views.generic.detail import SingleObjectMixin
 from luzfcb_dj_simplelock.views import LuzfcbLockMixin
-# from phantom_pdf import render_to_pdf
-# from simple_history.views import HistoryRecordListViewMixin, RevertFromHistoryRecordViewMixin
+from urlobject import URLObject
+from wkhtmltopdf.views import PDFRenderMixin
 
 from luzfcb_djdocuments.templatetags.luzfcb_djdocuments_tags import absolute_uri
 from luzfcb_djdocuments.views.mixins import (
@@ -43,15 +39,26 @@ from luzfcb_djdocuments.views.mixins import (
     DocumentoAssinadoRedirectMixin,
     NextURLMixin,
     PopupMixin,
-    SingleDocumentObjectMixin)
-from wkhtmltopdf.views import PDFRenderMixin
+    SingleDocumentObjectMixin
+)
 
-from ..forms import AssinarDocumento, DocumentoEditarForm, DocumentoRevertForm, DocumetoValidarForm, \
-    CriarModeloDocumentoForm
+from ..forms import (
+    AssinarDocumento,
+    CriarDocumentoForm,
+    CriarModeloDocumentoForm,
+    DocumentoEditarForm,
+    DocumentoRevertForm,
+    DocumetoValidarForm
+)
 from ..models import Documento
+from ..templatetags.luzfcb_djdocuments_tags import absolute_uri
 from ..utils import add_querystrings_to_url, make_absolute_paths
 from ..utils.module_loading import get_real_user_model_class
-from ..templatetags.luzfcb_djdocuments_tags import absolute_uri
+
+# from phantom_pdf import render_to_pdf
+# from simple_history.views import HistoryRecordListViewMixin, RevertFromHistoryRecordViewMixin
+
+
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -507,7 +514,6 @@ class DocumentoEditor(LoginRequiredMixin,
         return super(DocumentoEditor, self).post(request, *args, **kwargs)
 
 
-from ..forms import CriarDocumentoForm
 
 
 def create_from_template(current_user, documento_template):

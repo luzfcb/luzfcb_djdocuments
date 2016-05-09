@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function, unicode_literals
 
+import re
+
+from django.conf import settings
 from django.utils import six
 from django.utils.http import urlencode, urlunquote
 from django.utils.six.moves.urllib.parse import parse_qsl, urlparse, urlunsplit
@@ -57,8 +60,6 @@ except ImportError:  # Python2
     from urllib import pathname2url
     from urlparse import urljoin
 
-from django.conf import settings
-import re
 
 
 def pathname2fileurl(pathname):

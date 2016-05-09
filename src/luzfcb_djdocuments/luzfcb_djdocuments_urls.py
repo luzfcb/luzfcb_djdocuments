@@ -4,6 +4,7 @@ from __future__ import absolute_import, print_function, unicode_literals
 from django.conf.urls import url
 
 import luzfcb_djdocuments.views.autocompletes
+
 from .settings import DJANGO_DOCUMENTOS_ENABLE_GENERAL_DASHBOARD
 from .views import documentos as documentos_views
 from .views import documento_template

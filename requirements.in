@@ -1,5 +1,0 @@
-django
-django-spurl
-django-simple-captcha
--e git+https://github.com/luzfcb/django-simple-history.git@wip-generic-views#egg=django-simple-history
--e git+https://github.com/luzfcb/luzfcb_dj_simplelock.git@master#egg=luzfcb_dj_simplelock

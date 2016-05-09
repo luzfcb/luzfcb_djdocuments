@@ -6,9 +6,9 @@ from django.db.models.query_utils import Q
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
 
-from luzfcb_djdocuments.templatetags.luzfcb_djdocuments_tags import remover_tags_html
-from luzfcb_djdocuments.views.documentos import USER_MODEL
-from luzfcb_djdocuments.models import DocumentoTemplate, Documento
+from ..models import Documento, DocumentoTemplate
+from ..templatetags.luzfcb_djdocuments_tags import remover_tags_html
+from ..views.documentos import USER_MODEL
 
 
 class UserAutocomplete(autocomplete.Select2QuerySetView):

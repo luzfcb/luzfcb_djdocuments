@@ -5,11 +5,11 @@ import collections
 import re
 from pprint import pprint
 
+from dal import autocomplete
 from django import forms
 from django.core.validators import RegexValidator
 from django.forms import widgets
 from django.utils.translation import ugettext
-from dal import autocomplete
 
 from .utils.split_utils import gsplit
 

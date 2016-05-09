@@ -15,6 +15,7 @@ from django.utils.translation import ugettext as _
 
 from ..models import Documento
 
+
 class NextURLMixin(object):
     next_kwarg_name = 'next'
     next_page_url = None

@@ -4,9 +4,8 @@ from __future__ import absolute_import, print_function, unicode_literals
 import bleach
 from django import template
 from django.forms.models import modelform_factory
-from django.utils.safestring import mark_safe
 from django.template.defaultfilters import striptags
-
+from django.utils.safestring import mark_safe
 from simple_history.forms import new_readonly_form_class
 
 from ..utils import identificador, split_utils

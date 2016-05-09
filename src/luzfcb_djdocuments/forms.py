@@ -11,15 +11,17 @@ from django import forms
 from django.contrib.auth.hashers import check_password
 from django.utils.translation import ugettext_lazy as _
 
+from .models import Documento, TipoDocumento
+from .templatetags.luzfcb_djdocuments_tags import remover_tags_html
+from .utils.module_loading import get_real_user_model_class
+from .widgets import ModelSelect2ForwardExtras, SplitedHashField3
+
 # TODO: remove this ugly hack
 try:
     from test_app.tests.samples_html import BIG_SAMPLE_HTML, CABECALHO, RODAPE, TITULO
 except ImportError:
     BIG_SAMPLE_HTML = CABECALHO = RODAPE = TITULO = ' '
 
-from .models import Documento
-from .utils.module_loading import get_real_user_model_class
-from .widgets import SplitedHashField3, ModelSelect2ForwardExtras
 
 
 class ProdutoForm(forms.ModelForm):
@@ -354,7 +356,6 @@ class RemoverAssinaturaDocumento(AssinarDocumentoHelperFormMixin, forms.ModelFor
         return documento
 
 
-from .templatetags.luzfcb_djdocuments_tags import remover_tags_html
 
 
 class TipoDocumentoTemplateModelChoiceField(forms.ModelChoiceField):
@@ -369,7 +370,6 @@ class ModeloDocumentoTemplateModelChoiceField(forms.ModelChoiceField):
         return a
 
 
-from .models import TipoDocumento
 
 
 class CriarDocumentoForm(BootstrapFormInputMixin, forms.Form):
