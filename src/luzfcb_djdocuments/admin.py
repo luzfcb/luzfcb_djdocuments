@@ -14,6 +14,7 @@ from .templatetags.luzfcb_djdocuments_tags import remover_tags_html
 
 @admin.register(models.Documento)
 class DocumentoAdmin(SimpleHistoryAdmin):
+
     def get_queryset(self, request):
         qs = self.model.admin_objects.get_queryset()
         ordering = self.ordering or ()

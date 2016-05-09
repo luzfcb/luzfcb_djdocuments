@@ -5,6 +5,7 @@ from django.utils.safestring import mark_safe
 
 
 class RemoveHTMLTextField(models.TextField):
+
     def from_db_value(self, value, expression, connection, context):
         if value is None:
             return value

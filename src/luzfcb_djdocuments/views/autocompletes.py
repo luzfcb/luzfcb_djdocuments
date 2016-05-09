@@ -63,6 +63,7 @@ class DocumentoTemplateAutocomplete(autocomplete.Select2QuerySetView):
 
 
 class DocumentoCriarAutocomplete(autocomplete.Select2QuerySetView):
+
     @method_decorator(never_cache)
     def dispatch(self, request, *args, **kwargs):
         return super(DocumentoCriarAutocomplete, self).dispatch(request, *args, **kwargs)

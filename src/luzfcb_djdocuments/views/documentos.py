@@ -59,7 +59,6 @@ from ..utils.module_loading import get_real_user_model_class
 # from simple_history.views import HistoryRecordListViewMixin, RevertFromHistoryRecordViewMixin
 
 
-
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
@@ -514,8 +513,6 @@ class DocumentoEditor(LoginRequiredMixin,
         return super(DocumentoEditor, self).post(request, *args, **kwargs)
 
 
-
-
 def create_from_template(current_user, documento_template):
     # template_documento = Documento.objects.get(pk=documento_template.pk)
 
@@ -652,7 +649,6 @@ class VincularDocumentoBaseView(SingleDocumentObjectMixin, SingleObjectMixin, ge
                     self.object.save()
                     return True
         return False
-
 
         # kwargs_names = ['atendimento_numero', ]
         # kwargs_have_name = False

@@ -9,7 +9,6 @@ from ..models import DocumentoTemplate
 class DocumentoTemplateDashboard(generic.TemplateView):
     template_name = 'luzfcb_djdocuments/documento_template_dashboard.html'
 
-
     def get_context_data(self, **kwargs):
         context = super(DocumentoTemplateDashboard, self).get_context_data(**kwargs)
         quantidade_documentos_cadastrados = None

@@ -178,11 +178,8 @@ class SingleDocumentObjectMixin(object):
             return None
 
 
-
-
-
-
 class AuditavelViewMixin(object):
+
     def form_valid(self, form):
         if hasattr(self.request, 'user') and not isinstance(self.request.user, AnonymousUser):
             if not form.instance.criado_por:
@@ -192,6 +189,7 @@ class AuditavelViewMixin(object):
 
 
 class PopupMixin(object):
+
     def get_initial(self):
         initial = super(PopupMixin, self).get_initial()
         initial.update({'is_popup': self.get_is_popup()})
@@ -215,6 +213,7 @@ class PopupMixin(object):
 
 
 class CopyDocumentContentMixin(object):
+
     def get_initial(self):
         initial = super(CopyDocumentContentMixin, self).get_initial()
         documento_instance = self.get_documento_instance()
@@ -241,6 +240,7 @@ class CopyDocumentContentMixin(object):
 
 
 class DocumentoAssinadoRedirectMixin(object):
+
     def get(self, request, *args, **kwargs):
         ret = super(DocumentoAssinadoRedirectMixin, self).get(request, *args, **kwargs)
         if self.object and self.object.esta_ativo:

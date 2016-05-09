@@ -56,6 +56,5 @@ class TestViewEditarDocumento(SplinterStaticLiveServerTestCase):
         # with self.browser.get_iframe('iframemodal') as iframe:
         #     iframe.do_stuff()
 
-
         self.wait_for_seconds(5)
         self.assertTrue(True)

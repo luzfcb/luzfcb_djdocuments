@@ -21,6 +21,7 @@ validate_ascii_e_numeros = RegexValidator(ascii_e_numeros_re,
 
 
 class SplitWidget(widgets.MultiWidget):
+
     def __init__(self, attrs=None, split_into=4, value_size=None, value=None, fields_max_length=None):
         assert isinstance(split_into, int) and split_into > 0, '"split_into" parameter expect a positive integer'
         self.split_into = split_into
@@ -129,6 +130,7 @@ class SplitedHashField2(forms.MultiValueField):
 
 
 class SplitWidget2(widgets.MultiWidget):
+
     def __init__(self, attrs=None, split_guide=None, merge_last=True, value=None):
         assert isinstance(split_guide, collections.Iterable) and all(
             isinstance(x, int) and x > 0 for x in
@@ -225,6 +227,7 @@ class SplitedHashField3(forms.MultiValueField):
 
 
 class ForwardExtrasMixin(object):
+
     def __init__(self, url=None, forward=None, clear_on_change=None, *args, **kwargs):
         self.clear_on_change = clear_on_change
         super(ForwardExtrasMixin, self).__init__(url, forward, *args, **kwargs)
