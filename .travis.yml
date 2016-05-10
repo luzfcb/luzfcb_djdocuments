@@ -9,10 +9,10 @@ addons:
   postgresql: "9.4"
 
 env:
+  - DATABASE_URL="postgres://postgres:@localhost:5432/testdatabase-${TRAVIS_BUILD_ID}-${TRAVIS_JOB_ID}"
   global:
     - LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
     - SEGFAULT_SIGNALS=all
-    - DATABASE_URL="postgres://postgres:@localhost:5432/testdatabase"
   matrix:
 #    - TOXENV=check
 #    - TOXENV=docs
@@ -55,7 +55,7 @@ install:
   - tox --version
 
 before_script:
-  - psql -c 'create database testdatabase;' -U postgres
+  - psql -c 'create database testdatabase-${TRAVIS_BUILD_ID}-${TRAVIS_JOB_ID};' -U postgres
 
 script:
   - tox -v
