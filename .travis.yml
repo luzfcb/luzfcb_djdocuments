@@ -3,70 +3,55 @@ python: '3.5'
 sudo: false
 dist: trusty
 services:
-  - postgresql
-
+- postgresql
 addons:
-  postgresql: "9.4"
-
+  postgresql: '9.4'
 env:
   global:
-    - LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
-    - SEGFAULT_SIGNALS=all
+  - LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
+  - SEGFAULT_SIGNALS=all
   matrix:
-#    - TOXENV=check
-#    - TOXENV=docs
-    - TOXENV=flake8-isort
-
-    - TOXENV=py27-django18,codecov
-
-    - TOXENV=py27-django19,codecov
-
-    - TOXENV=py27-djangomaster,codecov
-
-    - TOXENV=py34-django18,codecov
-
-    - TOXENV=py34-django19,codecov
-
-    - TOXENV=py34-djangomaster,codecov
-
-    - TOXENV=py35-django18,codecov
-
-    - TOXENV=py35-django19,codecov
-
-    - TOXENV=py35-djangomaster,codecov
-
-#    - TOXENV=pypy-django18,codecov
-#
-#    - TOXENV=pypy-django19,codecov
-#
-#    - TOXENV=pypy-djangomaster,codecov
-
+  - TOXENV=flake8-isort
+  - TOXENV=py27-django18,codecov
+  - TOXENV=py27-django19,codecov
+  - TOXENV=py27-djangomaster,codecov
+  - TOXENV=py35-django18,codecov
+  - TOXENV=py35-django19,codecov
+  - TOXENV=py35-djangomaster,codecov
+  allow_failures:
+  - TOXENV=py27-djangomaster,codecov
+  - TOXENV=py35-djangomaster,codecov
 before_install:
-  - python --version
-  - uname -a
-  - lsb_release -a
-
+- python --version
+- uname -a
+- lsb_release -a
 install:
-  - pip install tox
-  - virtualenv --version
-  - easy_install --version
-  - pip --version
-  - tox --version
-
+- pip install tox
+- virtualenv --version
+- easy_install --version
+- pip --version
+- tox --version
 before_script:
-  - bash create_database.sh
-
+- bash create_database.sh
 script:
-  - tox -v
+- tox -v
 after_failure:
-  - more .tox/log/* | cat
-  - more .tox/*/log/* | cat
+- more .tox/log/* | cat
+- more .tox/*/log/* | cat
 before_cache:
-  - rm -rf $HOME/.cache/pip/log
+- rm -rf $HOME/.cache/pip/log
 cache:
   directories:
-    - $HOME/.cache/pip
+  - "$HOME/.cache/pip"
 notifications:
   email:
     on_success: never
     on_failure: always
+deploy:
+  provider: heroku
+  api_key:
+    secure: fXNlwJeLzbhc/EtOEhBt/5K9Wb61AT7KNIqB5dzWD6dZHOCvt4LZ6TXXtKTzop24PnwyuOsHcGqp5Ua0oWhQaKy8osDA6AbjvYHpHaWnNPEvqKteowLbo23x3I3ma2v5DsG6i6Ymnu0kBsZtxNICuVFPSCLD+iZhH2xMcFhmNFkzUM5CUC1Rr6cTwFbucu7fXpGFOXa+yXkLY5MaYXH56FkIaAkgxaKX/xE9ZlMUCNPeMq0ayVofgziydyRGgBtvw6ygQfyx6e5Ut9Sjj+X80NdrvNSfMFGTssc4ljPz3VrYKoPwf/vE4zNc3z5Aapx3LV0fYUMQYSVW0rdr41pkBD/6gElhkqKhiZdbfGLtG6nrpJTSEaW+6y12zcnFThNqAqVGBjev3+tFdf2uiq+HbpARYNqrcsYhNZrq2llDz7VlbIX4WUSkWRCwPJFOtieucVDexhb0lUyKNPfhPZrcj8IdYEhPZ3MhE6mygX6kqLUryT9I53e3I38txDnSIhQIYZWvsAcAC1BwiHwpWVUU9A5fe63w1W+uW2kf609CD/D78E3UrFK8ONrwjUFXe1olWUcWiJo0qyTWRXF90JKaejOhxRE2/U5ag/0SeGqJYnec8mpK+u2dA3y1HZICZ8Yz6nSGLvp8CBAf8/03kNdxLa5P1khAyKmxv4z2B17Ir1E=
+  app: luzfcb-djangodocuments
+  on:
+    repo: luzfcb/luzfcb_djdocuments
+    branch: add-django-app
