@@ -160,9 +160,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static_collected')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'users_mediafiles')
 
-
-FONT_DIR = os.path.join(
-    os.path.dirname(BASE_DIR), 'tests', '', 'contrib', 'fonts')
+FONT_DIR = os.path.join(BASE_DIR, 'contrib', 'fonts')
 
 # WKHTMLTOPDF_CMD = os.path.join(ROOT_PATH, 'binarios_executaveis', 'wkhtmltox', 'bin', 'wkhtmltopdf')
 
@@ -181,6 +179,5 @@ CAPTCHA_WORDS_DICTIONARY = '/usr/share/dict/brazilian'
 # end django-simple-captcha config
 
 db_from_env = dj_database_url.config(conn_max_age=500)
-
 
 DATABASES['default'].update(db_from_env)
