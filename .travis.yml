@@ -14,10 +14,10 @@ env:
   - TOXENV=flake8-isort
   - TOXENV=py27-django18,codecov
   - TOXENV=py27-django19,codecov
-  - TOXENV=py27-djangomaster,codecov
+#  - TOXENV=py27-djangomaster,codecov
   - TOXENV=py35-django18,codecov
   - TOXENV=py35-django19,codecov
-  - TOXENV=py35-djangomaster,codecov
+#  - TOXENV=py35-djangomaster,codecov
   allow_failures:
   - TOXENV=py27-djangomaster,codecov
   - TOXENV=py35-djangomaster,codecov
