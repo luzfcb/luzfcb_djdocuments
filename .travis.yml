@@ -55,5 +55,6 @@ deploy:
   on:
     repo: luzfcb/luzfcb_djdocuments
     branch: add-django-app
+    condition: "$TOXENV = py35-django18,codecov"
   run:
-    - "python manage.py migrate"
+    - "python manage.py migrate --noinput"
