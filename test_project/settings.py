@@ -60,7 +60,7 @@ LUZFCB_DJDOCUMENTS_APPS = [
     # end development dependencies
 
     'luzfcb_djdocuments',
-    'test_app'
+    'test_project.test_app'
 ]
 
 INSTALLED_APPS = DEFAULT_DJANGO_INSTALLED_APPS + LUZFCB_DJDOCUMENTS_APPS
@@ -162,7 +162,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'users_mediafiles')
 
 
 FONT_DIR = os.path.join(
-    os.path.dirname(BASE_DIR), 'tests', 'test_project', 'contrib', 'fonts')
+    os.path.dirname(BASE_DIR), 'tests', '', 'contrib', 'fonts')
 
 # WKHTMLTOPDF_CMD = os.path.join(ROOT_PATH, 'binarios_executaveis', 'wkhtmltox', 'bin', 'wkhtmltopdf')
 
@@ -184,4 +184,3 @@ db_from_env = dj_database_url.config(conn_max_age=500)
 
 
 DATABASES['default'].update(db_from_env)
-

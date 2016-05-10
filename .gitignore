@@ -62,6 +62,7 @@ docs/_build
 .appveyor.token
 *.bak
 
+*.sqlite
 *.sqlite3
 
-tests/static_collected
+test_project/static_collected

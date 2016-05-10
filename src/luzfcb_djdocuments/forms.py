@@ -11,14 +11,14 @@ from django import forms
 from django.contrib.auth.hashers import check_password
 from django.utils.translation import ugettext_lazy as _
 
-from .models import Documento, TipoDocumento, Assinatura
+from .models import Assinatura, Documento, TipoDocumento
 from .templatetags.luzfcb_djdocuments_tags import remover_tags_html
 from .utils.module_loading import get_real_user_model_class
 from .widgets import ModelSelect2ForwardExtras, SplitedHashField3
 
 # TODO: remove this ugly hack
 try:
-    from test_app.tests.samples_html import BIG_SAMPLE_HTML, CABECALHO, RODAPE, TITULO
+    from test_project.test_app.tests import BIG_SAMPLE_HTML, CABECALHO, RODAPE, TITULO
 except ImportError:
     BIG_SAMPLE_HTML = CABECALHO = RODAPE = TITULO = ' '
 
