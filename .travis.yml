@@ -9,7 +9,6 @@ addons:
   postgresql: "9.4"
 
 env:
-  - DATABASE_URL="postgres://postgres:@localhost:5432/testdatabase-${TRAVIS_BUILD_ID}-${TRAVIS_JOB_ID}"
   global:
     - LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
     - SEGFAULT_SIGNALS=all
@@ -18,29 +17,29 @@ env:
 #    - TOXENV=docs
     - TOXENV=flake8-isort
 
-    - TOXENV=py27-django18,codecov
+    - TOXENV=py27-django18,codecov DATABASE_URL="postgres://postgres:@localhost:5432/testdatabase-${TRAVIS_BUILD_ID}-${TRAVIS_JOB_ID}"
 
-    - TOXENV=py27-django19,codecov
+    - TOXENV=py27-django19,codecov DATABASE_URL="postgres://postgres:@localhost:5432/testdatabase-${TRAVIS_BUILD_ID}-${TRAVIS_JOB_ID}"
 
-    - TOXENV=py27-djangomaster,codecov
+    - TOXENV=py27-djangomaster,codecov DATABASE_URL="postgres://postgres:@localhost:5432/testdatabase-${TRAVIS_BUILD_ID}-${TRAVIS_JOB_ID}"
 
-    - TOXENV=py34-django18,codecov
+    - TOXENV=py34-django18,codecov DATABASE_URL="postgres://postgres:@localhost:5432/testdatabase-${TRAVIS_BUILD_ID}-${TRAVIS_JOB_ID}"
 
-    - TOXENV=py34-django19,codecov
+    - TOXENV=py34-django19,codecov DATABASE_URL="postgres://postgres:@localhost:5432/testdatabase-${TRAVIS_BUILD_ID}-${TRAVIS_JOB_ID}"
 
-    - TOXENV=py34-djangomaster,codecov
+    - TOXENV=py34-djangomaster,codecov DATABASE_URL="postgres://postgres:@localhost:5432/testdatabase-${TRAVIS_BUILD_ID}-${TRAVIS_JOB_ID}"
 
-    - TOXENV=py35-django18,codecov
+    - TOXENV=py35-django18,codecov DATABASE_URL="postgres://postgres:@localhost:5432/testdatabase-${TRAVIS_BUILD_ID}-${TRAVIS_JOB_ID}"
 
-    - TOXENV=py35-django19,codecov
+    - TOXENV=py35-django19,codecov DATABASE_URL="postgres://postgres:@localhost:5432/testdatabase-${TRAVIS_BUILD_ID}-${TRAVIS_JOB_ID}"
 
-    - TOXENV=py35-djangomaster,codecov
+    - TOXENV=py35-djangomaster,codecov DATABASE_URL="postgres://postgres:@localhost:5432/testdatabase-${TRAVIS_BUILD_ID}-${TRAVIS_JOB_ID}"
 
-#    - TOXENV=pypy-django18,codecov
+#    - TOXENV=pypy-django18,codecov DATABASE_URL="postgres://postgres:@localhost:5432/testdatabase-${TRAVIS_BUILD_ID}-${TRAVIS_JOB_ID}"
 #
-#    - TOXENV=pypy-django19,codecov
+#    - TOXENV=pypy-django19,codecov DATABASE_URL="postgres://postgres:@localhost:5432/testdatabase-${TRAVIS_BUILD_ID}-${TRAVIS_JOB_ID}"
 #
-#    - TOXENV=pypy-djangomaster,codecov
+#    - TOXENV=pypy-djangomaster,codecov DATABASE_URL="postgres://postgres:@localhost:5432/testdatabase-${TRAVIS_BUILD_ID}-${TRAVIS_JOB_ID}"
 
 before_install:
   - python --version
