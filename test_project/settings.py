@@ -18,6 +18,7 @@ import dj_database_url
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+print(BASE_DIR)
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/
 
@@ -160,7 +161,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static_collected')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'users_mediafiles')
 
-FONT_DIR = os.path.join(BASE_DIR, 'contrib', 'fonts')
+FONT_DIR = os.path.join(BASE_DIR, 'test_project', 'contrib', 'fonts')
 
 # WKHTMLTOPDF_CMD = os.path.join(ROOT_PATH, 'binarios_executaveis', 'wkhtmltox', 'bin', 'wkhtmltopdf')
 
