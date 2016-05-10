@@ -55,7 +55,7 @@ install:
 
 before_script:
   - export DATABASE_CREATE="create database testdatabase_${TRAVIS_BUILD_ID}_${TRAVIS_JOB_ID};"
-  - psql -c $DATABASE_CREATE -U postgres
+  - psql -c '$DATABASE_CREATE' -U postgres
 
 script:
   - tox -v
