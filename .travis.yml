@@ -55,3 +55,5 @@ deploy:
   on:
     repo: luzfcb/luzfcb_djdocuments
     branch: add-django-app
+  run:
+    - "python manage.py migrate"
