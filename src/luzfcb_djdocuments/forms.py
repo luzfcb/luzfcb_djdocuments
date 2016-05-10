@@ -29,6 +29,7 @@ class ProdutoForm(forms.ModelForm):
 
 
 class BootstrapFormInputMixin(object):
+
     def __init__(self, *args, **kwargs):
         super(BootstrapFormInputMixin, self).__init__(*args, **kwargs)
         for field_name in self.fields:
@@ -46,6 +47,7 @@ class BootstrapFormInputMixin(object):
 
 
 class SaveHelper(FormHelper):
+
     def __init__(self, form=None):
         super(SaveHelper, self).__init__(form)
         self.layout.append(Submit(name='save', value='Salvar'))
@@ -56,12 +58,14 @@ class SaveHelper(FormHelper):
 
 
 class SaveHelperFormMixin(object):
+
     def __init__(self, *args, **kwargs):
         super(SaveHelperFormMixin, self).__init__(*args, **kwargs)
         self.helper = SaveHelper(self)
 
 
 class RevertHelper(FormHelper):
+
     def __init__(self, form=None):
         super(RevertHelper, self).__init__(form)
         self.layout.append(Submit(name='revert', value='Reverter'))
@@ -70,6 +74,7 @@ class RevertHelper(FormHelper):
 
 
 class RevertHelperFormMixin(object):
+
     def __init__(self, *args, **kwargs):
         super(RevertHelperFormMixin, self).__init__(*args, **kwargs)
         self.helper = RevertHelper(self)
@@ -116,6 +121,7 @@ class DocumentoFormUpdate(SaveHelperFormMixin, forms.ModelForm):
 
 
 class CkeditorWidgetNew(forms.Textarea):
+
     def __init__(self, attrs=None):
         # Use slightly better defaults than HTML's 20x2 box
         default_attrs = {'data-djckeditor': 'true'}
@@ -157,12 +163,14 @@ class DocumentoEditarForm(SaveHelperFormMixin, forms.ModelForm):
 
 
 class DocumentoRevertForm(RevertHelperFormMixin, forms.ModelForm):
+
     class Meta:
         model = Documento
         fields = '__all__'
 
 
 class ValidarHelper(FormHelper):
+
     def __init__(self, form=None):
         super(ValidarHelper, self).__init__(form)
         self.layout.append(
@@ -179,6 +187,7 @@ class ValidarHelper(FormHelper):
 
 
 class ValidarHelperFormMixin(object):
+
     def __init__(self, *args, **kwargs):
         super(ValidarHelperFormMixin, self).__init__(*args, **kwargs)
         self.helper = ValidarHelper(self)
@@ -224,6 +233,7 @@ class DocumetoValidarForm(ValidarHelperFormMixin, forms.Form):
 # DocumetoValidarForm = parsleyfy(DocumetoValidarForm22)
 
 class AssinarDocumentoHelper(FormHelper):
+
     def __init__(self, form=None):
         super(AssinarDocumentoHelper, self).__init__(form)
         # self.layout.append(
@@ -240,17 +250,20 @@ class AssinarDocumentoHelper(FormHelper):
 
 
 class AssinarDocumentoHelperFormMixin(object):
+
     def __init__(self, *args, **kwargs):
         super(AssinarDocumentoHelperFormMixin, self).__init__(*args, **kwargs)
         self.helper = AssinarDocumentoHelper(self)
 
 
 class UserModelChoiceField(forms.ModelChoiceField):
+
     def label_from_instance(self, obj):
         return '{} ({})'.format(obj.get_full_name().title(), getattr(obj, obj.USERNAME_FIELD))
 
 
 class UserModelMultipleChoiceField(forms.ModelMultipleChoiceField):
+
     def label_from_instance(self, obj):
         return '{} ({})'.format(obj.get_full_name().title(), getattr(obj, obj.USERNAME_FIELD))
 
@@ -396,11 +409,13 @@ class RemoverAssinaturaDocumento(AssinarDocumentoHelperFormMixin, forms.ModelFor
 
 
 class TipoDocumentoTemplateModelChoiceField(forms.ModelChoiceField):
+
     def label_from_instance(self, obj):
         return obj.titulo
 
 
 class ModeloDocumentoTemplateModelChoiceField(forms.ModelChoiceField):
+
     def label_from_instance(self, obj):
         a = remover_tags_html(obj.titulo or 'Descricao modelo: {}'.format(obj.pk))
         print('ModeloDocumentoTemplateModelChoiceField:', a)
