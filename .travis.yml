@@ -1,6 +1,7 @@
 language: python
 python: '3.5'
 sudo: false
+dist: trusty
 services:
   - postgresql
 
@@ -11,7 +12,7 @@ env:
   global:
     - LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
     - SEGFAULT_SIGNALS=all
-    - DATABASE_URL="postgres://localhost/bancoteste"
+    - DATABASE_URL="postgres://postgres:@localhost:5432/testdatabase"
   matrix:
 #    - TOXENV=check
 #    - TOXENV=docs
@@ -54,7 +55,7 @@ install:
   - tox --version
 
 before_script:
-  - psql -c 'create database bancoteste;' -U postgres
+  - psql -c 'create database testdatabase;' -U postgres
 
 script:
   - tox -v
