@@ -7,7 +7,8 @@ import luzfcb_djdocuments.views.autocompletes
 
 from .settings import DJANGO_DOCUMENTOS_ENABLE_GENERAL_DASHBOARD
 from .views import documentos as documentos_views
-from .views import documento_template
+
+# from .views import documento_template
 
 urlpatterns = [
     # url(r'^$',
@@ -72,6 +73,7 @@ urlpatterns = [
         documentos_views.PDFViewer.as_view(),
         name='pdf_view'
         ),
+
     url(r'^user-autocomplete/$',
         luzfcb_djdocuments.views.autocompletes.UserAutocomplete.as_view(),
         name='user-autocomplete'
@@ -94,13 +96,13 @@ if DJANGO_DOCUMENTOS_ENABLE_GENERAL_DASHBOARD:
             ),
     ]
 
-urlpatterns = urlpatterns + [
-    url(r'^t/list/$',
-        documento_template.DocumentoTemplateListView.as_view(),
-        name='template_list'
-        ),
-    url(r'^t/$',
-        documento_template.DocumentoTemplateDashboard.as_view(),
-        name='template_dashboard'
-        ),
-]
+# urlpatterns = urlpatterns + [
+#     url(r'^t/list/$',
+#         documento_template.DocumentoTemplateListView.as_view(),
+#         name='template_list'
+#         ),
+#     url(r'^t/$',
+#         documento_template.DocumentoTemplateDashboard.as_view(),
+#         name='template_dashboard'
+#         ),
+# ]

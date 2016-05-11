@@ -47,7 +47,7 @@ from ..forms import (
     DocumentoRevertForm,
     DocumetoValidarForm
 )
-from ..models import Documento
+from ..models import Assinatura, Documento
 from ..templatetags.luzfcb_djdocuments_tags import absolute_uri
 from ..utils import add_querystrings_to_url
 from ..utils.module_loading import get_real_user_model_class
@@ -393,6 +393,8 @@ class DocumentoDetailValidarView(PDFRenderMixin, DocumentoDetailView):
                 'qr_code_validation_html_img_tag': img_tag
             }
         )
+        Assinatura()
+
         return context
 
     def render_to_response(self, context, **response_kwargs):

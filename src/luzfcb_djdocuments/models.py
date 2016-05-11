@@ -65,6 +65,7 @@ class Assinatura(models.Model):
     # assinatura_salto = models.TextField(blank=True, editable=False, unique=True, null=True)
 
     esta_assinado = models.BooleanField(default=False, editable=True)
+    esta_ativo = models.NullBooleanField(default=True, editable=False)
 
     assinado_em = models.DateTimeField(blank=True, null=True, editable=False)
 
@@ -88,7 +89,7 @@ class Assinatura(models.Model):
             para_hash = '{username}-{conteudo}-{versao}-{assinado_em}'.format(  # username=self.assinado_por.username,
                 username=self.assinado_por.username,
                 conteudo=self.documento.conteudo,
-                versao=self.versao_numero,
+                versao=self.versao_numero + 1,
                 assinado_em=self.assinado_em.strftime("%Y-%m-%d %H:%M:%S.%f")
             )
             password_hasher = SHA1PasswordHasher()
@@ -300,14 +301,13 @@ class Documento(models.Model):
         )
 
 
-class DocumentoTemplateManager(models.Manager):
-
-    def get_queryset(self):
-        return super(DocumentoTemplateManager, self).get_queryset().filter(esta_ativo=True, eh_template=True)
-
-
-class DocumentoTemplate(Documento):
-    objects = DocumentoTemplateManager()
-
-    class Meta:
-        proxy = True
+# class DocumentoTemplateManager(models.Manager):
+#     def get_queryset(self):
+#         return super(DocumentoTemplateManager, self).get_queryset().filter(esta_ativo=True, eh_template=True)
+#
+#
+# class DocumentoTemplate(Documento):
+#     objects = DocumentoTemplateManager()
+#
+#     class Meta:
+#         proxy = True

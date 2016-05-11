@@ -244,6 +244,8 @@ class DocumentoAssinadoRedirectMixin(object):
     def get(self, request, *args, **kwargs):
         ret = super(DocumentoAssinadoRedirectMixin, self).get(request, *args, **kwargs)
         if self.object and self.object.esta_ativo:
+            # assinantes = self.object.assinantes
+            # for assinante in assinantes
             if self.object.esta_assinado:
                 detail_url = reverse('documentos:validar-detail', kwargs={'pk': self.object.pk})
                 messages.add_message(request, messages.INFO,

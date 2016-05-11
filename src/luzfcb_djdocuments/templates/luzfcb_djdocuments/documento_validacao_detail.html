@@ -95,18 +95,13 @@
                         <div class="documento-conteudo">
                             {{ object.conteudo|safe }}
                         </div>
-                    {% else %}
-                        Nada para mostrar
-                    {% endif %}
-                {% endblock corpo %}
+                        <div class="documento-assinaturas">
+                            <hr class="assinantes-borda">
 
 
-                {% block rodape %}
-                    <div class="documento-rodape">
-                        {% if object.esta_assinado %}
                             {% url 'documentos:validar' as validar_url_view %}
                             {% spurl base=validar_url_view query="h={{ object.assinatura_hash_upper_limpo }}" as validar_url %}
-                            <hr class="assinantes-borda">
+
                             <table>
                                 <tbody>
                                 <tr>
@@ -125,7 +120,21 @@
                                 </tr>
                                 </tbody>
                             </table>
+
                             <hr class="assinantes-borda">
+
+                        </div>
+                    {% else %}
+                        Nada para mostrar
+                    {% endif %}
+
+                {% endblock corpo %}
+
+
+                {% block rodape %}
+                    <div class="documento-rodape">
+                        {% if object.esta_assinado %}
+
                             <table>
                                 <tbody>
                                 <tr>

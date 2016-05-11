@@ -76,23 +76,23 @@ class DocumentoAdmin(SimpleHistoryAdmin):
         super(DocumentoAdmin, self).save_model(request, obj, form, change)
 
 
-@admin.register(models.DocumentoTemplate)
-class DocumentoTemplateAdmin(DocumentoAdmin):
-    objects = models.DocumentoTemplateManager()
-    readonly_fields = DocumentoAdmin.readonly_fields + ('eh_template',)
-
-    # def get_form(self, request, obj=None, *args, **kwargs):
-    #     form = super(DocumentoTemplateAdmin, self).get_form(request, *args, **kwargs)
-    #     # Initial values
-    #     form.base_fields['eh_template'].initial = True
-    #     if obj and obj.eh_template:
-    #         form.base_fields['eh_template'].initial = obj.eh_template
-    #     return form
-
-    def save_model(self, request, obj, form, change):
-        if not obj.eh_template:
-            obj.eh_template = True
-        super(DocumentoTemplateAdmin, self).save_model(request, obj, form, change)
+# @admin.register(models.DocumentoTemplate)
+# class DocumentoTemplateAdmin(DocumentoAdmin):
+#     objects = models.DocumentoTemplateManager()
+#     readonly_fields = DocumentoAdmin.readonly_fields + ('eh_template',)
+#
+#     # def get_form(self, request, obj=None, *args, **kwargs):
+#     #     form = super(DocumentoTemplateAdmin, self).get_form(request, *args, **kwargs)
+#     #     # Initial values
+#     #     form.base_fields['eh_template'].initial = True
+#     #     if obj and obj.eh_template:
+#     #         form.base_fields['eh_template'].initial = obj.eh_template
+#     #     return form
+#
+#     def save_model(self, request, obj, form, change):
+#         if not obj.eh_template:
+#             obj.eh_template = True
+#         super(DocumentoTemplateAdmin, self).save_model(request, obj, form, change)
 
 
 @admin.register(models.TipoDocumento)

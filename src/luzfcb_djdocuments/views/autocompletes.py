@@ -6,7 +6,7 @@ from django.db.models.query_utils import Q
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
 
-from ..models import Documento, DocumentoTemplate
+from .. import models
 from ..templatetags.luzfcb_djdocuments_tags import remover_tags_html
 from ..views.documentos import USER_MODEL
 
@@ -39,27 +39,27 @@ class UserAutocomplete(autocomplete.Select2QuerySetView):
         return '{} ({})'.format(name, user_name)
 
 
-class DocumentoTemplateAutocomplete(autocomplete.Select2QuerySetView):
-    """
-    Autocomplete view to Django User Based
-    """
-
-    def get_queryset(self):
-        # Don't forget to filter out results depending on the visitor !
-        if not self.request.user.is_authenticated():
-            return DocumentoTemplate.objects.none()
-
-        qs = DocumentoTemplate.objects.all()
-
-        if self.q:
-            qs = qs.filter(Q(first_name__icontains=self.q) | Q(last_name__icontains=self.q))
-
-            # qs = qs.annotate(full_name=Concat('first_name', Value(' '), 'last_name', output_field=CharField()))
-            # qs = qs.filter(full_name__icontains=self.q)
-        return qs
-
-    def get_result_label(self, result):
-        return result.get_full_name().title()
+# class DocumentoTemplateAutocomplete(autocomplete.Select2QuerySetView):
+#     """
+#     Autocomplete view to Django User Based
+#     """
+#
+#     def get_queryset(self):
+#         # Don't forget to filter out results depending on the visitor !
+#         if not self.request.user.is_authenticated():
+#             return models.DocumentoTemplate.objects.none()
+#
+#         qs = models.DocumentoTemplate.objects.all()
+#
+#         if self.q:
+#             qs = qs.filter(Q(first_name__icontains=self.q) | Q(last_name__icontains=self.q))
+#
+#             # qs = qs.annotate(full_name=Concat('first_name', Value(' '), 'last_name', output_field=CharField()))
+#             # qs = qs.filter(full_name__icontains=self.q)
+#         return qs
+#
+#     def get_result_label(self, result):
+#         return result.get_full_name().title()
 
 
 class DocumentoCriarAutocomplete(autocomplete.Select2QuerySetView):
@@ -71,11 +71,11 @@ class DocumentoCriarAutocomplete(autocomplete.Select2QuerySetView):
     def get_queryset(self):
         # Don't forget to filter out results depending on the visitor !
         if not self.request.user.is_authenticated():
-            return Documento.admin_objects.none()
+            return models.Documento.admin_objects.none()
 
         tipo_documento = self.forwarded.get('tipo_documento', None)
 
-        qs = Documento.admin_objects.filter(eh_template=True)
+        qs = models.Documento.admin_objects.filter(eh_template=True)
 
         if tipo_documento:
             qs = qs.filter(tipo_documento_id=tipo_documento)
@@ -83,7 +83,7 @@ class DocumentoCriarAutocomplete(autocomplete.Select2QuerySetView):
                 qs = qs.filter(template_descricao__icontains=self.q)
 
         else:
-            qs = Documento.admin_objects.none()
+            qs = models.Documento.admin_objects.none()
 
         # if self.q:
         #     qs = qs.filter(Q(first_name__icontains=self.q) | Q(last_name__icontains=self.q))

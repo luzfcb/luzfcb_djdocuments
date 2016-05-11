@@ -36,12 +36,12 @@ body {
     margin-left: -40px;
 }
 
-.documento-rodape hr.assinantes-borda {
+.documento-rodape hr.assinantes-borda, .documento-assinaturas hr.assinantes-borda{
     margin-top: 3px;
     margin-bottom: 3px;
 }
 
-.documento-rodape hr.borda-dupla, .documento-cabecalho hr.borda-dupla {
+.documento-rodape hr.borda-dupla, .documento-cabecalho hr.borda-dupla, .documento-assinaturas hr.borda-dupla {
     border: none;
     padding: 0;
     margin: 5px 2px 0 2px;
