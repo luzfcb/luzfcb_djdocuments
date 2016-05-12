@@ -78,7 +78,6 @@ class DocumentoAdmin(SimpleHistoryAdmin):
 
 # @admin.register(models.DocumentoTemplate)
 # class DocumentoTemplateAdmin(DocumentoAdmin):
-#     objects = models.DocumentoTemplateManager()
 #     readonly_fields = DocumentoAdmin.readonly_fields + ('eh_template',)
 #
 #     # def get_form(self, request, obj=None, *args, **kwargs):
@@ -102,13 +101,16 @@ class TipoDocumentoAdmin(admin.ModelAdmin):
 
 @admin.register(models.Assinatura)
 class AssinaturaDocumentoAdmin(admin.ModelAdmin):
+    objects = models.AssinaturaAdminManager()
+
     list_display = (
         'documento',
         'assinado_por',
         'versao_numero',
         'assinatura_hash',
         'assinado_em',
-        'esta_assinado'
+        'esta_assinado',
+        'esta_ativo'
 
     )
 
@@ -121,3 +123,6 @@ class AssinaturaDocumentoAdmin(admin.ModelAdmin):
         'esta_assinado'
 
     )
+
+    def get_queryset(self, request):
+        return self.model.admin_objects.get_queryset()

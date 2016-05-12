@@ -2,7 +2,7 @@
 from __future__ import absolute_import, print_function, unicode_literals
 
 from django.contrib.auth.hashers import SHA1PasswordHasher
-from django.db import models
+from django.db import models, transaction
 from django.db.models import Max
 from django.utils import timezone
 from django.utils.six import python_2_unicode_compatible
@@ -15,6 +15,9 @@ from .utils import identificador
 
 class DocumentoQuerySet(models.QuerySet):
 
+    def ativos(self):
+        return self.filter(esta_ativo=True)
+
     def inativos(self):
         return self.filter(esta_ativo=False)
 
@@ -25,13 +28,34 @@ class DocumentoQuerySet(models.QuerySet):
 class DocumentoManager(models.Manager):
 
     def get_queryset(self):
-        return DocumentoQuerySet(model=self.model, using=self._db).filter(esta_ativo=True, eh_template=False)
+        return DocumentoQuerySet(model=self.model, using=self._db).ativos().filter(eh_template=False)
 
 
 class DocumentoAdminManager(models.Manager):
 
     def get_queryset(self):
         return DocumentoQuerySet(model=self.model, using=self._db)
+
+
+class AssinaturaQuerySet(models.QuerySet):
+
+    def inativos(self):
+        return self.filter(esta_ativo=False)
+
+    def ativos(self):
+        return self.filter(esta_ativo=True)
+
+
+class AssinaturaManager(models.Manager):
+
+    def get_queryset(self):
+        return AssinaturaQuerySet(model=self.model, using=self._db).ativos()
+
+
+class AssinaturaAdminManager(models.Manager):
+
+    def get_queryset(self):
+        return AssinaturaQuerySet(model=self.model, using=self._db)
 
 
 @python_2_unicode_compatible
@@ -45,11 +69,11 @@ class TipoDocumento(models.Model):
 
 class Assinatura(models.Model):
     documento = models.ForeignKey(to='Documento',
-                                  related_name="%(app_label)s_%(class)s_documento",
+                                  related_name="assinaturas",
                                   null=True,
                                   blank=True,
                                   on_delete=models.SET_NULL,
-                                  editable=False
+                                  editable=False,
                                   )
 
     assinado_por = models.ForeignKey(to=USER_MODEL,
@@ -65,12 +89,18 @@ class Assinatura(models.Model):
     # assinatura_salto = models.TextField(blank=True, editable=False, unique=True, null=True)
 
     esta_assinado = models.BooleanField(default=False, editable=True)
-    esta_ativo = models.NullBooleanField(default=True, editable=False)
+    esta_ativo = models.NullBooleanField(default=True, editable=True)
 
     assinado_em = models.DateTimeField(blank=True, null=True, editable=False)
 
+    objects = AssinaturaManager()
+    admin_objects = AssinaturaAdminManager()
+
     class Meta:
         unique_together = ('documento', 'assinado_por', 'versao_numero')
+
+    def __str__(self):
+        return '{} - esta_ativo: {}'.format(self.documento_id, self.esta_ativo)
 
     def save(self, *args, **kwargs):
         if self.documento and not self.versao_numero:
@@ -285,6 +315,11 @@ class Documento(models.Model):
         # self.assinatura_salto = None
         self.save(*args, **kwargs)
 
+        with transaction.atomic:
+            for assinatura in self.assinaturas.select_for_update():
+                assinatura.esta_ativo = False
+                assinatura.save(update_fields=['esta_ativo'])
+
     class Meta:
         ordering = ['criado_em']
         verbose_name = 'Documento Digital'
@@ -299,7 +334,6 @@ class Documento(models.Model):
             ("pode_reverter_para_uma_versao_anterior_documento", "Pode Reverter documento para uma versão anterior"),
             ("pode_imprimir", "Pode Imprimir documento"),
         )
-
 
 # class DocumentoTemplateManager(models.Manager):
 #     def get_queryset(self):

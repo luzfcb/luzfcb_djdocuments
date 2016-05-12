@@ -66,3 +66,4 @@ docs/_build
 *.sqlite3
 
 test_project/static_collected
+static_collected/
