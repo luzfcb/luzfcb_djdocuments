@@ -369,20 +369,3 @@ class Documento(models.Model):
 #         proxy = True
 
 
-class ForensicPessoa(models.Model):
-    name = models.CharField(max_length=100, blank=True, null=True, verbose_name='Nome')
-    birth = models.DateTimeField(blank=True, null=True, verbose_name='Data de Nascimento')
-    rg = models.CharField(max_length=25, blank=True, null=True, verbose_name='RG')
-
-
-class ForensicAgressor(models.Model):
-    forensicpessoa_ptr = models.OneToOneField(auto_created=True, on_delete=models.deletion.CASCADE,
-                                              parent_link=True, primary_key=True, serialize=False,
-                                              to='ForensicPessoa')
-    stature = models.DecimalField(max_digits=20, decimal_places=6, blank=True, null=True, verbose_name='Estatura')
-    color_hair = models.CharField(max_length=100, blank=True, null=True, verbose_name='Cor do cabelo')
-
-
-class ForensicVida(models.Model):
-    agressor = models.ForeignKey(ForensicAgressor)
-    belongings_victim_lf = models.CharField(max_length=100, blank=True, null=True, verbose_name='Pertences')
