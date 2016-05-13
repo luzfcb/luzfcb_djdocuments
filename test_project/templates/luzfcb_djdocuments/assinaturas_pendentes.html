@@ -1,0 +1,71 @@
+{% extends "luzfcb_djdocuments/bootstrap3/base.html" %}
+{% load staticfiles %}
+{% block titulo %}
+    Listar Documentos
+{% endblock titulo %}
+
+
+
+{% block conteudo_app %}
+    {{ block.super }}
+
+
+
+
+    <table class="table table-bordered table-striped table-hover">
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>Assunto</th>
+            <th></th>
+            <th>Username</th>
+        </tr>
+        </thead>
+
+
+        <tbody>
+        {% if object_list %}
+            {% for assinatura in object_list %}
+                <tr>
+                    <th scope="row"></th>
+                    <td>Mark - {{ assinatura.documento.assunto }}</td>
+                    <td>Otto</td>
+                    <td><a href="{% url 'documentos:assinar' assinatura.documento_id %}" class="btn btn-sm btn-primary">Assinar</a></td>
+                </tr>
+            {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="4">Não há itens cadastrados</td>
+            </tr>
+
+        {% endif %}
+        </tbody>
+
+
+        <tfoot>
+        <tr>
+            <th>#</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Username</th>
+        </tr>
+        </tfoot>
+    </table>
+
+    <ul class="list-group">
+        {% for object in object_list %}
+            <li class="list-group-item">{{ object }} - doc: {{ object.documento }} <a
+                    class="btn btn-danger btn-xs djpopup" href="{% url 'documentos:editar' object.pk %}">Editar</a>
+                - {% if object.esta_assinado %}
+                    Assinado
+                {% else %}
+                    <a href="{% url 'documentos:assinar' object.pk %}">Assinar</a>
+                {% endif %}
+                <a href="{% url 'documentos:validar-detail' object.pk %}">Imprimir</a>
+            </li>
+        {% endfor %}
+
+    </ul>
+
+
+{% endblock conteudo_app %}

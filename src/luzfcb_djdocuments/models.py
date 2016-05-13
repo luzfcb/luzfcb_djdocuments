@@ -45,6 +45,16 @@ class AssinaturaQuerySet(models.QuerySet):
     def ativos(self):
         return self.filter(esta_ativo=True)
 
+    def nao_assinados(self, assinante=None):
+        if assinante:
+            return self.ativos().filter(esta_assinado=False, assinado_por=assinante)
+        return self.ativos().filter(esta_assinado=False)
+
+    def assinados(self, assinante=None):
+        if assinante:
+            return self.ativos().filter(esta_assinado=True, assinado_por=assinante)
+        return self.ativos().filter(esta_assinado=True)
+
 
 class AssinaturaManager(models.Manager):
 
@@ -83,7 +93,9 @@ class Assinatura(models.Model):
                                      on_delete=models.SET_NULL,
                                      editable=False
                                      )
+
     # criado_em = models.DateTimeField(default=timezone.now, blank=True, editable=False)
+    assinado_em = models.DateTimeField(blank=True, null=True, editable=False)
     versao_numero = models.IntegerField(editable=False, null=True)
     assinatura_hash = models.TextField(blank=True, editable=False, unique=True, null=True)
     # assinatura_salto = models.TextField(blank=True, editable=False, unique=True, null=True)
@@ -91,7 +103,9 @@ class Assinatura(models.Model):
     esta_assinado = models.BooleanField(default=False, editable=True)
     esta_ativo = models.NullBooleanField(default=True, editable=True)
 
-    assinado_em = models.DateTimeField(blank=True, null=True, editable=False)
+    modificado_em = models.DateTimeField(auto_now=True, blank=True, null=True, editable=False)
+    modificado_por = models.ForeignKey(to=USER_MODEL, null=True,
+                                       blank=True, on_delete=models.SET_NULL, editable=False)
 
     objects = AssinaturaManager()
     admin_objects = AssinaturaAdminManager()
@@ -100,7 +114,13 @@ class Assinatura(models.Model):
         unique_together = ('documento', 'assinado_por', 'versao_numero')
 
     def __str__(self):
-        return '{} - esta_ativo: {}'.format(self.documento_id, self.esta_ativo)
+        return 'pk: {} - versao_numero: {} - (doc: {}  - ver: {}) - esta_ativo: {} - esta_assinado: {}'.format(self.pk,
+                                                                                                               self.versao_numero,
+                                                                                                               self.documento_id,
+                                                                                                               self.documento.versao_numero,
+                                                                                                               self.esta_ativo,
+                                                                                                               self.esta_assinado
+                                                                                                               )
 
     def save(self, *args, **kwargs):
         if self.documento and not self.versao_numero:
@@ -138,7 +158,8 @@ class Documento(models.Model):
                                         related_name="%(app_label)s_%(class)s_assinantes",
                                         blank=True,
                                         editable=False,
-                                        through='Assinatura'
+                                        through='Assinatura',
+                                        through_fields=('documento', 'assinado_por')
                                         )
 
     cabecalho = models.TextField(blank=True)
@@ -335,6 +356,7 @@ class Documento(models.Model):
             ("pode_imprimir", "Pode Imprimir documento"),
         )
 
+
 # class DocumentoTemplateManager(models.Manager):
 #     def get_queryset(self):
 #         return super(DocumentoTemplateManager, self).get_queryset().filter(esta_ativo=True, eh_template=True)
@@ -345,3 +367,22 @@ class Documento(models.Model):
 #
 #     class Meta:
 #         proxy = True
+
+
+class ForensicPessoa(models.Model):
+    name = models.CharField(max_length=100, blank=True, null=True, verbose_name='Nome')
+    birth = models.DateTimeField(blank=True, null=True, verbose_name='Data de Nascimento')
+    rg = models.CharField(max_length=25, blank=True, null=True, verbose_name='RG')
+
+
+class ForensicAgressor(models.Model):
+    forensicpessoa_ptr = models.OneToOneField(auto_created=True, on_delete=models.deletion.CASCADE,
+                                              parent_link=True, primary_key=True, serialize=False,
+                                              to='ForensicPessoa')
+    stature = models.DecimalField(max_digits=20, decimal_places=6, blank=True, null=True, verbose_name='Estatura')
+    color_hair = models.CharField(max_length=100, blank=True, null=True, verbose_name='Cor do cabelo')
+
+
+class ForensicVida(models.Model):
+    agressor = models.ForeignKey(ForensicAgressor)
+    belongings_victim_lf = models.CharField(max_length=100, blank=True, null=True, verbose_name='Pertences')

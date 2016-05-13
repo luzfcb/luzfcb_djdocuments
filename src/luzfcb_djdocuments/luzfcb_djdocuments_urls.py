@@ -61,6 +61,10 @@ urlpatterns = [
         documentos_views.AssinarDocumentoView.as_view(),
         name='assinar'
         ),
+    url(r'^assinatura-pendente/$',
+        documentos_views.AssinaturaPendenteView.as_view(),
+        name='assinatura-pendente'
+        ),
     url(r'^validar/$',
         documentos_views.DocumentoValidacaoView.as_view(),
         name='validar'

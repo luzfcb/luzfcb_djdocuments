@@ -346,6 +346,18 @@ class TestePDF(PDFRenderMixin, generic.TemplateView):
     }
 
 
+class AssinaturaPendenteView(LoginRequiredMixin, generic.ListView):
+    model = Assinatura
+    template_name = 'luzfcb_djdocuments/assinaturas_pendentes.html'
+
+    def get_queryset(self):
+        if hasattr(self.request, 'user') and not isinstance(self.request.user, AnonymousUser):
+            aaaa = self.model.objects.select_related('documento', 'assinado_por').nao_assinados(self.request.user)
+        else:
+            aaaa = self.model.objects.select_related('documento', 'assinado_por').nao_assinados()
+        return aaaa
+
+
 class DocumentoDetailValidarView(PDFRenderMixin, DocumentoDetailView):
     template_name = 'luzfcb_djdocuments/documento_validacao_detail.html'
 
@@ -393,7 +405,6 @@ class DocumentoDetailValidarView(PDFRenderMixin, DocumentoDetailView):
                 'qr_code_validation_html_img_tag': img_tag
             }
         )
-        Assinatura()
 
         return context
 

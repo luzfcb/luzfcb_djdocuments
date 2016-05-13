@@ -13,7 +13,7 @@ from django.shortcuts import redirect, resolve_url
 from django.utils import six
 from django.utils.translation import ugettext as _
 
-from ..models import Documento
+from ..models import Assinatura, Documento
 
 
 class NextURLMixin(object):
@@ -243,14 +243,23 @@ class DocumentoAssinadoRedirectMixin(object):
 
     def get(self, request, *args, **kwargs):
         ret = super(DocumentoAssinadoRedirectMixin, self).get(request, *args, **kwargs)
-        if self.object and self.object.esta_ativo:
-            # assinantes = self.object.assinantes
-            # for assinante in assinantes
-            if self.object.esta_assinado:
+        if self.object and self.object.esta_ativo and hasattr(self.request, 'user') and not isinstance(
+                self.request.user, AnonymousUser):
+            assinatura = Assinatura.objects.all().nao_assinados(self.request.user).filter(documento=self.object).first()
+            print(assinatura)
+            if assinatura.esta_assinado:
                 detail_url = reverse('documentos:validar-detail', kwargs={'pk': self.object.pk})
                 messages.add_message(request, messages.INFO,
-                                     'Documentos assinados só podem ser visualizados - {}'.format(
-                                         self.__class__.__name__))
+                                     'Você já assinou o documento {} em: {:%d-%m-%Y %H:%M}'.format(
+                                         assinatura.documento.identificador_documento,
+                                         assinatura.assinado_em))
+                # if self.object.esta_assinado:
+                # for assinante in assinantes
+                # if self.object.esta_assinado:
+                #     detail_url = reverse('documentos:validar-detail', kwargs={'pk': self.object.pk})
+                #     messages.add_message(request, messages.INFO,
+                #                          'Documentos assinados só podem ser visualizados - {}'.format(
+                #                              self.__class__.__name__))
                 return redirect(detail_url, permanent=False)
         return ret
 

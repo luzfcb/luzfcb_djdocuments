@@ -325,16 +325,17 @@ class AssinarDocumento(AssinarDocumentoHelperFormMixin, forms.ModelForm):
     def save(self, commit=True):
         documento = super(AssinarDocumento, self).save(False)
         assinado_por = self.cleaned_data.get('assinado_por')
-        usuarios_assinantes = self.cleaned_data.get('incluir_assinantes')
 
         # cria ou obten instancia de Assinatura para o usuario selecionado em  assinado_por
         obj, created = Assinatura.objects.get_or_create(documento=documento,
                                                         assinado_por=assinado_por,
                                                         versao_numero=documento.versao_numero,
+                                                        esta_ativo=True,
                                                         defaults={
                                                             'documento': documento,
                                                             'assinado_por': assinado_por,
-                                                            'versao_numero': documento.versao_numero
+                                                            'versao_numero': documento.versao_numero,
+                                                            'esta_ativo': True
                                                         }
                                                         )
         if created:
@@ -346,6 +347,7 @@ class AssinarDocumento(AssinarDocumentoHelperFormMixin, forms.ModelForm):
             obj.assinar_documento()
 
         # cria assinatura
+        usuarios_assinantes = self.cleaned_data.get('incluir_assinantes')
         for usuario_assinante in usuarios_assinantes:
             # Assinatura.objects.get
             obj, created = Assinatura.objects.get_or_create(documento=documento,
@@ -368,6 +370,7 @@ class AssinarDocumento(AssinarDocumentoHelperFormMixin, forms.ModelForm):
             assinado_por=self.cleaned_data.get('assinado_por'),
             current_logged_user=self.current_logged_user
         )
+
         print(self.cleaned_data.get('incluir_assinantes'))
         return documento
 
