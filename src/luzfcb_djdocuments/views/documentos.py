@@ -40,7 +40,7 @@ from luzfcb_djdocuments.views.mixins import (
 )
 
 from ..forms import (
-    AssinarDocumento,
+    AssinarDocumentoForm,
     CriarDocumentoForm,
     CriarModeloDocumentoForm,
     DocumentoEditarForm,
@@ -418,13 +418,14 @@ class PDFViewer(generic.TemplateView):
 
 class AssinarDocumentoView(DocumentoAssinadoRedirectMixin, AuditavelViewMixin, generic.UpdateView):
     template_name = 'luzfcb_djdocuments/documento_assinar.html'
-    form_class = AssinarDocumento
+    form_class = AssinarDocumentoForm
     model = Documento
 
     success_url = reverse_lazy('documentos:list')
 
     @method_decorator(never_cache)
     @method_decorator(login_required)
+    @method_decorator(transaction.atomic)
     def dispatch(self, request, *args, **kwargs):
         return super(AssinarDocumentoView, self).dispatch(request, *args, **kwargs)
 

@@ -150,6 +150,28 @@ class Assinatura(models.Model):
             print('deu pau aqui: ', e)
         self.save()
 
+    def remover_assinatura(self, password=None):
+        # if current_logged_user:
+        #     self.assinado_por = current_logged_user
+        try:
+            self.assinado_em = timezone.now()
+            self.esta_assinado = True
+            # self.assinatura_salto = get_random_string(length=8, allowed_chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
+
+            para_hash = '{username}-{conteudo}-{versao}-{assinado_em}'.format(  # username=self.assinado_por.username,
+                username=self.assinado_por.username,
+                conteudo=self.documento.conteudo,
+                versao=self.versao_numero + 1,
+                assinado_em=self.assinado_em.strftime("%Y-%m-%d %H:%M:%S.%f")
+            )
+            password_hasher = SHA1PasswordHasher()
+            self.assinatura_hash = password_hasher.encode(para_hash, 'djdocumentos')
+            # self.assinatura_hash = password_hasher.encode(para_hash, self.assinatura_salto)
+        except Exception as e:
+
+            print('deu pau aqui: ', e)
+        self.save()
+
 
 @python_2_unicode_compatible
 class Documento(models.Model):
@@ -356,7 +378,6 @@ class Documento(models.Model):
             ("pode_imprimir", "Pode Imprimir documento"),
         )
 
-
 # class DocumentoTemplateManager(models.Manager):
 #     def get_queryset(self):
 #         return super(DocumentoTemplateManager, self).get_queryset().filter(esta_ativo=True, eh_template=True)
@@ -367,5 +388,3 @@ class Documento(models.Model):
 #
 #     class Meta:
 #         proxy = True
-
-

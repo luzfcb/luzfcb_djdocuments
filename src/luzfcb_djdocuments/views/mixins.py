@@ -245,9 +245,10 @@ class DocumentoAssinadoRedirectMixin(object):
         ret = super(DocumentoAssinadoRedirectMixin, self).get(request, *args, **kwargs)
         if self.object and self.object.esta_ativo and hasattr(self.request, 'user') and not isinstance(
                 self.request.user, AnonymousUser):
-            assinatura = Assinatura.objects.all().nao_assinados(self.request.user).filter(documento=self.object).first()
-            print(assinatura)
-            if assinatura.esta_assinado:
+            assinatura = Assinatura.objects.filter(assinado_por=self.request.user, documento=self.object,
+                                                   versao_numero=self.object.versao_numero).first()
+
+            if assinatura and assinatura.esta_assinado and assinatura.esta_ativo:
                 detail_url = reverse('documentos:validar-detail', kwargs={'pk': self.object.pk})
                 messages.add_message(request, messages.INFO,
                                      'Você já assinou o documento {} em: {:%d-%m-%Y %H:%M}'.format(

@@ -21,6 +21,7 @@
                         <a href="{% url 'documentos:assinar' object.pk %}">Assinar</a>
                     {% endif %}
                     <a href="{% url 'documentos:validar-detail' object.pk %}">Imprimir</a>
+                    <a href="{% url 'documentos:assinar' object.pk %}">Assinar</a>
                 </li>
             {% endfor %}
 

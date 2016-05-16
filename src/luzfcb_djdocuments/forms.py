@@ -268,7 +268,7 @@ class UserModelMultipleChoiceField(forms.ModelMultipleChoiceField):
         return '{} ({})'.format(obj.get_full_name().title(), getattr(obj, obj.USERNAME_FIELD))
 
 
-class AssinarDocumento(AssinarDocumentoHelperFormMixin, forms.ModelForm):
+class AssinarDocumentoForm(AssinarDocumentoHelperFormMixin, forms.ModelForm):
     assinado_por = UserModelChoiceField(
         label="Assinante",
         help_text="Selecione o usuário que irá assinar o documento",
@@ -301,7 +301,7 @@ class AssinarDocumento(AssinarDocumentoHelperFormMixin, forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         self.current_logged_user = kwargs.pop('current_logged_user')
-        super(AssinarDocumento, self).__init__(*args, **kwargs)
+        super(AssinarDocumentoForm, self).__init__(*args, **kwargs)
 
     class Meta:
         model = Documento
@@ -310,7 +310,7 @@ class AssinarDocumento(AssinarDocumentoHelperFormMixin, forms.ModelForm):
 
     def clean_assinado_por(self):
         assinado_por = self.cleaned_data.get('assinado_por')
-        print('AssinarDocumento: pk', assinado_por.pk, 'username', assinado_por.get_full_name())
+        print('AssinarDocumentoForm: pk', assinado_por.pk, 'username', assinado_por.get_full_name())
         return assinado_por
 
     def clean_password(self):
@@ -323,18 +323,18 @@ class AssinarDocumento(AssinarDocumentoHelperFormMixin, forms.ModelForm):
         return password
 
     def save(self, commit=True):
-        documento = super(AssinarDocumento, self).save(False)
+        documento = super(AssinarDocumentoForm, self).save(False)
         assinado_por = self.cleaned_data.get('assinado_por')
 
         # cria ou obten instancia de Assinatura para o usuario selecionado em  assinado_por
         obj, created = Assinatura.objects.get_or_create(documento=documento,
                                                         assinado_por=assinado_por,
-                                                        versao_numero=documento.versao_numero,
+                                                        versao_numero=documento.versao_numero + 1,
                                                         esta_ativo=True,
                                                         defaults={
                                                             'documento': documento,
                                                             'assinado_por': assinado_por,
-                                                            'versao_numero': documento.versao_numero,
+                                                            'versao_numero': documento.versao_numero + 1,
                                                             'esta_ativo': True
                                                         }
                                                         )
@@ -352,11 +352,11 @@ class AssinarDocumento(AssinarDocumentoHelperFormMixin, forms.ModelForm):
             # Assinatura.objects.get
             obj, created = Assinatura.objects.get_or_create(documento=documento,
                                                             assinado_por=usuario_assinante,
-                                                            versao_numero=documento.versao_numero,
+                                                            versao_numero=documento.versao_numero + 1,
                                                             defaults={
                                                                 'documento': documento,
                                                                 'assinado_por': usuario_assinante,
-                                                                'versao_numero': documento.versao_numero,
+                                                                'versao_numero': documento.versao_numero + 1,
                                                                 'esta_assinado': False
                                                             }
                                                             )
