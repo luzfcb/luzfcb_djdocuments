@@ -14,7 +14,6 @@ from .utils import identificador
 
 
 class DocumentoQuerySet(models.QuerySet):
-
     def ativos(self):
         return self.filter(esta_ativo=True)
 
@@ -26,19 +25,16 @@ class DocumentoQuerySet(models.QuerySet):
 
 
 class DocumentoManager(models.Manager):
-
     def get_queryset(self):
         return DocumentoQuerySet(model=self.model, using=self._db).ativos().filter(eh_template=False)
 
 
 class DocumentoAdminManager(models.Manager):
-
     def get_queryset(self):
         return DocumentoQuerySet(model=self.model, using=self._db)
 
 
 class AssinaturaQuerySet(models.QuerySet):
-
     def inativos(self):
         return self.filter(esta_ativo=False)
 
@@ -57,15 +53,37 @@ class AssinaturaQuerySet(models.QuerySet):
 
 
 class AssinaturaManager(models.Manager):
-
     def get_queryset(self):
         return AssinaturaQuerySet(model=self.model, using=self._db).ativos()
 
+    def inativos(self):
+        return AssinaturaQuerySet(model=self.model, using=self._db).inativos()
+
+    def ativos(self):
+        return self.get_queryset()
+
+    def nao_assinados(self, assinante=None):
+        return self.get_queryset().nao_assinados(assinante=assinante)
+
+    def assinados(self, assinante=None):
+        return self.get_queryset().assinados(assinante=assinante)
+
 
 class AssinaturaAdminManager(models.Manager):
-
     def get_queryset(self):
         return AssinaturaQuerySet(model=self.model, using=self._db)
+
+    def inativos(self):
+        return self.get_queryset().inativos()
+
+    def ativos(self):
+        return self.get_queryset().ativos()
+
+    def nao_assinados(self, assinante=None):
+        return self.get_queryset().nao_assinados(assinante=assinante)
+
+    def assinados(self, assinante=None):
+        return self.get_queryset().assinados(assinante=assinante)
 
 
 @python_2_unicode_compatible
@@ -123,8 +141,8 @@ class Assinatura(models.Model):
                                                                                                                )
 
     def save(self, *args, **kwargs):
-        #if self.documento and not self.versao_numero:
-            #self.versao_numero = self.documento.versao_numero
+        # if self.documento and not self.versao_numero:
+        # self.versao_numero = self.documento.versao_numero
 
         super(Assinatura, self).save(*args, **kwargs)
 
@@ -135,7 +153,8 @@ class Assinatura(models.Model):
             self.assinado_em = timezone.now()
             self.esta_assinado = True
             # self.assinatura_salto = get_random_string(length=8, allowed_chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
-            print("self.versao_numero: {} - self.documento.versao_numero: {}".format(self.versao_numero, self.documento.versao_numero))
+            print("self.versao_numero: {} - self.documento.versao_numero: {}".format(self.versao_numero,
+                                                                                     self.documento.versao_numero))
             para_hash = '{username}-{conteudo}-{versao}-{assinado_em}'.format(  # username=self.assinado_por.username,
                 username=self.assinado_por.username,
                 conteudo=self.documento.conteudo,

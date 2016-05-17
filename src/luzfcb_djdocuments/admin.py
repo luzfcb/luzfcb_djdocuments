@@ -65,10 +65,12 @@ class DocumentoAdmin(SimpleHistoryAdmin):
     visualizar_titulo.short_description = "Título"
 
     def remover_assinatura(self, request, queryset):
-        q = queryset
-        print(q)
+        for obj in queryset:
+            obj.assinaturas.update(esta_ativo=False)
         queryset.update(assinatura_hash='', esta_assinado=False, assinado_em=None, assinado_por=None,
                         assinatura_removida_em=timezone.now(), assinatura_removida_por=request.user)
+
+
 
     remover_assinatura.short_description = "Remove assinatura dos documentos selecionados"
 
