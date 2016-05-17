@@ -123,8 +123,8 @@ class Assinatura(models.Model):
                                                                                                                )
 
     def save(self, *args, **kwargs):
-        if self.documento and not self.versao_numero:
-            self.versao_numero = self.documento.versao_numero
+        #if self.documento and not self.versao_numero:
+            #self.versao_numero = self.documento.versao_numero
 
         super(Assinatura, self).save(*args, **kwargs)
 
@@ -135,11 +135,11 @@ class Assinatura(models.Model):
             self.assinado_em = timezone.now()
             self.esta_assinado = True
             # self.assinatura_salto = get_random_string(length=8, allowed_chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
-
+            print("self.versao_numero: {} - self.documento.versao_numero: {}".format(self.versao_numero, self.documento.versao_numero))
             para_hash = '{username}-{conteudo}-{versao}-{assinado_em}'.format(  # username=self.assinado_por.username,
                 username=self.assinado_por.username,
                 conteudo=self.documento.conteudo,
-                versao=self.versao_numero + 1,
+                versao=self.versao_numero,
                 assinado_em=self.assinado_em.strftime("%Y-%m-%d %H:%M:%S.%f")
             )
             password_hasher = SHA1PasswordHasher()

@@ -329,7 +329,7 @@ class AssinarDocumentoForm(AssinarDocumentoHelperFormMixin, forms.ModelForm):
         # cria ou obten instancia de Assinatura para o usuario selecionado em  assinado_por
         obj, created = Assinatura.objects.get_or_create(documento=documento,
                                                         assinado_por=assinado_por,
-                                                        versao_numero=documento.versao_numero + 1,
+                                                        versao_numero=documento.versao_numero,
                                                         esta_ativo=True,
                                                         defaults={
                                                             'documento': documento,
@@ -352,7 +352,7 @@ class AssinarDocumentoForm(AssinarDocumentoHelperFormMixin, forms.ModelForm):
             # Assinatura.objects.get
             obj, created = Assinatura.objects.get_or_create(documento=documento,
                                                             assinado_por=usuario_assinante,
-                                                            versao_numero=documento.versao_numero + 1,
+                                                            versao_numero=documento.versao_numero,
                                                             defaults={
                                                                 'documento': documento,
                                                                 'assinado_por': usuario_assinante,
