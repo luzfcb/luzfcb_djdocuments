@@ -14,7 +14,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import AnonymousUser
 from django.core import signing
 from django.core.exceptions import ImproperlyConfigured
-from django.core.urlresolvers import reverse_lazy
+from django.core.urlresolvers import reverse, reverse_lazy
 from django.db import transaction
 from django.db.utils import IntegrityError
 from django.http import HttpResponse
@@ -509,7 +509,7 @@ class AssinarDocumentoView(DocumentoAssinadoRedirectMixin, generic.FormView, gen
         # )
 
         print(form.cleaned_data.get('incluir_assinantes'))
-        #return documento
+        # return documento
         ###################################
         assinado_por = form.cleaned_data.get('assinado_por', None)
 

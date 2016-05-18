@@ -70,8 +70,6 @@ class DocumentoAdmin(SimpleHistoryAdmin):
         queryset.update(assinatura_hash='', esta_assinado=False, assinado_em=None, assinado_por=None,
                         assinatura_removida_em=timezone.now(), assinatura_removida_por=request.user)
 
-
-
     remover_assinatura.short_description = "Remove assinatura dos documentos selecionados"
 
     def save_model(self, request, obj, form, change):

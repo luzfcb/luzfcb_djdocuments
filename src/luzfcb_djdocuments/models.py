@@ -14,6 +14,7 @@ from .utils import identificador
 
 
 class DocumentoQuerySet(models.QuerySet):
+
     def ativos(self):
         return self.filter(esta_ativo=True)
 
@@ -25,16 +26,19 @@ class DocumentoQuerySet(models.QuerySet):
 
 
 class DocumentoManager(models.Manager):
+
     def get_queryset(self):
         return DocumentoQuerySet(model=self.model, using=self._db).ativos().filter(eh_template=False)
 
 
 class DocumentoAdminManager(models.Manager):
+
     def get_queryset(self):
         return DocumentoQuerySet(model=self.model, using=self._db)
 
 
 class AssinaturaQuerySet(models.QuerySet):
+
     def inativos(self):
         return self.filter(esta_ativo=False)
 
@@ -53,6 +57,7 @@ class AssinaturaQuerySet(models.QuerySet):
 
 
 class AssinaturaManager(models.Manager):
+
     def get_queryset(self):
         return AssinaturaQuerySet(model=self.model, using=self._db).ativos()
 
@@ -70,6 +75,7 @@ class AssinaturaManager(models.Manager):
 
 
 class AssinaturaAdminManager(models.Manager):
+
     def get_queryset(self):
         return AssinaturaQuerySet(model=self.model, using=self._db)
 
@@ -190,6 +196,43 @@ class Assinatura(models.Model):
 
             print('deu pau aqui: ', e)
         self.save()
+
+
+# class BlocoAssinaturas(models.Model):
+#     documento = models.ForeignKey(to='Documento',
+#                                   related_name="assinaturas",
+#                                   null=True,
+#                                   blank=True,
+#                                   on_delete=models.SET_NULL,
+#                                   editable=False,
+#                                   )
+#
+#     assinaturas = models.ForeignKey(to='Documento',
+#                                     related_name="assinaturas",
+#                                     null=True,
+#                                     blank=True,
+#                                     on_delete=models.SET_NULL,
+#                                     editable=False,
+#                                     )
+#
+#     # fields para auditoria
+#     criado_em = models.DateTimeField(default=timezone.now, blank=True, editable=False)
+#     criado_por = models.ForeignKey(to=USER_MODEL,
+#                                    related_name="%(app_label)s_%(class)s_criado_por", null=True,
+#                                    blank=True, on_delete=models.SET_NULL, editable=False)
+#
+#     modificado_em = models.DateTimeField(auto_now=True, blank=True, null=True, editable=False)
+#     modificado_por = models.ForeignKey(to=USER_MODEL,
+#                                        related_name="%(app_label)s_%(class)s_modificado_por", null=True,
+#                                        blank=True, on_delete=models.SET_NULL, editable=False)
+#
+#     revertido_em = models.DateTimeField(blank=True, null=True, editable=False)
+#     revertido_por = models.ForeignKey(to=USER_MODEL,
+#                                       related_name="%(app_label)s_%(class)s_revertido_por", null=True,
+#                                       blank=True, on_delete=models.SET_NULL, editable=False)
+#     revertido_da_versao = models.IntegerField(null=True, default=None, auto_created=True, editable=False, blank=True)
+#
+#     esta_ativo = models.NullBooleanField(default=True, editable=False)
 
 
 @python_2_unicode_compatible
