@@ -23,11 +23,6 @@ except ImportError:
     BIG_SAMPLE_HTML = CABECALHO = RODAPE = TITULO = ' '
 
 
-class ProdutoForm(forms.ModelForm):
-    vlunitario = forms.DecimalField(max_digits=10, decimal_places=2, localize=True,
-                                    widget=forms.TextInput(attrs={'class': 'form-control'}))
-
-
 class BootstrapFormInputMixin(object):
 
     def __init__(self, *args, **kwargs):
