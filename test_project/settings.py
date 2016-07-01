@@ -111,7 +111,7 @@ if USE_PG:
         'USER': 'postgres',
         'PASSWORD': 'postgres',
         'HOST': '127.0.0.1',
-        'PORT': 5433
+        'PORT': 5432
     }
 else:
     DB_ENGINE_CONFIG = {
@@ -169,15 +169,15 @@ FONT_DIR = os.path.join(BASE_DIR, 'test_project', 'contrib', 'fonts')
 # WKHTMLTOPDF_CMD = os.path.join(ROOT_PATH, 'binarios_executaveis', 'wkhtmltox', 'bin', 'wkhtmltopdf')
 
 # django-simple-captcha config
-CAPTCHA_FONT_PATH = (
-    os.path.join(FONT_DIR, 'HomemadeApple.ttf'),
-    os.path.join(FONT_DIR, 'RockSalt.ttf'),
-    os.path.join(FONT_DIR, 'ShadowsIntoLight.ttf'),
-)
+# CAPTCHA_FONT_PATH = (
+#     os.path.join(FONT_DIR, 'HomemadeApple.ttf'),
+#     os.path.join(FONT_DIR, 'RockSalt.ttf'),
+#     os.path.join(FONT_DIR, 'ShadowsIntoLight.ttf'),
+# )
 CAPTCHA_FOREGROUND_COLOR = '#991100'
 
 CAPTCHA_FONT_SIZE = 50
-CAPTCHA_CHALLENGE_FUNCT = 'captcha.helpers.math_challenge'
+CAPTCHA_CHALLENGE_FUNCT = 'captcha.helpers.random_char_challenge'
 # CAPTCHA_CHALLENGE_FUNCT = 'captcha.helpers.word_challenge'
 CAPTCHA_WORDS_DICTIONARY = '/usr/share/dict/brazilian'
 # end django-simple-captcha config

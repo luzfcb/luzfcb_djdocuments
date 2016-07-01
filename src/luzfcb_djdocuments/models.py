@@ -14,7 +14,6 @@ from .utils import identificador
 
 
 class DocumentoQuerySet(models.QuerySet):
-
     def ativos(self):
         return self.filter(esta_ativo=True)
 
@@ -26,19 +25,16 @@ class DocumentoQuerySet(models.QuerySet):
 
 
 class DocumentoManager(models.Manager):
-
     def get_queryset(self):
         return DocumentoQuerySet(model=self.model, using=self._db).ativos().filter(eh_template=False)
 
 
 class DocumentoAdminManager(models.Manager):
-
     def get_queryset(self):
         return DocumentoQuerySet(model=self.model, using=self._db)
 
 
 class AssinaturaQuerySet(models.QuerySet):
-
     def inativos(self):
         return self.filter(esta_ativo=False)
 
@@ -57,12 +53,13 @@ class AssinaturaQuerySet(models.QuerySet):
 
 
 class AssinaturaManager(models.Manager):
+    queryset_class = AssinaturaQuerySet
 
     def get_queryset(self):
-        return AssinaturaQuerySet(model=self.model, using=self._db).ativos()
+        return self.queryset_class(model=self.model, using=self._db).ativos()
 
     def inativos(self):
-        return AssinaturaQuerySet(model=self.model, using=self._db).inativos()
+        return self.queryset_class(model=self.model, using=self._db).inativos()
 
     def ativos(self):
         return self.get_queryset()
@@ -75,7 +72,6 @@ class AssinaturaManager(models.Manager):
 
 
 class AssinaturaAdminManager(models.Manager):
-
     def get_queryset(self):
         return AssinaturaQuerySet(model=self.model, using=self._db)
 
@@ -439,14 +435,3 @@ class Documento(models.Model):
             ("pode_reverter_para_uma_versao_anterior_documento", "Pode Reverter documento para uma versão anterior"),
             ("pode_imprimir", "Pode Imprimir documento"),
         )
-
-# class DocumentoTemplateManager(models.Manager):
-#     def get_queryset(self):
-#         return super(DocumentoTemplateManager, self).get_queryset().filter(esta_ativo=True, eh_template=True)
-#
-#
-# class DocumentoTemplate(Documento):
-#     objects = DocumentoTemplateManager()
-#
-#     class Meta:
-#         proxy = True

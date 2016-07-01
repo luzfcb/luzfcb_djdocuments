@@ -112,6 +112,7 @@ class DocumentoDashboardView(generic.TemplateView):
 class DocumentoListView(generic.ListView):
     template_name = 'luzfcb_djdocuments/documento_list.html'
     model = Documento
+    paginate_by = 5
 
     def render_to_response(self, context, **response_kwargs):
         rend = super(DocumentoListView, self).render_to_response(context, **response_kwargs)
@@ -554,6 +555,7 @@ class DocumentoEditor(LoginRequiredMixin,
                       PopupMixin,
                       LuzfcbLockMixin,
                       generic.UpdateView):
+
     detail_view_named_url = 'documentos:detail'
     document_json_fields = ('titulo', 'document_number', 'document_version_number', 'identificador_versao')
     template_name = 'luzfcb_djdocuments/editor/documento_editor.html'
@@ -701,10 +703,12 @@ class VincularDocumentoBaseView(SingleDocumentObjectMixin, SingleObjectMixin, ge
     def get(self, request, *args, **kwargs):
         self.documents_field_name = self.get_documents_field_name()
 
-        self.object = self.get_object()
-        self.document_object = self.get_document_object()
+        self.object = self.get_object()  # obtenho tarefa
+        self.document_object = self.get_document_object()  # obtenho documento
 
         self.vinculate()
+
+
         editar_url = reverse(self.document_edit_named_view, kwargs={'pk': self.document_object.pk})
         return redirect(editar_url, permanent=True)
 
@@ -712,15 +716,23 @@ class VincularDocumentoBaseView(SingleDocumentObjectMixin, SingleObjectMixin, ge
         document_field = getattr(self.object, self.documents_field_name)
 
         with transaction.atomic():
-            if not document_field.filter(id=self.document_object.pk).count():
+            if not document_field.filter(id=self.document_object.pk).exists():
                 try:
                     document_field.add(self.document_object)
                 except IntegrityError as e:
                     logger.error(e)
                 else:
                     self.object.save()
+                    logger.info()
                     return True
         return False
+
+
+
+
+
+
+
 
         # kwargs_names = ['atendimento_numero', ]
         # kwargs_have_name = False
