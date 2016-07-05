@@ -21,11 +21,11 @@ from django.contrib.auth import views as auth_views
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.i18n import javascript_catalog
 
-from luzfcb_djdocuments import luzfcb_djdocuments_urls
+# from luzfcb_djdocuments import luzfcb_djdocuments_urls
 
 urlpatterns = [
-    url(r'', include(luzfcb_djdocuments_urls,
-                     namespace='documentos')),
+    # url(r'', include(luzfcb_djdocuments_urls,
+    #                  namespace='documentos')),
 
     url(r'^captcha/',
         include('captcha.urls'),

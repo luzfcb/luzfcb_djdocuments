@@ -142,7 +142,7 @@ class Assinatura(models.Model):
 
         if self.grupo_assinante:
             if not self.pk:
-                self.nome_defensoria = self.grupo_assinante.nome
+                self.nome_defensoria = self.grupo_assinante.name
         if self.cadastrado_por:
             if not self.pk:
                 self.nome_cadastrado_por = self.cadastrado_por.get_full_name()
@@ -157,17 +157,26 @@ class Documento(models.Model):
     def __unicode__(self):
         return 'pk: {}'.format(self.pk)
 
-    conteudo_documento = models.TextField(blank=True)
+    assunto = models.CharField(max_length=255, blank=True)
+
+    cabecalho = models.TextField(blank=True)
+    titulo = models.TextField(blank=True)
+    conteudo = models.TextField(blank=True)
+    rodape = models.TextField(blank=True)
+
+    # template
+    eh_template = models.BooleanField(default=False, editable=True)
+    template_descricao = models.TextField(blank=True)
+    # end template
 
     assinatura_hash = models.TextField(blank=True, editable=False, unique=True, null=True)
     esta_assinado = models.BooleanField(default=False, editable=True)
-    
+
     data_finalizado = models.DateTimeField(null=True)
     finalizado = models.BooleanField(default=False)
 
     grupos_assinates = models.ManyToManyField(to=get_grupo_assinante_model_str(),
                                               through='Assinatura',
-                                              through_fields=('documento', 'defensoria')
                                               )
 
     versao_numero = models.PositiveIntegerField(default=1, auto_created=True, editable=False)
@@ -187,8 +196,6 @@ class Documento(models.Model):
     modificado_em = models.DateTimeField(auto_now=True, blank=True, null=True, editable=False)
 
     modificado_por_nome = models.CharField(max_length=255, blank=True)
-
-
 
     esta_ativo = models.NullBooleanField(default=True, editable=False)
 
@@ -212,7 +219,7 @@ class Documento(models.Model):
         for defensoria in defensorias_assinantes:
             assinatura = self.grupos_assinates.through(
                 documento=self,
-                defensoria=defensoria,
+                grupo_assinante=defensoria,
                 cadastrado_por=cadastrado_por
             )
             assinatura.save()
@@ -285,6 +292,4 @@ class Documento(models.Model):
                     })
         if not self.esta_assinado:
             self.assinatura_hash = None
-        if self.assinado_por:
-            print(self.assinado_por.pk, ':', self.assinado_por.get_full_name())
         super(Documento, self).save(*args, **kwargs)

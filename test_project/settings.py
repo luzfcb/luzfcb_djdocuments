@@ -60,7 +60,8 @@ LUZFCB_DJDOCUMENTS_APPS = [
     'debug_toolbar',
     # end development dependencies
 
-    'luzfcb_djdocuments',
+    # 'luzfcb_djdocuments',
+    'djdocuments',
     'test_project.test_app'
 ]
 
@@ -68,7 +69,7 @@ INSTALLED_APPS = DEFAULT_DJANGO_INSTALLED_APPS + LUZFCB_DJDOCUMENTS_APPS
 
 MIDDLEWARE_CLASSES = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+    # 'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -182,6 +183,11 @@ CAPTCHA_CHALLENGE_FUNCT = 'captcha.helpers.random_char_challenge'
 CAPTCHA_WORDS_DICTIONARY = '/usr/share/dict/brazilian'
 # end django-simple-captcha config
 
-db_from_env = dj_database_url.config(conn_max_age=500)
+DJDOCUMENT = {
+    'BACKEND': 'test_project.test_app.backends.AuthGroupDocumentosBackend',
+    'GRUPO_ASSINANTE_MODEL': 'auth.Group',
+}
 
-DATABASES['default'].update(db_from_env)
+# db_from_env = dj_database_url.config(con_max_age=500)
+#
+# DATABASES['default'].update(db_from_env)

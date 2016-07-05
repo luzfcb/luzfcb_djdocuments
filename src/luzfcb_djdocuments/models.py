@@ -247,8 +247,10 @@ class Documento(models.Model):
     conteudo = models.TextField(blank=True)
     rodape = models.TextField(blank=True)
 
+    # template
     eh_template = models.BooleanField(default=False, editable=True)
     template_descricao = models.TextField(blank=True)
+    # end template
 
     versao_numero = models.IntegerField(default=1, auto_created=True, editable=False)
 

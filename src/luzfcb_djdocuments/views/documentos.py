@@ -723,7 +723,7 @@ class VincularDocumentoBaseView(SingleDocumentObjectMixin, SingleObjectMixin, ge
                     logger.error(e)
                 else:
                     self.object.save()
-                    logger.info()
+                    #logger.info('')
                     return True
         return False
 
