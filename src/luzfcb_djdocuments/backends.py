@@ -1,6 +1,5 @@
-from datetime import datetime
-
 from django.db.models import Q
+from django.utils import timezone
 
 
 class DocumentosBaseBackend(object):
@@ -23,7 +22,7 @@ class DocumentosAuthGroupBackend(DocumentosBaseBackend):
 
 class SolarDefensoriaBackend(DocumentosBaseBackend):
     def pode_visualizar_documento_para_o_grupo(self, document, usuario_assinante, grupo_assinante):
-        agora = datetime.now()
+        agora = timezone.now()
         usuario_atual_pode_visualizar = document.assinaturas.filter(
             Q(defensoria__all_atuacoes__ativo=True) &
             Q(defensoria__all_atuacoes__data_inicial__lte=agora) &
@@ -40,7 +39,9 @@ class SolarDefensoriaBackend(DocumentosBaseBackend):
         return usuario_atual_pode_visualizar
 
     def pode_editar_documento_para_o_grupo(self, document, usuario_assinante):
-        agora = datetime.now()
+        if document.esta_pronto_para_assinar:
+            return False
+        agora = timezone.now()
         usuario_atual_pode_editar = document.grupos_assinates.filter(
             Q(all_atuacoes__ativo=True) &
             Q(all_atuacoes__data_inicial__lte=agora) &

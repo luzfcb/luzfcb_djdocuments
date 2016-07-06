@@ -22,6 +22,10 @@ class NaoPodeAssinarException(Exception):
     message = 'Usuario nao pode assinar'
 
 
+class GrupoNaoPodeAssinarException(NaoPodeAssinarException):
+    message = 'Grupo nao e assintante deste documento'
+
+
 class ExitemAssinaturasPendentes(Exception):
     message = 'Impossivel finalizar documento com assinaturas pendentes'
 
@@ -85,9 +89,10 @@ class Assinatura(models.Model):
     data_exclusao = models.DateTimeField(null=True)
 
     def pode_assinar(self, grupo_assinante, usuario_assinante, agora):
-        return BackendGrupoAssinante.pode_assinar_documento_para_o_grupo(
+        return BackendGrupoAssinante.pode_assinar(
             document=self.documento,
-            usuario_assinante=usuario_assinante,
+            grupo_assinante=grupo_assinante,
+            usuario=usuario_assinante,
             now_datetime=agora
         )
 
@@ -109,26 +114,25 @@ class Assinatura(models.Model):
 
         self.assinado_por = usuario_assinante
         self.assinado_em = agora
-        self.hash_assinatura = self.gerar_hash()
         self.assinado_nome = self.assinado_por.get_full_name()
         self.versao_documento = self.documento.versao_numero
         self.esta_assinado = True
+        self.hash_assinatura = self.gerar_hash()
         self.save()
 
     def gerar_hash(self, ):
-        print("self.versao_numero: {} - self.documento.versao_numero: {}".format(self.versao_numero,
-                                                                                 self.documento.versao_numero))
+        print("Assinatura: {} - self.documento.versao_numero: {}".format(self.pk, self.documento.versao_numero))
 
         para_hash = '{username}-{conteudo}-{versao}-{assinado_em}'.format(  # username=self.assinado_por.username,
             username=self.assinado_por.username,
             conteudo=self.documento.conteudo,
-            versao=self.versao_numero,
+            versao=self.documento.versao_numero,
             assinado_em=self.assinado_em.strftime("%Y-%m-%d %H:%M:%S.%f")
         )
         password_hasher = SHA1PasswordHasher()
-        self.assinatura_hash = password_hasher.encode(para_hash, 'djdocumentos')
+        assinatura_hash = password_hasher.encode(para_hash, 'djdocumentos')
 
-        return 'Bah'
+        return assinatura_hash
 
     def revogar(self, usuario_atual):
         self.ativo = False
@@ -170,10 +174,11 @@ class Documento(models.Model):
     # end template
 
     assinatura_hash = models.TextField(blank=True, editable=False, unique=True, null=True)
+
+    data_assinado = models.DateTimeField(null=True)
     esta_assinado = models.BooleanField(default=False, editable=True)
 
-    data_finalizado = models.DateTimeField(null=True)
-    finalizado = models.BooleanField(default=False)
+    esta_pronto_para_assinar = models.BooleanField(default=False, editable=True)
 
     grupos_assinates = models.ManyToManyField(to=get_grupo_assinante_model_str(),
                                               through='Assinatura',
@@ -182,7 +187,6 @@ class Documento(models.Model):
     versao_numero = models.PositiveIntegerField(default=1, auto_created=True, editable=False)
     tipo_documento = models.ForeignKey(TipoDocumento, null=True, on_delete=models.SET_NULL,
                                        verbose_name='Tipo do Documento')
-
 
     # auditoria
     criado_por = models.ForeignKey(to='auth.User',
@@ -203,16 +207,16 @@ class Documento(models.Model):
 
     def pode_editar(self, usuario_atual):
         # TODO: Verificar ManyToManyField de Defensoria para Documento, com related donos
-        return BackendGrupoAssinante.pode_editar_documento_para_o_grupo(document=self,
-                                                                        usuario_assinante=usuario_atual)
+        return BackendGrupoAssinante.pode_editar(document=self,
+                                                 usuario=usuario_atual)
 
     def pode_visualizar(self, usuario_atual):
         if self.pode_editar(usuario_atual):
             return True
         else:
-            return BackendGrupoAssinante.pode_visualizar_documento_para_o_grupo(
+            return BackendGrupoAssinante.pode_visualizar(
                 document=self,
-                usuario_assinante=usuario_atual
+                usuario=usuario_atual
             )
 
     def adicionar_grupos_assinantes(self, defensorias_assinantes, cadastrado_por):
@@ -238,8 +242,9 @@ class Documento(models.Model):
             assinatura = self.assinaturas.get(
                 grupo_assinante=grupo_assinante,
                 ativo=True,
-                esta_assinado=False
             )
+            if assinatura.esta_assinado:
+                raise JaEstaAssinado()
             if assinatura:
                 try:
                     assinatura.assinar(usuario_assinante=usuario_assinante)
@@ -251,17 +256,16 @@ class Documento(models.Model):
                     raise e
 
                     #
-        # TODO: tratar caso documento ja assinado
         except self.grupos_assinates.through.DoesNotExist as e:
             logger.error(e)
-            raise e
+            raise GrupoNaoPodeAssinarException()
 
     def finalizar_documento(self, usuario):
         if self.assinaturas.filter(ativo=True, esta_assinado=False).exists():
             raise ExitemAssinaturasPendentes()
         self.assinatura_hash = self.gerar_hash()
-        self.data_finalizado = datetime.now()
-        self.finalizado = True
+        self.data_assinado = datetime.now()
+        self.esta_assinado = True
 
         self.save()
 
