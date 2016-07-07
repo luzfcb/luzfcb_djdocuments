@@ -1,0 +1,180 @@
+{% load staticfiles %}
+{% load i18n %}
+{% load spurl %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="robots" content="noindex, nofollow">
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Editar</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/themes/blue/pace-theme-loading-bar.css"
+          rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/pace.min.js"
+            data-pace-options='{ "ajax": true , "restartOnRequestAfter": false, "document": true, "startOnPageLoad": false}'></script>
+
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/humane-js/3.2.2/themes/jackedup.min.css"
+          rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/humane-js/3.2.2/humane.min.js"></script>
+    <style>
+        {#        .humane,#}
+        {#        .humane-jackedup {#}
+        {#            background-color: #d0ffcf;#}
+        {#        }#}
+
+    </style>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
+          integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css"
+          integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+
+    <link type="application/vnd.ms-fontobject"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/fonts/glyphicons-halflings-regular.eot"
+          rel="stylesheet">
+    {% if not disable_pagestyle %}
+        <link href="{% static "luzfcb_djdocuments/css/luzfcb_page_style.css" %}" rel="stylesheet">
+
+    {% endif %}
+    <link href="{% static "luzfcb_djdocuments/css/luzfcb_djdocuments.css" %}"
+          rel="stylesheet">
+
+
+    <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+            integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS"
+            crossorigin="anonymous"></script>
+    <script src="{% static "luzfcb_djdocuments/js/vendor/ckeditor/4.5.7/ckeditor-full-min/ckeditor.js" %}"></script>
+    <script src="{% static "luzfcb_dj_simplelock/js/jquery_csrftoken.js" %}"></script>
+    <script>
+        (function () {
+            console.log("iniciando Pace");
+            Pace.start();
+            console.log("talvez tenha iniciado");
+        })();
+
+    </script>
+
+</head>
+
+<body class="body">
+<div class="maindiv">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div id="menu-superior" class="row navbar-fixed-top cor-de-fundo-menus">
+                    <div class="col-md-12">
+                        <div class="pull-right" id="status-bar">
+                            Documento: {{ object.identificador_versao }}
+                        </div>
+                        <div class="btn-group">
+
+                            <button class="btn btn-default" type="button" id="salvar">
+                                <em class="glyphicon glyphicon-floppy-disk"></em> Salvar
+                            </button>
+                            {% if object %}
+{#                                <a class="btn btn-default djpopup2" type="button"#}
+{#                                   href="{% url 'documentos:validar-detail' pk=object.pk %}">#}
+{#                                    <em class="glyphicon glyphicon-print"></em>Imprimir#}
+{#                                </a>#}
+                                {% url 'documentos:list' as documento_list_url %}
+                                {% url 'documentos:assinar' object.pk as documento_assinar_url %}
+                                {% spurl base=documento_assinar_url add_query="next={{ documento_list_url }}" as documento_assinar_url_com_parametros %}
+                                <a href="{{ documento_assinar_url_com_parametros }}"
+                                   class="btn btn-default" {% if object.esta_assinado %}disabled="disabled" {% endif %}><em
+                                        class="glyphicon glyphicon-pencil"></em>Assinar</a>
+
+                            {% endif %}
+                        </div>
+                        <div id="top" class="cktop">
+                            <!-- Menu superior CKEditor -->
+                        </div>
+                    </div>
+
+                </div>
+                <div id="conteudo" class="row conteudo">
+                    <div class="center-block a4-pagina">
+                        <table>
+                            <div class="col-md-12">
+                                {% url 'documentos:editar' pk=object.pk as base_documento_update_url %}
+                                {% spurl base=base_documento_update_url add_query="{{ next_page_paran }}" add_query="{{ popup_paran }}" as documento_update_url %}
+                                <form role="form" method="post" id="formulario"
+                                      action="{{ documento_update_url }}">
+                                    <div class="form-group ">
+                                        {{ form.cabecalho }}
+                                    </div>
+                                    <div class="form-group">
+                                        {{ form.titulo }}
+                                    </div>
+                                    <div class="form-group">
+                                        {{ form.conteudo }}
+                                    </div>
+                                    <div class="form-group">
+                                        {{ form.rodape }}
+                                    </div>
+                                </form>
+                            </div>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="row navbar-fixed-bottom cor-de-fundo-menus">
+                    <div class="col-md-12">
+                        <div id="bottom">
+                            <!--  Menu inferior CKEditor  -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    (function (window, jQuery) {
+        window.luzfcb = window.luzfcb || {};
+        window.luzfcb.editor = window.luzfcb.editor || {};
+        var ckeditor_contentsCss = '{% static "luzfcb_djdocuments/css/luzfcb_document_format_styles.css" %}';
+
+
+        var msg_nao_salvo = '{% trans "O documento possui modificações e ainda não foi salvo" %}';
+        var ckeditor_style_name = 'luzfcb_djdocuments';
+        var ckeditor_style_full_url = '{% static "luzfcb_djdocuments/js/luzfcb_ckeditor.styles.js" %}';
+
+
+        var $botao_salvar = jQuery("#salvar");
+        var $formulario = jQuery("#formulario");
+
+        window.luzfcb.editor.ckeditor_style_name = ckeditor_style_name;
+        window.luzfcb.editor.ckeditor_style_full_url = ckeditor_style_full_url;
+        window.luzfcb.editor.ckeditor_contentsCss = ckeditor_contentsCss;
+        window.luzfcb.editor.msg_nao_salvo = msg_nao_salvo;
+        window.luzfcb.editor.$botao_salvar = $botao_salvar;
+        window.luzfcb.editor.$formulario = $formulario;
+        {% if debug %}
+            window.luzfcb.editor.debug = true;
+        {% endif %}
+    })(window, jQuery);
+
+    Pace.on('hide', function () {
+        //inicia os scripts basicos da pagina
+        window.luzfcb.editor.startall();
+
+    });
+
+</script>
+<script src="{% static "luzfcb_djdocuments/js/luzfcb_editor.js" %}"></script>
+
+{# luzfcb_dj_simplelock includes. Requires jQuery loaded first #}
+{% include 'luzfcb_dj_simplelock/dj_simplelock.html' %}
+{# end luzfcb_dj_simplelock includes. #}
+
+</body>
+
+</html>

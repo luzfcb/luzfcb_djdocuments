@@ -1,0 +1,32 @@
+{% extends "luzfcb_djdocuments/base.html" %}
+{% load staticfiles %}
+{% block titulo %}
+    Listar Documentos
+{% endblock titulo %}
+
+
+
+{% block conteudo_app %}
+    {{ block.super }}
+
+
+    {% if object_list %}
+
+        <ul class="list-group">
+            {% for object in object_list %}
+                <li class="list-group-item">{{ object }} - doc: {{ object.documento }} <a class="btn btn-danger btn-xs djpopup" href="{% url 'documentos:editar' object.pk %}">Editar</a>
+                    - {% if object.esta_assinado %}
+                        Assinado
+                    {% else %}
+                        <a href="{% url 'documentos:assinar' object.pk %}">Assinar</a>
+                    {% endif %}
+                    <a href="{% url 'documentos:validar-detail' object.pk %}">Imprimir</a>
+                </li>
+            {% endfor %}
+
+        </ul>
+    {% else %}
+        Não há itens cadastrados
+    {% endif %}
+
+{% endblock conteudo_app %}

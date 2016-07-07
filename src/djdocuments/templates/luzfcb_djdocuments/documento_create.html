@@ -1,0 +1,118 @@
+{% extends popup|yesno:"luzfcb_djdocuments/documento_create_popup_base.html,luzfcb_djdocuments/base.html" %}
+{% load i18n %}
+{#{% extends popup %}#}
+
+{#{% extends "luzfcb_djdocuments/base.html" %}#}
+{% load staticfiles %}
+
+{#{% block titulo %}#}
+{#    Criar Documento#}
+{#{% endblock titulo %}#}
+{% block  extra_head_js %}
+{% endblock extra_head_js %}
+{% block css_app %}
+    <style>
+        body {
+            background: rgb(204, 204, 204);
+        }
+
+        article {
+            background: white;
+            width: 21cm;
+        {#            height: 29.7cm;#} display: block;
+            margin: 0 auto 0.5cm;
+            box-shadow: 0 0 0.5cm rgba(0, 0, 0, 0.5);
+
+            padding: 30px;
+        {#            font-size: 11pt;#}{#            font-family: Arial;#}{#            text-justify: distribute;#} line-height: 22pt;
+        }
+
+        @media print {
+            body, article[size="A4"] {
+                margin: 0;
+                box-shadow: 0;
+                background: transparent;
+            }
+        }
+
+        .no-print {
+            display: block;
+        }
+
+        {#        @media all {#}
+        {#            .page-break {#}
+        {#                display: none;#}
+        {#            }#}
+        {#        }#}
+
+        @media print {
+            .cke_pagebreak {
+                display: block;
+                page-break-before: always;
+            }
+        }
+    </style>
+{% endblock css_app %}
+
+
+{% block conteudo_app %}
+    {{ block.super }}
+    <div id="toolbar-editor"></div>
+    <article id="cke_editable">
+        {% if form %}
+            <a id="teste" href="{% url 'documentos:create' %}{% if popup %}?popup=1{% endif %}">Verifique a Validade</a>
+
+            <div id="success_div"></div>
+            <div id="error_div"></div>
+            <form action="{% url 'documentos:create' %}{% if popup or next_page_url %}?{% endif %}{% if popup %}popup=1{% endif %}{% if next_page_url %}&{{ next_kwarg_name }}={{ next_page_url }}{% endif %}"
+                  method="post" id="documento_create">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    {{ form.non_field_errors }}
+                {% endif %}
+
+                {{ form.as_table }}
+                <input type="submit" id="enviar" value="Submit">
+
+            </form>
+            <div id="appdebug"></div>
+        {% endif %}
+    </article>
+{% endblock conteudo_app %}
+{% block js_app %}
+    {{ block.super }}
+    <script src="{% static 'luzfcb_djdocuments/js/prettyprint.js' %}"></script>
+
+    {% if form.media %}
+        {{ form.media }}
+    {% endif %}
+    {% if popup %}
+        <script>
+            {% if not popup %}
+                function OnClose() {
+                    "use strict";
+                    if (window.opener != null && !window.opener.closed) {
+                        window.opener.HideModalDiv();
+                        {% if next_page_url %}
+                            window.opener.redirecionar("{{ next_page_url }}");
+                        {% endif %}
+                    }
+                }
+                window.onunload = OnClose;
+            {% endif %}
+        </script>
+    {% endif %}
+
+    <script type="text/javascript" src="{% static "luzfcb_djdocuments/js/autosize.js" %}"></script>
+    {% if popup %}
+        <script>
+            {# coloca o editor em fullscreen se for uma janela popup#}
+            CKEDITOR.on('instanceReady',
+                    function (evt) {
+                        var editor = evt.editor;
+                        editor.execCommand('maximize');
+                    });
+        </script>
+    {% endif %}
+{% endblock %}

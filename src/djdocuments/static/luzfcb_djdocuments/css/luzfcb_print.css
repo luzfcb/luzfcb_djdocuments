@@ -1,0 +1,107 @@
+body {
+    background: rgb(204, 204, 204);
+    z-index: 10;
+    font-family: "Times New Roman";
+}
+
+article {
+    z-index: 20;
+    background: white;
+    width: 21cm;
+    margin: 0 auto 0.5cm;
+    box-shadow: 0 0 0.5cm rgba(0, 0, 0, 0.5);
+
+    padding: 30px;
+
+    line-height: 22pt;
+}
+
+@media print {
+    body, article[size="A4"] {
+        margin: 0;
+        box-shadow: 0;
+        background: transparent;
+    }
+}
+
+.no-print {
+    display: block;
+}
+
+@media all {
+    .page-break {
+        display: none;
+    }
+}
+
+@media print {
+    .cke_pagebreak {
+        display: block;
+        page-break-before: always;
+    }
+}
+
+.signin-form {
+
+}
+
+#bg-text {
+    color: lightgrey;
+    font-size: 80px;
+    z-index: -200;
+    background-repeat: repeat;
+
+    transform: rotate(300deg);
+    -webkit-transform: rotate(300deg);
+
+}
+
+@media print {
+    thead {
+        display: table-header-group;
+    }
+}
+
+@media print {
+    .no-print, .no-print * {
+        display: none !important;
+    }
+}
+
+.only-on-print * {
+
+    display: none !important;
+}
+
+@media print {
+    .only-on-print * {
+        display: block;
+    }
+}
+
+@media screen {
+    .noPrint {
+    }
+
+    .noScreen {
+        display: none;
+    }
+}
+
+@media print {
+    .noPrint {
+        display: none;
+    }
+
+    .noScreen {
+    }
+}
+
+.Texto_Centralizado_Maiusculas {
+    font-weight: bold;
+    font-size: 13pt;
+    font-family: "Times New Roman";
+    text-align: center;
+    text-transform: uppercase;
+    word-wrap: normal;
+}

@@ -1,0 +1,248 @@
+{% load staticfiles %}
+{% load spurl %}
+{% load luzfcb_djdocuments_tags %}
+<!DOCTYPE html>
+<html lang="pt-br" id="this-doc">
+<head>
+    <meta charset="utf-8">
+    <title>{{ object.titulo|remover_tags_html|slugify|slice:":200" }}_{{ object.identificador_versao }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="author" content="diti">
+    <!-- google font -->
+    <!-- <link href="http://fonts.googleapis.com/css?family=Aclonica:regular" rel="stylesheet" type="text/css"/> -->
+    <!-- styles -->
+    {#    <link href="{% static "luzfcb_djdocuments/css/print.css" %}" media="print" rel="stylesheet">#}
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+        <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    {% block css_app %}
+
+
+    {% endblock css_app %}
+    {% block extra_head_js %}
+    {% endblock extra_head_js %}
+    {#    <style>#}
+    {#        body {#}
+    {#            background: rgb(204, 204, 204);#}
+    {#            z-index: 10;#}
+    {#            font-family: "Times New Roman";#}
+    {#            word-wrap: break-word;#}
+    {#        }#}
+    {##}
+    {#        @media print {#}
+    {#            .no-print {#}
+    {#                visibility: hidden;#}
+    {#                display: none;#}
+    {#            }#}
+    {##}
+    {#            body {#}
+    {#                background: transparent;#}
+    {#                z-index: 0;#}
+    {#            }#}
+    {#        }#}
+    {#    </style>#}
+    <link href="{% static 'luzfcb_djdocuments/css/luzfcb_page_style.css' %}"
+          rel="stylesheet">
+    <link href="{% static 'luzfcb_djdocuments/css/luzfcb_document_format_styles_print.css' %}"
+          rel="stylesheet">
+</head>
+<body class="body" onload="subst()">
+<section class="section" id="documento-section">
+    <div class="container">
+        <div class="signin-form row-fluid">
+            <div class="a4-pagina">
+                {% if not disableTable %}
+                    <table width="100%">
+                    {# cabecalho repetido em todas as paginas #}
+                    <thead>
+                    <tr>
+                    <td>
+                {% endif %}
+                <div align="center">
+                    {{ object.cabecalho|safe }}
+                </div>
+                {{ object.titulo|safe }}
+                <hr style="border:none; padding:0; margin:5px 2px 0 2px; border-top:medium double #333">
+                {% if not disableTable %}
+                    </td>
+
+                    </tr>
+
+                    </thead>
+                    {# end cabecalho repetido em todas as paginas#}
+                    <tbody>
+                    <tr>
+                    <td>
+                {% endif %}
+                {% block conteudo_app %}
+                    {% if object %}
+                        <div class="documento-conteudo">
+                            {{ object.conteudo|safe }}
+                        </div>
+                    {% else %}
+                        Nada para mostrar
+                    {% endif %}
+
+                {% endblock conteudo_app %}
+
+                {#                <p id="bg-text">Rascunho</p>#}
+                {% if not disableTable %}
+                    </td>
+
+                    </tr>
+                    </tbody>
+
+                    <tfoot>
+                    <tr>
+                    <td>
+                {% endif %}
+                {% if object.esta_assinado %}
+                    {% url 'documentos:validar' as validar_url_view %}
+                    {% spurl base=validar_url_view query="h={{ object.assinatura_hash_upper_limpo }}" as validar_url %}
+                    <hr>
+                    <table>
+                        <tbody>
+                        <tr>
+                            <td>
+
+                            </td>
+                            <td>
+                                <p style="margin:0;text-align: left; font-size:11pt;font-family: Times New Roman;">
+                                    Documento assinado eletronicamente por
+                                    <b>{{ object.assinado_por.get_full_name }}</b>,
+                                    em {{ object.assinado_em|date:"d/m/Y H:m:s" }}, conforme art. 1º, III,
+                                    "b", da Lei 11.419/2006.</p>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <hr>
+                    <table>
+                        <tbody>
+                        <tr>
+                            <td style="width: 200px; height: 105px">
+                                <a id="url_validacao" href="{{ validar_url|absolute_uri:request }}">
+                                    <div id="codigo_qr" style="alignment: center; display: block;"></div>
+                                    <p class="no-print">Verifique a Validade</p>
+                                </a>
+
+                            </td>
+                            <td>
+                                <p style="margin:4;text-align: left; font-size:11pt;font-family: Times New Roman;">
+                                    A autenticidade do documento pode ser conferida no site
+                                    {{ validar_url_view|absolute_uri:request|urlize }} informando o código
+                                    verificador <b>{{ object.assinatura_hash_upper_limpo }}</b>.</p>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <hr style="border:none; padding:0; margin:5px 2px 0 2px; border-top:medium double #333">
+                    <table border="0" cellpadding="2" cellspacing="0" style="width:100%">
+                        <tbody>
+                        <tr>
+                            <td></td>
+                            <td style="text-align:right">{{ object.identificador_versao }} - Página [page] de [toPage]
+                        </tr>
+                        </tbody>
+                    </table>
+                {% endif %}
+                {% if not disableTable %}
+                    </td>
+                    </tr>
+                    </tfoot>
+                    </table>
+                {% endif %}
+            </div>
+        </div>
+        <!-- /row -->
+    </div>
+    <!-- /container -->
+</section>
+<div id="pdf-aqui"></div>
+<!-- javascript ================================================== -->
+<script src="{% static "luzfcb_djdocuments/js/vendor/jquery/1.12.1/jquery-1.12.1.min.js" %}"></script>
+{#<script src="{% static "js/bootstrap.js" %}"></script>#}
+
+<script>
+    if (!window.jQuery) {
+        document.write('<script src="{% static 'luzfcb_djdocuments/js/vendor/jquery/1.11.3/jquery.min.js' %}"><\/script>');
+        document.write('<script src="{% static 'luzfcb_djdocuments/js/vendor/jquery/1.11.3/jquery-migrate.min.js' %}"><\/script>');
+    }
+</script>
+
+
+<script src="{% static 'luzfcb_djdocuments/js/vendor/qrcode/0.12.0/jquery.qrcode.min.js' %}"></script>
+
+{% if object.esta_assinado %}
+    <script>
+        var url_validacao = $("#url_validacao").attr("href");
+
+        function gerar_qr(dado, renderizar_em) {
+            var opcoes = {
+                // render method: 'canvas', 'image' or 'div'
+                render: 'canvas',
+
+                // version range somewhere in 1 .. 40
+                minVersion: 1,
+                maxVersion: 40,
+
+                // error correction level: 'L', 'M', 'Q' or 'H'
+                ecLevel: 'H',
+
+                // offset in pixel if drawn onto existing canvas
+                left: 0,
+                top: 0,
+
+                // size in pixel
+                size: 110,
+
+                // code color or image element
+                fill: '#000',
+
+                // background color or image element, null for transparent background
+                background: null,
+
+                // content
+                text: dado,
+
+                // corner radius relative to module width: 0.0 .. 0.5
+                radius: 0.0,
+
+                // quiet zone in modules
+                quiet: 0,
+
+                // modes
+                // 0: normal
+                // 1: label strip
+                // 2: label box
+                // 3: image strip
+                // 4: image box
+                mode: 2,
+
+                mSize: 0.1,
+                mPosX: 0.5,
+                mPosY: 0.5,
+
+                label: 'DPE-TO',
+                fontname: 'sans',
+                fontcolor: '#ff8300',
+
+                image: null
+            };
+
+            $(renderizar_em).qrcode(opcoes);
+        }
+
+        gerar_qr(url_validacao, "#codigo_qr");
+
+    </script>
+{% endif %}
+
+{% block js_app %}
+{% endblock %}
+
+</body>
+</html>

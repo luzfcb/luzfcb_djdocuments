@@ -11,9 +11,12 @@ from django.utils.encoding import python_2_unicode_compatible
 from simple_history.models import HistoricalRecords
 from simple_history.views import MissingHistoryRecordsField
 
+from djdocuments.utils import identificador
+
 logger = logging.getLogger()
 
 from .utils import get_grupo_assinante_backend, get_grupo_assinante_model_str
+from . import managers
 
 BackendGrupoAssinante = get_grupo_assinante_backend()
 
@@ -70,7 +73,7 @@ class Assinatura(models.Model):
     assinado_em = models.DateTimeField(null=True, blank=True)
     hash_assinatura = models.TextField(blank=True)
 
-    esta_assinado = models.BooleanField(default=False)
+    esta_ativo = models.NullBooleanField(default=True, editable=False)
 
     #
     ativo = models.BooleanField(default=True)
@@ -204,6 +207,40 @@ class Documento(models.Model):
     esta_ativo = models.NullBooleanField(default=True, editable=False)
 
     versoes = HistoricalRecords()
+    objects = managers.DocumentoManager()
+    admin_objects = managers.DocumentoAdminManager()
+
+    @property
+    def _history_user(self):
+        return self.modificado_por
+
+    @_history_user.setter
+    def _history_user(self, value):
+        self.modificado_por = value
+
+    @property
+    def identificador_documento(self):
+        if not self.pk:
+            return None
+        return identificador.document_number(self.pk)
+
+    @property
+    def identificador_versao(self):
+        if not self.pk:
+            return None
+        return identificador.document(self.pk, self.versao_numero)
+
+    @property
+    def document_number(self):
+        if not self.pk:
+            return None
+        return identificador.document_number(self.pk)
+
+    @property
+    def document_version_number(self):
+        if not self.pk:
+            return None
+        return identificador.document_version_number(self.versao_numero)
 
     def pode_editar(self, usuario_atual):
         # TODO: Verificar ManyToManyField de Defensoria para Documento, com related donos

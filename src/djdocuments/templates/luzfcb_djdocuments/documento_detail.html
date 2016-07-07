@@ -1,0 +1,39 @@
+{% extends "luzfcb_djdocuments/documento_detail_base.html" %}
+{% load luzfcb_djdocuments_tags %}
+
+
+
+{% block titulo %}
+    Detalhes Documento
+{% endblock titulo %}
+
+
+
+
+{% block conteudo_app %}
+{#    {{ block.super }}#}
+
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    {% if object %}
+        <a href="{% url 'documentos:history' pk=object.pk %}" class="btn btn-primary"> Historico de Modificações</a>
+    {% endif %}
+
+
+        {% if object %}
+                        {{ object.conteudo|safe }}
+            <br>
+            <br>
+            <br>
+            <br>
+{#            {{ conteudo_sign }}#}
+        {% else %}
+            Nada para mostrar
+        {% endif %}
+
+{% endblock conteudo_app %}

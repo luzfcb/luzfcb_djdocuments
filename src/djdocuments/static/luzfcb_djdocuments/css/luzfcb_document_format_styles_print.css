@@ -1,0 +1,283 @@
+[contenteditable="false"] {
+    background-color: rgba(0, 0, 0, 0.15) !important;
+}
+
+body {
+    word-wrap: break-word;
+    text-align: justify;
+}
+
+@media print {
+    a[href]:after {
+        content: "" !important;
+    }
+
+    body {
+        padding-top: 0;
+        margin-top: 0;
+    }
+}
+
+.codigo-qr {
+    alignment: center;
+    display: block;
+    margin-right: 25px;
+}
+
+.documento .documento-conteudo {
+    padding-top: 20px;
+}
+
+.documento .documento-conteudo p {
+    text-indent: 40px;
+}
+
+.documento .documento-conteudo p img, hr {
+    margin-left: -40px;
+}
+
+.documento-rodape hr.assinantes-borda, .documento-assinaturas hr.assinantes-borda{
+    margin-top: 3px;
+    margin-bottom: 3px;
+}
+
+.documento-rodape hr.borda-dupla, .documento-cabecalho hr.borda-dupla, .documento-assinaturas hr.borda-dupla {
+    border: none;
+    padding: 0;
+    margin: 5px 2px 0 2px;
+    border-top: medium double #333
+
+}
+
+.documento p.Tabela_Texto_8 {
+    font-size: 8pt;
+    font-family: Times New Roman;
+    text-align: left;
+    word-wrap: inherit;
+    margin: 0 3pt 0 3pt;
+}
+
+.documento p.Tabela_Texto_Alinhado_Direita {
+    font-size: 11pt;
+    font-family: Times New Roman;
+    text-align: right;
+    word-wrap: inherit;
+    margin: 0 3pt 0 3pt;
+}
+
+.documento p.Tabela_Texto_Alinhado_Esquerda {
+    font-size: 11pt;
+    font-family: Times New Roman;
+    text-align: left;
+    word-wrap: inherit;
+    margin: 0 3pt 0 3pt;
+}
+
+.documento p.Tabela_Texto_Centralizado {
+    font-size: 11pt;
+    font-family: Times New Roman;
+    text-align: center;
+    word-wrap: inherit;
+    margin: 0 3pt 0;
+}
+
+.documento p.Tachado {
+    font-size: 11pt;
+    font-family: Times New Roman;
+    text-indent: 1.18in;
+    text-align: justify;
+    word-wrap: inherit;
+    text-decoration: line-through;
+}
+
+.documento p.Texto_Alinhado_Direita {
+    font-size: 12pt;
+    font-family: Times New Roman;
+    text-align: right;
+    word-wrap: inherit;
+    margin: 6pt;
+}
+
+.documento p.Texto_Alinhado_Esquerda {
+    font-size: 12pt;
+    font-family: Times New Roman;
+    text-align: left;
+    word-wrap: inherit;
+    margin: 6pt;
+}
+
+.documento p.Texto_Alinhado_Esquerda_Espaçamento_Simples {
+    font-size: 12pt;
+    font-family: Times New Roman;
+    text-align: left;
+    word-wrap: inherit;
+    margin: 0;
+}
+
+.documento p.Texto_Centralizado {
+    font-size: 12pt;
+    font-family: Times New Roman;
+    text-align: center;
+    word-wrap: inherit;
+    margin: 6pt;
+}
+
+.documento p.Texto_Centralizado_Maiusculas {
+    font-weight: bold;
+    font-size: 13pt;
+    font-family: Times New Roman;
+    text-align: center;
+    text-transform: uppercase;
+    word-wrap: inherit;
+}
+
+.documento p.Texto_Citação {
+    font-size: 10pt;
+    font-family: Times New Roman;
+    word-wrap: inherit;
+    margin: 4pt 0 4pt 1.18in;
+    text-align: justify;
+}
+
+.documento p.Texto_Ementa {
+    font-size: 10pt;
+    font-family: Times New Roman;
+    text-align: justify;
+    word-wrap: inherit;
+    margin: 4pt 0 4pt 3.14in;
+}
+
+.documento p.Texto_Justificado {
+    font-size: 12pt;
+    font-family: Times New Roman;
+    text-align: justify;
+    word-wrap: inherit;
+    text-indent: 0;
+    margin: 6pt;
+}
+
+.documento p.Texto_Justificado_Recuo_Primeira_Linha {
+    font-size: 12pt;
+    font-family: Times New Roman;
+    text-indent: 1.18in;
+    text-align: justify;
+    word-wrap: inherit;
+    margin: 6pt;
+}
+
+.documento p.Texto_Mono_Espaçado {
+    font-size: 8pt;
+    font-family: Courier New;
+    text-align: left;
+    white-space: pre;
+    word-wrap: inherit;
+    margin: 2pt;
+}
+
+.documento blockquote {
+    border: none;
+}
+
+.documento blockquote p {
+    font-size: 10pt;
+    font-family: Times New Roman;
+    word-wrap: inherit;
+    margin: 4pt 0 4pt 1.18in;
+    text-align: justify;
+    border: none;
+}
+
+/*@media print {*/
+
+/*body {*/
+/*display: inline;*/
+/*background: white;*/
+/*font-size: 10pt;*/
+/*margin: 0*/
+/*}*/
+
+/*#sidebar {*/
+/*display: none*/
+/*}*/
+
+/*#header {*/
+/*height: 75px*/
+/*}*/
+
+/*#content {*/
+/*margin-left: 0;*/
+/*float: none;*/
+/*width: auto*/
+/*}*/
+
+/*.demo .red {*/
+/*color: black;*/
+/*font-weight: bold*/
+/*}*/
+
+/*#content a {*/
+/*font-weight: bold;*/
+/*color: #000066;*/
+/*text-decoration: underline*/
+/*}*/
+
+/*#content {*/
+/*margin-left: 0;*/
+/*float: none;*/
+/*width: auto*/
+/*}*/
+
+/*#footer, .ad {*/
+/*display: none*/
+/*}*/
+
+/*h1, h2, h3, h4, h5, h6 {*/
+/*page-break-after: avoid;*/
+/*page-break-inside: avoid*/
+/*}*/
+
+/*h3 {*/
+/*margin-left: 10px;*/
+/*margin-bottom: 0px;*/
+/*padding-bottom: 0px*/
+/*}*/
+
+/*blockquote, table, pre {*/
+/*page-break-inside: avoid*/
+/*}*/
+
+/*ul, ol, dl {*/
+/*page-break-before: avoid*/
+/*}*/
+
+/*img.centered {*/
+/*display: block;*/
+/*margin-left: auto;*/
+/*margin-right: auto;*/
+/*}*/
+
+/*img.right {*/
+/*padding: 4px;*/
+/*margin: 0 0 2px 7px;*/
+/*display: inline;*/
+/*}*/
+
+/*img.left {*/
+/*padding: 4px;*/
+/*margin: 0 7px 2px 0;*/
+/*display: inline;*/
+/*}*/
+
+/*.right {*/
+/*float: right;*/
+/*}*/
+
+/*.left {*/
+/*float: left*/
+/*}*/
+
+/*img {*/
+/*page-break-inside: avoid;*/
+/*page-break-after: avoid;*/
+/*}*/
+/*}*/
