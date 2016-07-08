@@ -14,7 +14,7 @@
 
         <ul class="list-group">
             {% for object in object_list %}
-                <li class="list-group-item">{{ object }} - <a class="btn btn-danger btn-xs djpopup" href="{% url 'documentos:editar' object.pk %}">Editar</a>
+                <li class="list-group-item">{{ object }} - <a class="btn btn-danger btn-xs djpopup" href="{% url 'documentos:editar' object.pk_uuid %}">Editar</a>
                     - {% if object.esta_assinado %}
                         Assinado
                     {% else %}

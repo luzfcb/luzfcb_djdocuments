@@ -21,9 +21,8 @@ from luzfcb_dj_simplelock.views import LuzfcbLockMixin
 
 from .mixins import (NextURLMixin, PopupMixin, AuditavelViewMixin, AjaxFormPostMixin, DocumentoAssinadoRedirectMixin,
                      SingleDocumentObjectMixin)
-from ..models import Documento
+from ..models import Documento, Assinatura
 from ..forms import DocumentoEditarForm, CriarDocumentoForm, CriarModeloDocumentoForm, AssinarDocumentoForm
-from ..utils import add_querystrings_to_url
 from ..utils.module_loading import get_real_user_model_class
 
 logger = logging.getLogger(__name__)
@@ -82,6 +81,7 @@ class DocumentoEditor(LoginRequiredMixin,
     # template_name = 'luzfcb_djdocuments/documento_update.html'
     lock_revalidated_at_every_x_seconds = 3
     model = Documento
+    slug_field = 'pk_uuid'
     prefix = 'document'
     # form_class = DocumentoFormCreate
     form_class = DocumentoEditarForm
@@ -93,7 +93,7 @@ class DocumentoEditor(LoginRequiredMixin,
         return super(DocumentoEditor, self).dispatch(request, *args, **kwargs)
 
     def get_lock_url_to_redirect_if_locked(self):
-        return reverse('documentos:detail', kwargs={'pk': self.object.pk})
+        return reverse('documentos:detail', kwargs={'pk': self.object.pk_uuid})
 
     def form_valid(self, form):
         return super(DocumentoEditor, self).form_valid(form)
@@ -352,5 +352,5 @@ class AssinarDocumentoView(DocumentoAssinadoRedirectMixin, generic.FormView, gen
         return ret
 
     def get_success_url(self):
-        detail_url = reverse('documentos:validar-detail', kwargs={'pk': self.object.pk})
+        detail_url = reverse('documentos:validar-detail', kwargs={'pk': self.object.pk_uuid})
         return detail_url

@@ -2,9 +2,10 @@
 from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
 
 import logging
+import uuid
 from datetime import datetime
 
-from django.contrib.auth.hashers import SHA1PasswordHasher
+from django.contrib.auth.hashers import SHA1PasswordHasher, check_password
 from django.db import models
 from django.db.models import Q, Max
 from django.utils.encoding import python_2_unicode_compatible
@@ -99,7 +100,9 @@ class Assinatura(models.Model):
             now_datetime=agora
         )
 
-    def assinar(self, usuario_assinante):
+    def assinar(self, usuario_assinante, senha):
+
+        valid = check_password(senha, usuario_assinante.password)
         assert self.ativo == True, 'O registro nao esta ativo para ser assinado'
 
         assert self.esta_assinado == False, 'O registro ja esta assinado'
@@ -159,7 +162,7 @@ class Assinatura(models.Model):
 
 # Create your models here.
 class Documento(models.Model):
-    uuid_hash = models.UUIDField(editable=False, unique=True, null=True, db_index=True)
+    pk_uuid = models.UUIDField(editable=False, unique=True, null=True, db_index=True, default=uuid.uuid4)
 
     def __unicode__(self):
         return 'pk: {}'.format(self.pk)
@@ -274,7 +277,7 @@ class Documento(models.Model):
                 cadastrado_por=usuario_atual
             )
 
-    def assinar(self, grupo_assinante, usuario_assinante):
+    def assinar(self, grupo_assinante, usuario_assinante, senha):
         try:
             assinatura = self.assinaturas.get(
                 grupo_assinante=grupo_assinante,
@@ -284,7 +287,7 @@ class Documento(models.Model):
                 raise JaEstaAssinado()
             if assinatura:
                 try:
-                    assinatura.assinar(usuario_assinante=usuario_assinante)
+                    assinatura.assinar(usuario_assinante=usuario_assinante, senha)
                 except NaoPodeAssinarException as e:
                     logger.error(e)
                     raise e
@@ -312,7 +315,8 @@ class Documento(models.Model):
         return 'Balackbah'
 
     def save(self, *args, **kwargs):
-
+        if not self.pk_uuid:
+            self.pk_uuid = uuid.uuid4()
         if self.pk:
             if hasattr(self._meta, 'simple_history_manager_attribute'):
                 history_manager = getattr(self, self._meta.simple_history_manager_attribute)

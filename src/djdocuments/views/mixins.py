@@ -249,7 +249,7 @@ class DocumentoAssinadoRedirectMixin(object):
                                                    versao_documento=self.object.versao_numero).first()
 
             if assinatura and assinatura.esta_assinado and assinatura.esta_ativo:
-                detail_url = reverse('documentos:validar-detail', kwargs={'pk': self.object.pk})
+                detail_url = reverse('documentos:validar-detail', kwargs={'pk': self.object.pk_uuid})
                 messages.add_message(request, messages.INFO,
                                      'Você já assinou o documento {} em: {:%d-%m-%Y %H:%M}'.format(
                                          assinatura.documento.identificador_documento,
@@ -257,7 +257,7 @@ class DocumentoAssinadoRedirectMixin(object):
                 # if self.object.esta_assinado:
                 # for assinante in assinantes
                 # if self.object.esta_assinado:
-                #     detail_url = reverse('documentos:validar-detail', kwargs={'pk': self.object.pk})
+                #     detail_url = reverse('documentos:validar-detail', kwargs={'pk': self.object.pk_uuid})
                 #     messages.add_message(request, messages.INFO,
                 #                          'Documentos assinados só podem ser visualizados - {}'.format(
                 #                              self.__class__.__name__))

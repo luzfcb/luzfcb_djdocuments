@@ -28,9 +28,13 @@ urlpatterns = [
         # documentos_views.criar_documento,
         name='create'
         ),
-    url(r'^editar/(?P<pk>\d+)/$',
+    url(r'^editar/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/$',
         documentos_views.DocumentoEditor.as_view(),
         name='editar'
+        ),
+    url(r'^assinar/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/$',
+        documentos_views.AssinarDocumentoView.as_view(),
+        name='assinar'
         ),
     url(r'^d/create-template/$',
         documentos_views.DocumentoModeloCriar.as_view(),
