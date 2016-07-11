@@ -6,14 +6,15 @@ from datetime import datetime
 
 from django.contrib.auth.hashers import SHA1PasswordHasher
 from django.db import models
-from django.db.models import Q, Max
+from django.db.models import Max, Q
 from django.utils.encoding import python_2_unicode_compatible
 from simple_history.models import HistoricalRecords
 from simple_history.views import MissingHistoryRecordsField
 
+from .utils import get_grupo_assinante_backend, get_grupo_assinante_model_str
+
 logger = logging.getLogger()
 
-from .utils import get_grupo_assinante_backend, get_grupo_assinante_model_str
 
 BackendGrupoAssinante = get_grupo_assinante_backend()
 
@@ -41,6 +42,7 @@ class TipoDocumento(models.Model):
 
 @python_2_unicode_compatible
 class Assinatura(models.Model):
+
     def __str__(self):
         return 'pk: {}'.format(self.pk)
 
@@ -161,7 +163,7 @@ class Documento(models.Model):
 
     assinatura_hash = models.TextField(blank=True, editable=False, unique=True, null=True)
     esta_assinado = models.BooleanField(default=False, editable=True)
-    
+
     data_finalizado = models.DateTimeField(null=True)
     finalizado = models.BooleanField(default=False)
 
@@ -173,7 +175,6 @@ class Documento(models.Model):
     versao_numero = models.PositiveIntegerField(default=1, auto_created=True, editable=False)
     tipo_documento = models.ForeignKey(TipoDocumento, null=True, on_delete=models.SET_NULL,
                                        verbose_name='Tipo do Documento')
-
 
     # auditoria
     criado_por = models.ForeignKey(to='auth.User',
@@ -187,8 +188,6 @@ class Documento(models.Model):
     modificado_em = models.DateTimeField(auto_now=True, blank=True, null=True, editable=False)
 
     modificado_por_nome = models.CharField(max_length=255, blank=True)
-
-
 
     esta_ativo = models.NullBooleanField(default=True, editable=False)
 

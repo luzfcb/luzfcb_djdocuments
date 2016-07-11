@@ -3,15 +3,24 @@ from __future__ import absolute_import, print_function, unicode_literals
 
 import re
 
+from django.apps import apps
 from django.conf import settings
 from django.utils import six
 from django.utils.http import urlencode, urlunquote
 from django.utils.six.moves.urllib.parse import parse_qsl, urlparse, urlunsplit
 
+from .module_loading import import_member
+
+try:
+    from urllib.request import pathname2url
+    from urllib.parse import urljoin
+except ImportError:  # Python2
+    from urllib import pathname2url
+    from urlparse import urljoin
+
 __all__ = (
     'add_querystrings_to_url',
 )
-from .module_loading import import_member
 
 
 def get_grupo_assinante_backend(*args, **kwargs):
@@ -24,6 +33,10 @@ def get_grupo_assinante_backend(*args, **kwargs):
 def get_grupo_assinante_model_str():
     from ..settings import DJDOCUMENT
     return DJDOCUMENT['GRUPO_ASSINANTE_MODEL']
+
+
+def get_grupo_assinante_model_class():
+    return apps.get_model(get_grupo_assinante_model_str())
 
 
 def add_querystrings_to_url(url, querystrings_dict):
@@ -45,7 +58,7 @@ def add_querystrings_to_url(url, querystrings_dict):
     parsed_params = {
         key: (lambda x: x, urlunquote)[isinstance(value, six.string_types)](value)
         for key, value in six.iteritems(current_params)
-        }
+    }
 
     from pprint import pprint
     encoded_params = urlencode(parsed_params)
@@ -64,14 +77,6 @@ def intercalar(string, a_cada=4, caracter="."):
     assert isinstance(string, six.string_types) and isinstance(caracter, six.string_types), 'Expected string'
     assert isinstance(a_cada, int) and a_cada > 0, 'Expected positive integer'
     return caracter.join(string[i:i + a_cada] for i in list(six.moves.xrange(0, len(string), a_cada)))
-
-
-try:
-    from urllib.request import pathname2url
-    from urllib.parse import urljoin
-except ImportError:  # Python2
-    from urllib import pathname2url
-    from urlparse import urljoin
 
 
 def pathname2fileurl(pathname):

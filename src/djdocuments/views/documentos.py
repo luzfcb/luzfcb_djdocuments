@@ -5,7 +5,6 @@ import logging
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.db import transaction
@@ -16,14 +15,20 @@ from django.utils.decorators import method_decorator
 from django.views import generic
 from django.views.decorators.cache import never_cache
 from django.views.generic.detail import SingleObjectMixin
-
 from luzfcb_dj_simplelock.views import LuzfcbLockMixin
 
-from .mixins import (NextURLMixin, PopupMixin, AuditavelViewMixin, AjaxFormPostMixin, DocumentoAssinadoRedirectMixin,
-                     SingleDocumentObjectMixin)
-from ..models import Documento, Assinatura
-from ..forms import DocumentoEditarForm, CriarDocumentoForm, CriarModeloDocumentoForm, AssinarDocumentoForm
+from ..forms import AssinarDocumentoForm, CriarDocumentoForm, CriarModeloDocumentoForm, DocumentoEditarForm
+from ..models import Assinatura, Documento
 from ..utils.module_loading import get_real_user_model_class
+from .auth_mixins import LoginRequiredMixin
+from .mixins import (
+    AjaxFormPostMixin,
+    AuditavelViewMixin,
+    DocumentoAssinadoRedirectMixin,
+    NextURLMixin,
+    PopupMixin,
+    SingleDocumentObjectMixin
+)
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +50,7 @@ class DocumentoDashboardView(generic.TemplateView):
         return context
 
 
-class DocumentoListView(generic.ListView):
+class DocumentoListView(LoginRequiredMixin, generic.ListView):
     template_name = 'luzfcb_djdocuments/documento_list.html'
     model = Documento
     paginate_by = 5
@@ -126,7 +131,7 @@ def create_from_template(current_user, documento_template):
     return documento_novo
 
 
-class DocumentoCriar(generic.FormView):
+class DocumentoCriar(LoginRequiredMixin, generic.FormView):
     template_name = 'luzfcb_djdocuments/documento_create2.html'
     form_class = CriarDocumentoForm
     default_selected_document_template_pk = None
@@ -198,7 +203,7 @@ class DocumentoModeloCriar(DocumentoCriar):
     form_class = CriarModeloDocumentoForm
 
 
-class VincularDocumentoBaseView(SingleDocumentObjectMixin, SingleObjectMixin, generic.View):
+class VincularDocumentoBaseView(LoginRequiredMixin, SingleDocumentObjectMixin, SingleObjectMixin, generic.View):
     model = None
     documents_field_name = None
 
@@ -247,7 +252,7 @@ class VincularDocumentoBaseView(SingleDocumentObjectMixin, SingleObjectMixin, ge
         return False
 
 
-class AssinarDocumentoView(DocumentoAssinadoRedirectMixin, generic.FormView, generic.DetailView):
+class AssinarDocumentoView(LoginRequiredMixin, DocumentoAssinadoRedirectMixin, generic.FormView, generic.DetailView):
     template_name = 'luzfcb_djdocuments/documento_assinar.html'
     form_class = AssinarDocumentoForm
     model = Documento

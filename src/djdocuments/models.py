@@ -3,38 +3,40 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import logging
 import uuid
-from datetime import datetime
+from collections import Iterable
 
 from django.contrib.auth.hashers import SHA1PasswordHasher, check_password
+from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Q, Max
+from django.db.models import Max, Q
+from django.utils import timezone
 from django.utils.encoding import python_2_unicode_compatible
+from djdocuments.utils import identificador
 from simple_history.models import HistoricalRecords
 from simple_history.views import MissingHistoryRecordsField
 
-from djdocuments.utils import identificador
+from . import managers
+from .utils import get_grupo_assinante_backend, get_grupo_assinante_model_class, get_grupo_assinante_model_str
 
 logger = logging.getLogger()
 
-from .utils import get_grupo_assinante_backend, get_grupo_assinante_model_str
-from . import managers
 
 BackendGrupoAssinante = get_grupo_assinante_backend()
 
 
-class NaoPodeAssinarException(Exception):
+class NaoPodeAssinarException(ValidationError):
     message = 'Usuario nao pode assinar'
 
 
-class GrupoNaoPodeAssinarException(NaoPodeAssinarException):
+class GrupoNaoPodeAssinarException(ValidationError):
     message = 'Grupo nao e assintante deste documento'
 
 
-class ExitemAssinaturasPendentes(Exception):
+class ExitemAssinaturasPendentes(ValidationError):
     message = 'Impossivel finalizar documento com assinaturas pendentes'
 
 
-class JaEstaAssinado(Exception):
+class JaEstaAssinado(ValidationError):
     pass
 
 
@@ -49,6 +51,7 @@ class TipoDocumento(models.Model):
 
 @python_2_unicode_compatible
 class Assinatura(models.Model):
+
     def __str__(self):
         return 'pk: {}'.format(self.pk)
 
@@ -73,6 +76,7 @@ class Assinatura(models.Model):
     #  dados apos assinado
     assinado_em = models.DateTimeField(null=True, blank=True)
     hash_assinatura = models.TextField(blank=True)
+    esta_assinado = models.BooleanField(default=False, editable=False)
 
     esta_ativo = models.NullBooleanField(default=True, editable=False)
 
@@ -102,12 +106,14 @@ class Assinatura(models.Model):
 
     def assinar(self, usuario_assinante, senha):
 
-        valid = check_password(senha, usuario_assinante.password)
+        if not check_password(senha, usuario_assinante.password):
+            raise ValidationError('Senha inválida para o usuario selecionado')
+
         assert self.ativo == True, 'O registro nao esta ativo para ser assinado'
 
         assert self.esta_assinado == False, 'O registro ja esta assinado'
 
-        agora = datetime.now()
+        agora = timezone.now()
 
         #
 
@@ -116,7 +122,7 @@ class Assinatura(models.Model):
         if not self.pode_assinar(grupo_assinante=self.grupo_assinante,
                                  usuario_assinante=usuario_assinante,
                                  agora=agora):
-            raise NaoPodeAssinarException()
+            raise NaoPodeAssinarException('Usuario não pode assinar esse documento')
 
         self.assinado_por = usuario_assinante
         self.assinado_em = agora
@@ -144,7 +150,7 @@ class Assinatura(models.Model):
         self.ativo = False
         self.excluido_por = usuario_atual
         self.nome_excluido_por = usuario_atual.get_full_name()
-        self.data_exclusao = datetime.now()
+        self.data_exclusao = timezone.now()
         self.save()
 
     def save(self, *args, **kwargs):
@@ -182,7 +188,7 @@ class Documento(models.Model):
     assinatura_hash = models.TextField(blank=True, editable=False, unique=True, null=True)
 
     data_assinado = models.DateTimeField(null=True)
-    esta_assinado = models.BooleanField(default=False, editable=True)
+    esta_assinado = models.BooleanField(default=False, editable=False)
 
     esta_pronto_para_assinar = models.BooleanField(default=False, editable=True)
 
@@ -259,21 +265,24 @@ class Documento(models.Model):
                 usuario=usuario_atual
             )
 
-    def adicionar_grupos_assinantes(self, defensorias_assinantes, cadastrado_por):
-        for defensoria in defensorias_assinantes:
-            assinatura = self.grupos_assinates.through(
-                documento=self,
-                grupo_assinante=defensoria,
-                cadastrado_por=cadastrado_por
-            )
-            assinatura.save()
+    def adicionar_grupos_assinantes(self, grupos_assinantes, cadastrado_por):
+        if not isinstance(grupos_assinantes, Iterable):
+            grupos_assinantes = [grupos_assinantes]
+        for grupo in grupos_assinantes:
+            try:
+                self.grupos_assinates.through.objects.get(documento=self, grupo_assinante=grupo)
+            except self.grupos_assinates.through.DoesNotExist:
+                obj = self.grupos_assinates.through(documento=self,
+                                                    grupo_assinante=grupo,
+                                                    cadastrado_por=cadastrado_por)
+                obj.save()
 
     def revogar_assinaturas(self, usuario_atual):
         assinaturas = self.assinaturas.filter(ativo=True, esta_assinado=True)
         for assinatura in assinaturas:
             assinatura.revogar(usuario_atual=usuario_atual)
             self.adicionar_grupos_assinantes(
-                defensorias_assinantes=(assinatura.defensoria,),
+                grupos_assinantes=(assinatura.defensoria,),
                 cadastrado_por=usuario_atual
             )
 
@@ -284,10 +293,10 @@ class Documento(models.Model):
                 ativo=True,
             )
             if assinatura.esta_assinado:
-                raise JaEstaAssinado()
+                raise JaEstaAssinado('Documento já esta assinado')
             if assinatura:
                 try:
-                    assinatura.assinar(usuario_assinante=usuario_assinante, senha)
+                    assinatura.assinar(usuario_assinante=usuario_assinante, senha=senha)
                 except NaoPodeAssinarException as e:
                     logger.error(e)
                     raise e
@@ -298,20 +307,25 @@ class Documento(models.Model):
                     #
         except self.grupos_assinates.through.DoesNotExist as e:
             logger.error(e)
-            raise GrupoNaoPodeAssinarException()
+            raise GrupoNaoPodeAssinarException('GrupoNaoPodeAssinarException')
+
+    def possui_assinatura_pendente(self):
+        """
+        :return: bool
+        """
+        return self.assinaturas.filter(ativo=True, esta_assinado=False).exists()
 
     def finalizar_documento(self, usuario):
-        if self.assinaturas.filter(ativo=True, esta_assinado=False).exists():
-            raise ExitemAssinaturasPendentes()
+        if self.possui_assinatura_pendente():
+            raise ExitemAssinaturasPendentes('Impossivel finalizar documento, ainda existem assinaturas pendentes')
         self.assinatura_hash = self.gerar_hash()
-        self.data_assinado = datetime.now()
+        self.data_assinado = timezone.now()
         self.esta_assinado = True
 
         self.save()
 
     def gerar_hash(self):
         hashes = self.assinaturas.filter(ativo=True).values_list('hash_assinatura', flat=True)
-
         return 'Balackbah'
 
     def save(self, *args, **kwargs):

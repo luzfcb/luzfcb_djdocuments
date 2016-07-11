@@ -14,6 +14,7 @@ from .utils import identificador
 
 
 class DocumentoQuerySet(models.QuerySet):
+
     def ativos(self):
         return self.filter(esta_ativo=True)
 
@@ -25,16 +26,19 @@ class DocumentoQuerySet(models.QuerySet):
 
 
 class DocumentoManager(models.Manager):
+
     def get_queryset(self):
         return DocumentoQuerySet(model=self.model, using=self._db).ativos().filter(eh_template=False)
 
 
 class DocumentoAdminManager(models.Manager):
+
     def get_queryset(self):
         return DocumentoQuerySet(model=self.model, using=self._db)
 
 
 class AssinaturaQuerySet(models.QuerySet):
+
     def inativos(self):
         return self.filter(esta_ativo=False)
 
@@ -72,6 +76,7 @@ class AssinaturaManager(models.Manager):
 
 
 class AssinaturaAdminManager(models.Manager):
+
     def get_queryset(self):
         return AssinaturaQuerySet(model=self.model, using=self._db)
 

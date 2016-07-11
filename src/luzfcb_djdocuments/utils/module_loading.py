@@ -8,7 +8,6 @@ from django.utils import six
 from ..exceptions import InvalidDotPathToModelException, NonDjangoModelSubclassException
 
 
-
 def get_real_model_class(klass_or_str):
     """
     Return real django model class definition from string in format 'app_name.ModelName'

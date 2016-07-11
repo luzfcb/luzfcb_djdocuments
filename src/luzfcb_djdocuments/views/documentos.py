@@ -708,7 +708,6 @@ class VincularDocumentoBaseView(SingleDocumentObjectMixin, SingleObjectMixin, ge
 
         self.vinculate()
 
-
         editar_url = reverse(self.document_edit_named_view, kwargs={'pk': self.document_object.pk})
         return redirect(editar_url, permanent=True)
 
@@ -723,16 +722,9 @@ class VincularDocumentoBaseView(SingleDocumentObjectMixin, SingleObjectMixin, ge
                     logger.error(e)
                 else:
                     self.object.save()
-                    #logger.info('')
+                    # logger.info('')
                     return True
         return False
-
-
-
-
-
-
-
 
         # kwargs_names = ['atendimento_numero', ]
         # kwargs_have_name = False

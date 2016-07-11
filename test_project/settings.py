@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
 import os
+import sys
 
 # Update database configuration with $DATABASE_URL.
 import dj_database_url
@@ -18,7 +19,9 @@ import dj_database_url
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-print(BASE_DIR)
+ROOT_PROJECT_DIR = os.path.dirname(BASE_DIR)
+sys.path.append(os.path.join(ROOT_PROJECT_DIR, 'src'))
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/
 
@@ -184,7 +187,7 @@ CAPTCHA_WORDS_DICTIONARY = '/usr/share/dict/brazilian'
 # end django-simple-captcha config
 
 DJDOCUMENT = {
-    'BACKEND': 'test_project.test_app.backends.AuthGroupDocumentosBackend',
+    'BACKEND': 'djdocuments.backends.AuthGroupDocumentosBackend',
     'GRUPO_ASSINANTE_MODEL': 'auth.Group',
 }
 

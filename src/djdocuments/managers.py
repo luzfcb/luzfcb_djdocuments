@@ -2,6 +2,7 @@ from django.db import models
 
 
 class DocumentoQuerySet(models.QuerySet):
+
     def ativos(self):
         return self.filter(esta_ativo=True)
 

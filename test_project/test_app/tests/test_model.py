@@ -1,12 +1,20 @@
-from django.test import TestCase
-from djdocuments.models import Documento, TipoDocumento, Assinatura, JaEstaAssinado, GrupoNaoPodeAssinarException, \
-    NaoPodeAssinarException
 from django.contrib.auth.models import Group, User
+from django.test import TestCase
+from djdocuments.models import (
+    Assinatura,
+    Documento,
+    GrupoNaoPodeAssinarException,
+    JaEstaAssinado,
+    NaoPodeAssinarException,
+    TipoDocumento
+)
 
 
 class DocumentoModelTest(TestCase):
+
     @classmethod
     def setUpTestData(cls):
+        cls.senha = '123'
         cls.grupo1 = Group.objects.create(name='grupo1')
         cls.grupo2 = Group.objects.create(name='grupo2')
         cls.grupo3 = Group.objects.create(name='grupo3')
@@ -16,7 +24,7 @@ class DocumentoModelTest(TestCase):
                                         last_name='da Silva',
                                         email='user1@user.com',
                                         is_active=True)
-        cls.user1.set_password('123')
+        cls.user1.set_password(cls.senha)
         cls.user1.groups.add(cls.grupo1)
         cls.user1.groups.add(cls.grupo2)
         cls.user1.save()
@@ -26,7 +34,7 @@ class DocumentoModelTest(TestCase):
                                         last_name='Franca',
                                         email='user2@user.com',
                                         is_active=True)
-        cls.user2.set_password('123')
+        cls.user2.set_password(cls.senha)
         cls.user2.save()
         cls.user3 = User.objects.create(username='user3',
                                         first_name='User3',
@@ -34,7 +42,7 @@ class DocumentoModelTest(TestCase):
                                         email='user3@user.com',
                                         is_active=True)
         cls.user3.groups.add(cls.grupo3)
-        cls.user3.set_password('123')
+        cls.user3.set_password(cls.senha)
         cls.user3.save()
         cls.tipo_documento1 = TipoDocumento.objects.create(titulo='tipo1', descricao='desc tipo1')
         cls.tipo_documento2 = TipoDocumento.objects.create(titulo='tipo2', descricao='desc tipo2')
@@ -93,6 +101,24 @@ class DocumentoModelTest(TestCase):
                                          modificado_por=self.user1)
         self.assertTrue(documento.pk >= 1)
 
+    def test_adicionar_grupo_assinante(self):
+        self.documento.adicionar_grupos_assinantes(self.grupo1, self.user1)
+        self.assertEqual(self.documento.assinaturas.count(), 1)
+
+    def test_adicionar_grupo_assinante_ja_adicionado_anteriormente(self):
+        self.documento.adicionar_grupos_assinantes(self.grupo1, self.user1)
+        self.assertEqual(self.documento.assinaturas.count(), 1)
+        self.documento.adicionar_grupos_assinantes(self.grupo1, self.user1)
+        self.assertEqual(self.documento.assinaturas.count(), 1)
+
+    def test_adicionar_grupo_assinante_invalido(self):
+        self.assertRaises(ValueError,
+                          self.documento.adicionar_grupos_assinantes,
+                          grupos_assinantes=self.user1,
+                          cadastrado_por=self.user1,
+                          )
+        self.assertEqual(self.documento.assinaturas.count(), 0)
+
     def test_adicionar_grupos_assinantes(self):
         self.documento.adicionar_grupos_assinantes([self.grupo1, self.grupo3], self.user1)
         self.assertEqual(self.documento.assinaturas.count(), 2)
@@ -102,7 +128,7 @@ class DocumentoModelTest(TestCase):
                                          criado_por=self.user1,
                                          modificado_por=self.user1)
         documento.adicionar_grupos_assinantes([self.grupo1, self.grupo3], self.user1)
-        documento.assinar(self.grupo1, self.user1)
+        documento.assinar(self.grupo1, self.user1, self.senha)
         assinatura = documento.assinaturas.get(grupo_assinante=self.grupo1, assinado_por=self.user1)
 
         self.assertTrue(assinatura.esta_assinado)
@@ -115,21 +141,23 @@ class DocumentoModelTest(TestCase):
         self.assertRaises(NaoPodeAssinarException,
                           documento.assinar,
                           grupo_assinante=self.grupo1,
-                          usuario_assinante=self.user3
+                          usuario_assinante=self.user3,
+                          senha=self.senha
                           )
 
-    def test_usuario_pode_assinar_documento_ja_assinado(self):
+    def test_usuario_nao_pode_assinar_documento_ja_assinado(self):
         documento = self.criar_documento(tipo_documento=self.tipo_documento1,
                                          criado_por=self.user1,
                                          modificado_por=self.user1)
         documento.adicionar_grupos_assinantes([self.grupo1, self.grupo3], self.user1)
-        documento.assinar(self.grupo1, self.user1)
+        documento.assinar(self.grupo1, self.user1, self.senha)
         assinatura = documento.assinaturas.get(grupo_assinante=self.grupo1, assinado_por=self.user1)
         self.assertTrue(assinatura.esta_assinado)
         self.assertRaises(JaEstaAssinado,
                           documento.assinar,
                           grupo_assinante=self.grupo1,
-                          usuario_assinante=self.user1
+                          usuario_assinante=self.user1,
+                          senha=self.senha
                           )
 
     def test_grupo_nao_eh_assinante_do_documento(self):
@@ -140,7 +168,8 @@ class DocumentoModelTest(TestCase):
         self.assertRaises(GrupoNaoPodeAssinarException,
                           documento.assinar,
                           grupo_assinante=self.grupo3,
-                          usuario_assinante=self.user1
+                          usuario_assinante=self.user1,
+                          senha=self.senha
                           )
 
     def test_usuario_pode_visualizar(self):

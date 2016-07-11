@@ -6,10 +6,10 @@ from django import forms
 from django.contrib.auth.hashers import check_password
 from django.utils.translation import ugettext_lazy as _
 
-from .utils.module_loading import get_real_user_model_class
-from .widgets import ModelSelect2ForwardExtras, CkeditorTextAreadWidget
-from .models import TipoDocumento, Documento, Assinatura
+from .models import Assinatura, Documento, TipoDocumento
 from .templatetags.luzfcb_djdocuments_tags import remover_tags_html
+from .utils.module_loading import get_real_user_model_class
+from .widgets import CkeditorTextAreadWidget, ModelSelect2ForwardExtras
 
 # TODO: remove this ugly hack
 try:
@@ -19,6 +19,7 @@ except ImportError:
 
 
 class BootstrapFormInputMixin(object):
+
     def __init__(self, *args, **kwargs):
         super(BootstrapFormInputMixin, self).__init__(*args, **kwargs)
         for field_name in self.fields:
@@ -63,11 +64,13 @@ class DocumentoEditarForm(forms.ModelForm):
 
 
 class TipoDocumentoTemplateModelChoiceField(forms.ModelChoiceField):
+
     def label_from_instance(self, obj):
         return obj.titulo
 
 
 class ModeloDocumentoTemplateModelChoiceField(forms.ModelChoiceField):
+
     def label_from_instance(self, obj):
         a = remover_tags_html(obj.titulo or 'Descricao modelo: {}'.format(obj.pk))
         print('ModeloDocumentoTemplateModelChoiceField:', a)

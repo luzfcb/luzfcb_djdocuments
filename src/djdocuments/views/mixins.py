@@ -14,6 +14,7 @@ from django.utils import six
 from django.utils.translation import ugettext as _
 
 from ..models import Assinatura, Documento
+from ..utils import get_grupo_assinante_backend
 
 
 class NextURLMixin(object):
@@ -245,10 +246,14 @@ class DocumentoAssinadoRedirectMixin(object):
         ret = super(DocumentoAssinadoRedirectMixin, self).get(request, *args, **kwargs)
         if self.object and self.object.esta_ativo and hasattr(self.request, 'user') and not isinstance(
                 self.request.user, AnonymousUser):
-            assinatura = Assinatura.objects.filter(assinado_por=self.request.user, documento=self.object,
-                                                   versao_documento=self.object.versao_numero).first()
 
-            if assinatura and assinatura.esta_assinado and assinatura.esta_ativo:
+            # assinatura = Assinatura.objects.filter(assinado_por=self.request.user, documento=self.object,
+            #                                        versao_documento=self.object.versao_numero).first()
+            #
+            #
+
+            if get_grupo_assinante_backend().grupo_ja_assinou(
+                    document=self.object, usuario=self.request.user):
                 detail_url = reverse('documentos:validar-detail', kwargs={'pk': self.object.pk_uuid})
                 messages.add_message(request, messages.INFO,
                                      'Você já assinou o documento {} em: {:%d-%m-%Y %H:%M}'.format(

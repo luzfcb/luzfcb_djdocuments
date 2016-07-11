@@ -265,4 +265,3 @@ class CkeditorTextAreadWidget(forms.Textarea):
         if attrs:
             default_attrs.update(attrs)
         super(CkeditorTextAreadWidget, self).__init__(default_attrs)
-

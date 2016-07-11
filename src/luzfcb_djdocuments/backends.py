@@ -3,6 +3,7 @@ from django.utils import timezone
 
 
 class DocumentosBaseBackend(object):
+
     def pode_assinar_documento_para_o_grupo(self, document, usuario_assinante, grupo_assinante, now_datetime):
         raise NotImplemented
 
@@ -21,6 +22,7 @@ class DocumentosAuthGroupBackend(DocumentosBaseBackend):
 
 
 class SolarDefensoriaBackend(DocumentosBaseBackend):
+
     def pode_visualizar_documento_para_o_grupo(self, document, usuario_assinante, grupo_assinante):
         agora = timezone.now()
         usuario_atual_pode_visualizar = document.assinaturas.filter(
