@@ -1,6 +1,7 @@
 [paths]
 source =
-    djdocuments
+;    djdocuments
+    src/djdocuments
 ;   src/luzfcb_djdocuments
 ;   */site-packages/luzfcb_djdocuments
 

@@ -187,7 +187,7 @@ class Documento(models.Model):
 
     assinatura_hash = models.TextField(blank=True, editable=False, unique=True, null=True)
 
-    data_assinado = models.DateTimeField(null=True)
+    data_assinado = models.DateTimeField(null=True, blank=True)
     esta_assinado = models.BooleanField(default=False, editable=False)
 
     esta_pronto_para_assinar = models.BooleanField(default=False, editable=True)
@@ -303,8 +303,7 @@ class Documento(models.Model):
                 except AssertionError as e:
                     logger.error(e)
                     raise e
-
-                    #
+            return assinatura
         except self.grupos_assinates.through.DoesNotExist as e:
             logger.error(e)
             raise GrupoNaoPodeAssinarException('GrupoNaoPodeAssinarException')

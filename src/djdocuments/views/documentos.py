@@ -153,7 +153,7 @@ class DocumentoCriar(LoginRequiredMixin, generic.FormView):
                                                                      'pk': self.vinculate_value})
             return redirect(viculate_url, permanent=True)
         else:
-            editar_url = reverse('documentos:editar', kwargs={'pk': documento_novo.pk})
+            editar_url = reverse('documentos:editar', kwargs={'slug': documento_novo.pk_uuid})
             return redirect(editar_url, permanent=True)
 
     def get_initial(self):

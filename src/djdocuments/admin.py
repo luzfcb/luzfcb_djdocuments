@@ -13,14 +13,17 @@ from .templatetags.luzfcb_djdocuments_tags import remover_tags_html
 
 @admin.register(models.Documento)
 class DocumentoAdmin(SimpleHistoryAdmin):
+    manager_field = 'objects'  # utilize para caso voce use mais de um manager no model
+    ordering = ()
 
     def get_queryset(self, request):
-        qs = self.model.admin_objects.get_queryset()
+        qs = getattr(self.model, self.manager_field).get_queryset()
         ordering = self.ordering or ()
         if ordering:
             qs = qs.order_by(*ordering)
         return qs
 
+    list_filter = ['eh_template']
     # form = DocumentoEditarForm
     list_display = (
         # 'criado_em', 'criado_por', 'versao_numero', 'visualizar_versao'
