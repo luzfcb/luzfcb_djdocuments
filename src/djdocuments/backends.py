@@ -6,7 +6,6 @@ from django.utils import timezone
 
 
 class DocumentosBaseBackend(object):
-
     def pode_assinar(self, document, usuario, **kwargs):
         raise NotImplemented
 
@@ -24,7 +23,6 @@ class DocumentosBaseBackend(object):
 
 
 class AuthGroupDocumentosBackend(DocumentosBaseBackend):
-
     def grupo_ja_assinou(self, document, usuario, **kwargs):
         grupos = tuple(usuario.groups.all().values_list('id', flat=True))
         return document.assinaturas.filter(grupo_assinante__in=grupos, esta_assinado=True).exists()
@@ -44,6 +42,8 @@ class AuthGroupDocumentosBackend(DocumentosBaseBackend):
     def pode_editar(self, document, usuario, **kwargs):
         if document.esta_pronto_para_assinar:
             return False
+        if document.criado_por == usuario:
+            return True
         grupos = tuple(usuario.groups.all().values_list('id', flat=True))
         return document.assinaturas.filter(grupo_assinante__in=grupos).exists()
 
@@ -56,7 +56,6 @@ class AuthGroupDocumentosBackend(DocumentosBaseBackend):
 
 
 class SolarDefensoriaBackend(DocumentosBaseBackend):
-
     def grupo_ja_assinou(self, document, usuario, **kwargs):
         return NotImplemented
 
@@ -78,6 +77,10 @@ class SolarDefensoriaBackend(DocumentosBaseBackend):
         return usuario_atual_pode_visualizar
 
     def pode_editar(self, document, usuario, **kwargs):
+        if document.esta_pronto_para_assinar:
+            return False
+        if document.criado_por == usuario:
+            return True
         agora = timezone.now()
         usuario_atual_pode_editar = document.grupos_assinates.filter(
             Q(all_atuacoes__ativo=True) &

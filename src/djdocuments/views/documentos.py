@@ -139,7 +139,7 @@ class DocumentoCriar(LoginRequiredMixin, generic.FormView):
     vinculate_value_field = 'to'
     vinculate_view_name = None
     vinculate_value = None
-    document_pk_url_kwarg = 'document_pk'
+    document_slug_url_kwarg = 'document_pk'
 
     def form_valid(self, form):
         self.get_vinculate_parameters()
@@ -162,7 +162,7 @@ class DocumentoCriar(LoginRequiredMixin, generic.FormView):
         if default_document_template:
             initial.update({'modelo_documento': default_document_template})
         else:
-            document_pk_modelo = self.request.GET.get(self.document_pk_url_kwarg)
+            document_pk_modelo = self.request.GET.get(self.document_slug_url_kwarg)
 
             if document_pk_modelo:
                 try:

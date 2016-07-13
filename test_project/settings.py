@@ -191,6 +191,7 @@ DJDOCUMENT = {
     'GRUPO_ASSINANTE_MODEL': 'auth.Group',
 }
 
+DJANGO_LIVE_TEST_SERVER_ADDRESS = 'localhost:8000-8010,8080,9200-9300'
 if os.environ.get('DATABASE_URL'):
     db_from_env = dj_database_url.config(conn_max_age=500)
     DATABASES['default'].update(db_from_env)
