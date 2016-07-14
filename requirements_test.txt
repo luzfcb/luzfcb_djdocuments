@@ -1,3 +1,8 @@
 django
+django-test-plus
+pytest
+pytest-django
+pytest-cov
+pytest-sugar
 -e git+https://github.com/luzfcb/luzfcb_dj_simplelock.git@master#egg=luzfcb_dj_simplelock
 -e git://github.com/luzfcb/django-simple-history.git@wip-generic-views#egg=django-simple-history

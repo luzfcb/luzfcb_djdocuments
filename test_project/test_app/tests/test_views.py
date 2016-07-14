@@ -1,6 +1,10 @@
 from django.contrib.auth.models import Group, User
 from django.core.urlresolvers import reverse
-from django.test import TestCase
+from django.http import QueryDict
+from test_plus.test import CBVTestCase
+from test_plus.test import TestCase
+from django.test.client import RequestFactory
+
 from djdocuments.models import (
     Assinatura,
     Documento,
@@ -66,7 +70,7 @@ class DocumentCreateTestCase(TestCase):
                                                      criado_por=cls.user2,
                                                      modificado_por=cls.user3,
                                                      )
-        cls.documento_criar_url = reverse('documentos:create')
+        cls.documento_criar_named_view = 'documentos:create'
 
     # def setUp(self):
     #     self.documento = Documento(tipo_documento=self.tipo_documento1,
@@ -83,5 +87,18 @@ class DocumentCreateTestCase(TestCase):
 
 
     def test_get_view(self):
-        res = self.client.get(self.documento_criar_url)
-        self.assertEqual(res.status_code, 200)
+        response = self.get(self.documento_criar_named_view)
+        self.response_200(response)
+
+    # def test_form(self):
+    #     response = self.reverse(self.documento_criar_named_view)
+    #     a = response
+    #
+    def test_with_vinculate_parameters(self):
+        parametros_get = {'v': 'test_vinculate_view', 'to': 'test_vinculate_pk'}
+        response = self.client.get(reverse(self.documento_criar_named_view), parametros_get)
+        self.assertDictContainsSubset(parametros_get, response.context_data['view'].request.GET)
+
+
+    # def test_not_with_vinculate_parameters(self):
+    #     response = self.reverse(self.documento_criar_named_view)

@@ -17,6 +17,11 @@ pypng
 -e git+https://github.com/luzfcb/pyqrcode.git@base64_png#egg=PyQRCode
 
 # development dependencies
+django-test-plus
+pytest
+pytest-django
+pytest-cov
+pytest-sugar
 gunicorn
 dj-database-url
 whitenoise

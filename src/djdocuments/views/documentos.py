@@ -27,8 +27,8 @@ from .mixins import (
     DocumentoAssinadoRedirectMixin,
     NextURLMixin,
     PopupMixin,
-    SingleDocumentObjectMixin
-)
+    SingleDocumentObjectMixin,
+    VinculateMixin)
 
 logger = logging.getLogger(__name__)
 
@@ -131,15 +131,16 @@ def create_from_template(current_user, documento_template):
     return documento_novo
 
 
-class DocumentoCriar(LoginRequiredMixin, generic.FormView):
+class DocumentoCriar(LoginRequiredMixin, VinculateMixin, generic.FormView):
     template_name = 'luzfcb_djdocuments/documento_create2.html'
     form_class = CriarDocumentoForm
     default_selected_document_template_pk = None
-    vinculate_view_field = 'v'
-    vinculate_value_field = 'to'
-    vinculate_view_name = None
-    vinculate_value = None
     document_slug_url_kwarg = 'document_pk'
+
+    def get_form_kwargs(self):
+        kwargs = super(DocumentoCriar, self).get_form_kwargs()
+        kwargs.update({'user': self.request.user})
+        return kwargs
 
     def form_valid(self, form):
         self.get_vinculate_parameters()
@@ -180,23 +181,6 @@ class DocumentoCriar(LoginRequiredMixin, generic.FormView):
 
     def get_default_selected_document_template_pk(self):
         return self.default_selected_document_template_pk
-
-    def get_vinculate_parameters(self):
-
-        clean_vinculate_view_name = self.request.GET.get(self.vinculate_view_field, None)
-        if isinstance(clean_vinculate_view_name, six.string_types):
-            clean_vinculate_view_name = clean_vinculate_view_name.strip("'").strip('"')
-        self.vinculate_view_name = clean_vinculate_view_name
-        self.vinculate_value = self.request.GET.get(self.vinculate_value_field, None)
-
-    def get_context_data(self, **kwargs):
-        context = super(DocumentoCriar, self).get_context_data(**kwargs)
-        self.get_vinculate_parameters()
-
-        if self.vinculate_view_name and self.vinculate_value:
-            context['vinculate_view_kwarg'] = '{}={}'.format(self.vinculate_view_field, self.vinculate_view_name)
-            context['vinculate_value_kwarg'] = '{}={}'.format(self.vinculate_value_field, self.vinculate_value)
-        return context
 
 
 class DocumentoModeloCriar(DocumentoCriar):

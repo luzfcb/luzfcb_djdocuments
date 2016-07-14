@@ -296,3 +296,27 @@ class AjaxFormPostMixin(object):
             data['success_url'] = self.get_success_url()
             return JsonResponse(data=data, status=status.HTTP_400_BAD_REQUEST)
         return response
+
+
+class VinculateMixin(object):
+    vinculate_view_field = 'v'
+    vinculate_value_field = 'to'
+    vinculate_view_name = None
+    vinculate_value = None
+    def get_vinculate_parameters(self):
+
+        clean_vinculate_view_name = self.request.GET.get(self.vinculate_view_field, None)
+        if isinstance(clean_vinculate_view_name, six.string_types):
+            clean_vinculate_view_name = clean_vinculate_view_name.strip("'").strip('"')
+        self.vinculate_view_name = clean_vinculate_view_name
+        self.vinculate_value = self.request.GET.get(self.vinculate_value_field, None)
+
+    def get_context_data(self, **kwargs):
+        context = super(VinculateMixin, self).get_context_data(**kwargs)
+        self.get_vinculate_parameters()
+
+        if self.vinculate_view_name and self.vinculate_value:
+            context['vinculate_view_kwarg'] = '{}={}'.format(self.vinculate_view_field, self.vinculate_view_name)
+            context['vinculate_value_kwarg'] = '{}={}'.format(self.vinculate_value_field, self.vinculate_value)
+        return context
+

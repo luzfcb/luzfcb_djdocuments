@@ -6,6 +6,14 @@ from django.utils import timezone
 
 
 class DocumentosBaseBackend(object):
+    group_name_atrib = None
+
+    def get_grupo_name(self, grupo):
+        return getattr(grupo, self.group_name_atrib)
+
+    def get_grupos(self, usuario):
+        raise NotImplemented
+
     def pode_assinar(self, document, usuario, **kwargs):
         raise NotImplemented
 
@@ -23,6 +31,11 @@ class DocumentosBaseBackend(object):
 
 
 class AuthGroupDocumentosBackend(DocumentosBaseBackend):
+    group_name_atrib = 'name'
+
+    def get_grupo_name(self, grupo):
+        return getattr(grupo, self.group_name_atrib)
+
     def grupo_ja_assinou(self, document, usuario, **kwargs):
         grupos = tuple(usuario.groups.all().values_list('id', flat=True))
         return document.assinaturas.filter(grupo_assinante__in=grupos, esta_assinado=True).exists()
@@ -54,8 +67,13 @@ class AuthGroupDocumentosBackend(DocumentosBaseBackend):
         grupos = tuple(usuario.groups.all().values_list('id', flat=True))
         return document.grupos_assinates.filter(id__in=grupos).exists()
 
+    def get_grupos(self, usuario):
+        return usuario.groups.all()
+
 
 class SolarDefensoriaBackend(DocumentosBaseBackend):
+    group_name_atrib = 'nome'
+
     def grupo_ja_assinou(self, document, usuario, **kwargs):
         return NotImplemented
 
@@ -111,3 +129,15 @@ class SolarDefensoriaBackend(DocumentosBaseBackend):
         ).exists()
 
         return bool(defensorias)
+
+    def get_grupos(self, usuario):
+        agora = timezone.now()
+        defensorias = usuario.servidor.defensor.all_atuacoes.filter(
+            Q(ativo=True) &
+            Q(data_inicial__lte=agora) &
+            (
+                Q(data_final__gte=agora) |
+                Q(data_final=None)
+            )
+        )
+        return defensorias
