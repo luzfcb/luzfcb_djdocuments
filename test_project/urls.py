@@ -20,12 +20,17 @@ from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.i18n import javascript_catalog
+from test_app.views import DocumentoProcessoVinculateView
+
 # from luzfcb_djdocuments import luzfcb_djdocuments_urls
 from djdocuments import djdocuments_urls
 
 urlpatterns = [
     # url(r'', include(luzfcb_djdocuments_urls,
     #                  namespace='documentos')),
+    url(r'^documento_processo_vincular/(?P<document_pk>\d+)/(?P<pk>\d+)/$',
+        DocumentoProcessoVinculateView.as_view(),
+        name='documento_processo_vincular'),
     url(r'', include(djdocuments_urls,
                      namespace='documentos')),
 

@@ -1,10 +1,12 @@
 from django.contrib.auth.models import Group, User
 from django.core.urlresolvers import reverse
 from django.http import QueryDict
-from test_plus.test import CBVTestCase
-from test_plus.test import TestCase
 from django.test.client import RequestFactory
+from django.utils import six
+from test_plus.test import CBVTestCase, TestCase
+from test_project.test_app.models import Processo
 
+from djdocuments import views
 from djdocuments.models import (
     Assinatura,
     Documento,
@@ -13,10 +15,10 @@ from djdocuments.models import (
     NaoPodeAssinarException,
     TipoDocumento
 )
-from djdocuments import views
 
 
 class DocumentCreateTestCase(TestCase):
+
     @classmethod
     def setUpTestData(cls):
         cls.senha = '123'
@@ -53,20 +55,20 @@ class DocumentCreateTestCase(TestCase):
         cls.tipo_documento2 = TipoDocumento.objects.create(titulo='tipo2', descricao='desc tipo2')
         cls.template_doc1 = Documento.objects.create(tipo_documento=cls.tipo_documento1,
                                                      eh_template=True,
-                                                     cabecalho='template1',
-                                                     rodape='template1',
-                                                     conteudo='template1',
-                                                     titulo='template1',
+                                                     cabecalho='cabecalho_template1',
+                                                     rodape='rodape_template1',
+                                                     conteudo='conteudo_template1',
+                                                     titulo='titulo_template1',
                                                      criado_por=cls.user1,
                                                      modificado_por=cls.user1,
                                                      )
 
         cls.template_doc2 = Documento.objects.create(tipo_documento=cls.tipo_documento2,
                                                      eh_template=True,
-                                                     cabecalho='template2',
-                                                     rodape='template2',
-                                                     conteudo='template2',
-                                                     titulo='template2',
+                                                     cabecalho='cabecalho_template2',
+                                                     rodape='rodape_template2',
+                                                     conteudo='conteudo_template2',
+                                                     titulo='titulo_template2',
                                                      criado_por=cls.user2,
                                                      modificado_por=cls.user3,
                                                      )
@@ -83,8 +85,9 @@ class DocumentCreateTestCase(TestCase):
     #                                modificado_por=self.user1,
     #                                )
     #
-    #     self.documento.save()
-
+    # #     self.documento.save()
+    # def test_restrictions(self):
+    #     self.assertLoginRequired(self.documento_criar_named_view)
 
     def test_get_view(self):
         response = self.get(self.documento_criar_named_view)
@@ -99,6 +102,66 @@ class DocumentCreateTestCase(TestCase):
         response = self.client.get(reverse(self.documento_criar_named_view), parametros_get)
         self.assertDictContainsSubset(parametros_get, response.context_data['view'].request.GET)
 
+    # def test_with_vinculate_only_to_parameter(self):
+    #     parametros_get = {'to': 'test_vinculate_pk'}
+    #     response = self.client.get(reverse(self.documento_criar_named_view))
+    #     self.assertDictContainsSubset(parametros_get, response.context_data['view'].request.GET)
 
-    # def test_not_with_vinculate_parameters(self):
-    #     response = self.reverse(self.documento_criar_named_view)
+    def test_not_with_vinculate_parameters(self):
+        parametros_get = {'v': None, 'to': None}
+        response = self.client.get(reverse(self.documento_criar_named_view))
+        parametros_processador = response.context_data['view'].request.GET.keys()
+        for key in parametros_get.keys():
+            self.assertNotIn(key, parametros_processador)
+
+    def test_create_document(self):
+        data = {
+            'grupo': self.grupo1.pk,
+            'tipo_documento': self.tipo_documento1.pk,
+            'modelo_documento': self.template_doc1.pk,
+            'assunto': 'teste1-create_document'
+        }
+        with self.login(username=self.user1.username, password=self.senha):
+            response = self.client.post(reverse(self.documento_criar_named_view), data=data)
+            documento = Documento.objects.get(assunto='teste1-create_document')
+            self.assertEqual(documento.criado_por, self.user1)
+            self.assertEqual(documento.modificado_por, self.user1)
+
+            self.assertEqual(documento.cabecalho, 'cabecalho_template1')
+            self.assertEqual(documento.rodape, 'rodape_template1')
+            self.assertEqual(documento.conteudo, 'conteudo_template1')
+            self.assertEqual(documento.titulo, 'titulo_template1')
+
+            self.assertEqual(documento.tipo_documento, self.tipo_documento1)
+
+    def test_create_document_with_vincular(self):
+        processo = Processo.objects.create(nome='processo1')
+        parametros_get = {'v': 'documento_processo_vincular', 'to': processo.pk}
+        qd = QueryDict(mutable=True)
+        qd.update(parametros_get)
+        url_com_parametro_get = '{}?{}'.format(reverse(self.documento_criar_named_view), qd.urlencode())
+
+        data = {
+            'grupo': self.grupo1.pk,
+            'tipo_documento': self.tipo_documento1.pk,
+            'modelo_documento': self.template_doc1.pk,
+            'assunto': 'teste1-create_document'
+        }
+
+        with self.login(username=self.user1.username, password=self.senha):
+            # verifica se processo nao possui documento vinculado
+            self.assertFalse(processo.documentos.exists())
+            response = self.client.post(url_com_parametro_get, data=data, follow=True)
+            documento = Documento.objects.get(assunto='teste1-create_document')
+            self.assertEqual(documento.criado_por, self.user1)
+            self.assertEqual(documento.modificado_por, self.user1)
+
+            self.assertEqual(documento.cabecalho, 'cabecalho_template1')
+            self.assertEqual(documento.rodape, 'rodape_template1')
+            self.assertEqual(documento.conteudo, 'conteudo_template1')
+            self.assertEqual(documento.titulo, 'titulo_template1')
+
+            self.assertEqual(documento.tipo_documento, self.tipo_documento1)
+
+            # verifica se processo ossui documento vinculado
+            self.assertTrue(processo.documentos.exists())

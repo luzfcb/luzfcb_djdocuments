@@ -6,9 +6,9 @@ from django import forms
 from django.contrib.auth.hashers import check_password
 from django.utils.translation import ugettext_lazy as _
 
-from .utils import get_grupo_assinante_model_class, get_grupo_assinante_backend
 from .models import Assinatura, Documento, TipoDocumento
 from .templatetags.luzfcb_djdocuments_tags import remover_tags_html
+from .utils import get_grupo_assinante_backend, get_grupo_assinante_model_class
 from .utils.module_loading import get_real_user_model_class
 from .widgets import CkeditorTextAreadWidget, ModelSelect2ForwardExtras
 
@@ -20,6 +20,7 @@ except ImportError:
 
 
 class BootstrapFormInputMixin(object):
+
     def __init__(self, *args, **kwargs):
         super(BootstrapFormInputMixin, self).__init__(*args, **kwargs)
         for field_name in self.fields:
@@ -64,11 +65,13 @@ class DocumentoEditarForm(forms.ModelForm):
 
 
 class TipoDocumentoTemplateModelChoiceField(forms.ModelChoiceField):
+
     def label_from_instance(self, obj):
         return obj.titulo
 
 
 class ModeloDocumentoTemplateModelChoiceField(forms.ModelChoiceField):
+
     def label_from_instance(self, obj):
         a = remover_tags_html(obj.titulo or 'Descricao modelo: {}'.format(obj.pk))
         print('ModeloDocumentoTemplateModelChoiceField:', a)
@@ -76,11 +79,13 @@ class ModeloDocumentoTemplateModelChoiceField(forms.ModelChoiceField):
 
 
 class GrupoModelChoiceField(forms.ModelChoiceField):
+
     def label_from_instance(self, obj):
         return get_grupo_assinante_backend().get_grupo_name(obj)
 
 
 class CriarDocumentoForm(BootstrapFormInputMixin, forms.Form):
+
     def __init__(self, *args, **kwargs):
         current_user = kwargs.pop('user')
         super(CriarDocumentoForm, self).__init__(*args, **kwargs)
@@ -89,6 +94,7 @@ class CriarDocumentoForm(BootstrapFormInputMixin, forms.Form):
 
     # titulo = forms.CharField(max_length=500)]
     grupo = GrupoModelChoiceField(
+        label=get_grupo_assinante_backend().get_group_label(),
         queryset=get_grupo_assinante_model_class().objects.none()
     )
 
@@ -138,11 +144,13 @@ class CriarModeloDocumentoForm(BootstrapFormInputMixin, forms.Form):
 
 
 class UserModelChoiceField(forms.ModelChoiceField):
+
     def label_from_instance(self, obj):
         return '{} ({})'.format(obj.get_full_name().title(), getattr(obj, obj.USERNAME_FIELD))
 
 
 class UserModelMultipleChoiceField(forms.ModelMultipleChoiceField):
+
     def label_from_instance(self, obj):
         return '{} ({})'.format(obj.get_full_name().title(), getattr(obj, obj.USERNAME_FIELD))
 

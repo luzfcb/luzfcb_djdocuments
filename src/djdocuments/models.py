@@ -11,9 +11,10 @@ from django.db import models
 from django.db.models import Max, Q
 from django.utils import timezone
 from django.utils.encoding import python_2_unicode_compatible
-from djdocuments.utils import identificador
 from simple_history.models import HistoricalRecords
 from simple_history.views import MissingHistoryRecordsField
+
+from djdocuments.utils import identificador
 
 from . import managers
 from .utils import get_grupo_assinante_backend, get_grupo_assinante_model_class, get_grupo_assinante_model_str

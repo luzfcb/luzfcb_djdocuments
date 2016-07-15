@@ -303,6 +303,7 @@ class VinculateMixin(object):
     vinculate_value_field = 'to'
     vinculate_view_name = None
     vinculate_value = None
+
     def get_vinculate_parameters(self):
 
         clean_vinculate_view_name = self.request.GET.get(self.vinculate_view_field, None)
@@ -310,6 +311,18 @@ class VinculateMixin(object):
             clean_vinculate_view_name = clean_vinculate_view_name.strip("'").strip('"')
         self.vinculate_view_name = clean_vinculate_view_name
         self.vinculate_value = self.request.GET.get(self.vinculate_value_field, None)
+        if not self.vinculate_view_name and not self.vinculate_value:
+            pass
+        elif not self.vinculate_view_name or not self.vinculate_value:
+            raise ImproperlyConfigured(
+                "(cls)s has is missing %(vinculate_view_field)s or %(vinculate_value_field)s "
+                "querystring on GET parameter"
+                "provide %(vinculate_value_field)s=NAME_OF_VIEW and %(vinculate_value_field)s=PK_ " % {
+                    'cls': self.__class__.__name__,
+                    'vinculate_view_field': self.vinculate_view_field,
+                    'vinculate_value_field': self.vinculate_value_field
+                }
+            )
 
     def get_context_data(self, **kwargs):
         context = super(VinculateMixin, self).get_context_data(**kwargs)
@@ -319,4 +332,3 @@ class VinculateMixin(object):
             context['vinculate_view_kwarg'] = '{}={}'.format(self.vinculate_view_field, self.vinculate_view_name)
             context['vinculate_value_kwarg'] = '{}={}'.format(self.vinculate_value_field, self.vinculate_value)
         return context
-

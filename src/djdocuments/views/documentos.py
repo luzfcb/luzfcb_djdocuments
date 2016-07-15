@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.db import transaction
+from django.db.models import ManyToManyField
 from django.db.utils import IntegrityError
 from django.shortcuts import redirect
 from django.utils import six
@@ -28,7 +29,8 @@ from .mixins import (
     NextURLMixin,
     PopupMixin,
     SingleDocumentObjectMixin,
-    VinculateMixin)
+    VinculateMixin
+)
 
 logger = logging.getLogger(__name__)
 
@@ -98,7 +100,7 @@ class DocumentoEditor(LoginRequiredMixin,
         return super(DocumentoEditor, self).dispatch(request, *args, **kwargs)
 
     def get_lock_url_to_redirect_if_locked(self):
-        return reverse('documentos:detail', kwargs={'pk': self.object.pk_uuid})
+        return reverse('documentos:detail', kwargs={'slug': self.object.pk_uuid})
 
     def form_valid(self, form):
         return super(DocumentoEditor, self).form_valid(form)
@@ -112,7 +114,7 @@ class DocumentoEditor(LoginRequiredMixin,
         return super(DocumentoEditor, self).post(request, *args, **kwargs)
 
 
-def create_from_template(current_user, documento_template):
+def create_from_template(current_user, documento_template, assunto):
     # template_documento = Documento.objects.get(pk=documento_template.pk)
 
     document_kwargs = {
@@ -122,7 +124,8 @@ def create_from_template(current_user, documento_template):
         'rodape': documento_template.rodape,
         'tipo_documento': documento_template.tipo_documento,
         'criado_por': current_user,
-        'modificado_por': current_user
+        'modificado_por': current_user,
+        'assunto': assunto,
     }
 
     documento_novo = Documento(**document_kwargs)
@@ -145,7 +148,9 @@ class DocumentoCriar(LoginRequiredMixin, VinculateMixin, generic.FormView):
     def form_valid(self, form):
         self.get_vinculate_parameters()
         modelo_documento = form.cleaned_data['modelo_documento']
-        documento_novo = create_from_template(self.request.user, modelo_documento)
+        grupo = form.cleaned_data['grupo']
+        assunto = form.cleaned_data['assunto']
+        documento_novo = create_from_template(self.request.user, modelo_documento, assunto)
         # vinculate_view_name = self.request.GET.get(self.vinculate_view_field, None)
         # vinculate_value = self.request.GET.get(self.vinculate_value_field, None)
 
@@ -157,30 +162,30 @@ class DocumentoCriar(LoginRequiredMixin, VinculateMixin, generic.FormView):
             editar_url = reverse('documentos:editar', kwargs={'slug': documento_novo.pk_uuid})
             return redirect(editar_url, permanent=True)
 
-    def get_initial(self):
-        initial = super(DocumentoCriar, self).get_initial()
-        default_document_template = self.get_default_selected_document_template_pk()
-        if default_document_template:
-            initial.update({'modelo_documento': default_document_template})
-        else:
-            document_pk_modelo = self.request.GET.get(self.document_slug_url_kwarg)
-
-            if document_pk_modelo:
-                try:
-
-                    documento_modelo = Documento.objects.get(pk=document_pk_modelo)
-                except Documento.DoesNotExist:
-                    pass
-                else:
-                    print(documento_modelo)
-                    initial.update({
-                        'tipo_documento': documento_modelo.tipo_documento,
-                        'modelo_documento': documento_modelo.pk
-                    })
-        return initial
-
-    def get_default_selected_document_template_pk(self):
-        return self.default_selected_document_template_pk
+    # def get_initial(self):
+    #     initial = super(DocumentoCriar, self).get_initial()
+    #     default_document_template = self.get_default_selected_document_template_pk()
+    #     if default_document_template:
+    #         initial.update({'modelo_documento': default_document_template})
+    #     else:
+    #         document_pk_modelo = self.request.GET.get(self.document_slug_url_kwarg)
+    #
+    #         if document_pk_modelo:
+    #             try:
+    #
+    #                 documento_modelo = Documento.objects.get(pk=document_pk_modelo)
+    #             except Documento.DoesNotExist:
+    #                 pass
+    #             else:
+    #                 print(documento_modelo)
+    #                 initial.update({
+    #                     'tipo_documento': documento_modelo.tipo_documento,
+    #                     'modelo_documento': documento_modelo.pk
+    #                 })
+    #     return initial
+    #
+    # def get_default_selected_document_template_pk(self):
+    #     return self.default_selected_document_template_pk
 
 
 class DocumentoModeloCriar(DocumentoCriar):
@@ -217,12 +222,11 @@ class VincularDocumentoBaseView(LoginRequiredMixin, SingleDocumentObjectMixin, S
 
         self.vinculate()
 
-        editar_url = reverse(self.document_edit_named_view, kwargs={'pk': self.document_object.pk})
+        editar_url = reverse(self.document_edit_named_view, kwargs={'slug': self.document_object.pk_uuid})
         return redirect(editar_url, permanent=True)
 
     def vinculate(self):
         document_field = getattr(self.object, self.documents_field_name)
-
         with transaction.atomic():
             if not document_field.filter(id=self.document_object.pk).exists():
                 try:

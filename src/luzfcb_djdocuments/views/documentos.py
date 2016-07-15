@@ -26,9 +26,6 @@ from django.views import generic
 from django.views.decorators.cache import never_cache
 from django.views.generic.detail import SingleObjectMixin
 from luzfcb_dj_simplelock.views import LuzfcbLockMixin
-from urlobject import URLObject
-from wkhtmltopdf.views import PDFRenderMixin
-
 from luzfcb_djdocuments.views.mixins import (
     AjaxFormPostMixin,
     AuditavelViewMixin,
@@ -38,6 +35,8 @@ from luzfcb_djdocuments.views.mixins import (
     PopupMixin,
     SingleDocumentObjectMixin
 )
+from urlobject import URLObject
+from wkhtmltopdf.views import PDFRenderMixin
 
 from ..forms import (
     AssinarDocumentoForm,

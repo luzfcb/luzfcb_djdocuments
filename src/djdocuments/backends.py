@@ -1,15 +1,28 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function, unicode_literals
 
+from django.core.exceptions import ImproperlyConfigured
 from django.db.models import Q
 from django.utils import timezone
 
 
 class DocumentosBaseBackend(object):
     group_name_atrib = None
+    group_label = None
 
     def get_grupo_name(self, grupo):
         return getattr(grupo, self.group_name_atrib)
+
+    def get_group_label(self):
+        if not self.group_label:
+            raise ImproperlyConfigured(
+                "%(cls)s nao possui a variavel group_label. Defina "
+                "%(cls)s.group_label, ou sobreescreva o metodo"
+                "%(cls)s.get_group_label()." % {
+                    'cls': self.__class__.__name__
+                }
+            )
+        return self.group_label
 
     def get_grupos(self, usuario):
         raise NotImplemented
@@ -32,6 +45,7 @@ class DocumentosBaseBackend(object):
 
 class AuthGroupDocumentosBackend(DocumentosBaseBackend):
     group_name_atrib = 'name'
+    group_label = 'Grupo de usuario'
 
     def get_grupo_name(self, grupo):
         return getattr(grupo, self.group_name_atrib)
