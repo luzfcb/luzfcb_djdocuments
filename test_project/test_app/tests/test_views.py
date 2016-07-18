@@ -18,7 +18,6 @@ from djdocuments.models import (
 
 
 class DocumentCreateTestCase(TestCase):
-
     @classmethod
     def setUpTestData(cls):
         cls.senha = '123'
@@ -122,7 +121,10 @@ class DocumentCreateTestCase(TestCase):
             'assunto': 'teste1-create_document'
         }
         with self.login(username=self.user1.username, password=self.senha):
-            response = self.client.post(reverse(self.documento_criar_named_view), data=data)
+            # follow=True habilita o processamento do redirecionamento
+            response = self.client.post(reverse(self.documento_criar_named_view), data=data, follow=True)
+
+            # obter o documento recem criado
             documento = Documento.objects.get(assunto='teste1-create_document')
             self.assertEqual(documento.criado_por, self.user1)
             self.assertEqual(documento.modificado_por, self.user1)
@@ -133,6 +135,14 @@ class DocumentCreateTestCase(TestCase):
             self.assertEqual(documento.titulo, 'titulo_template1')
 
             self.assertEqual(documento.tipo_documento, self.tipo_documento1)
+
+            # verifica se houve 1 redirecionamento
+            self.assertEqual(len(response.redirect_chain), 1)
+
+            # verifica redirecionamentos view DocumentoCriar para DocumentoEditor
+            self.assertEqual(response.redirect_chain[0][0], "http://testserver{}".format(
+                reverse('documentos:editar', kwargs={'slug': documento.pk_uuid})))
+            self.assertEqual(response.redirect_chain[0][1], 301)
 
     def test_create_document_with_vincular(self):
         processo = Processo.objects.create(nome='processo1')
@@ -164,7 +174,16 @@ class DocumentCreateTestCase(TestCase):
 
             self.assertEqual(documento.tipo_documento, self.tipo_documento1)
 
-            # verifica se processo ossui documento vinculado
+            # verifica se processo possui documento vinculado
             self.assertTrue(processo.documentos.exists())
-            a = response
-            print(response)
+            # verifica se houve 2 redirecionamentos
+            self.assertEqual(len(response.redirect_chain), 2)
+
+            # verifica redirecionamentos view djdocuments.DocumentoCriar para test_app.DocumentoProcessoVinculateView
+            self.assertEqual(response.redirect_chain[0][0], "http://testserver{}".format(
+                reverse('documento_processo_vincular', kwargs={'document_pk': documento.pk, 'pk': processo.pk})))
+            self.assertEqual(response.redirect_chain[0][1], 301)
+            # verifica redirecionamentos view test_appDocumentoProcessoVinculateView para DocumentoEditor
+            self.assertEqual(response.redirect_chain[1][0], "http://testserver{}".format(
+                reverse('documentos:editar', kwargs={'slug': documento.pk_uuid})))
+            self.assertEqual(response.redirect_chain[1][1], 301)

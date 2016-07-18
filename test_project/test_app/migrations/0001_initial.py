@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('nome', models.CharField(max_length=255)),
-                ('documentos', models.ManyToManyField(related_name='test_app_processo_Processo', to='djdocuments.Documento', blank=True)),
+                ('documentos', models.ManyToManyField(related_name='processo', to='djdocuments.Documento', blank=True)),
             ],
         ),
     ]
