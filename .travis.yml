@@ -12,15 +12,15 @@ env:
   - SEGFAULT_SIGNALS=all
   matrix:
   - TOXENV=flake8-isort
-  - TOXENV=py27-django18,codecov
-  - TOXENV=py27-django19,codecov
+  - TOXENV=py27-django18,codecov,coveralls
+  - TOXENV=py27-django19,codecov,coveralls
 #  - TOXENV=py27-djangomaster,codecov
-  - TOXENV=py35-django18,codecov
-  - TOXENV=py35-django19,codecov
+  - TOXENV=py35-django18,codecov,coveralls
+  - TOXENV=py35-django19,codecov,coveralls
 #  - TOXENV=py35-djangomaster,codecov
   allow_failures:
-  - TOXENV=py27-djangomaster,codecov
-  - TOXENV=py35-djangomaster,codecov
+  - TOXENV=py27-djangomaster,codecov,coveralls
+  - TOXENV=py35-djangomaster,codecov,coveralls
 before_install:
 - python --version
 - uname -a
