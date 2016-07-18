@@ -152,6 +152,7 @@ class DocumentCreateTestCase(TestCase):
             # verifica se processo nao possui documento vinculado
             self.assertFalse(processo.documentos.exists())
             response = self.client.post(url_com_parametro_get, data=data, follow=True)
+            # obter o documento recem criado
             documento = Documento.objects.get(assunto='teste1-create_document')
             self.assertEqual(documento.criado_por, self.user1)
             self.assertEqual(documento.modificado_por, self.user1)
@@ -165,3 +166,5 @@ class DocumentCreateTestCase(TestCase):
 
             # verifica se processo ossui documento vinculado
             self.assertTrue(processo.documentos.exists())
+            a = response
+            print(response)

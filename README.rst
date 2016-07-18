@@ -11,10 +11,15 @@ Overview
       - |docs|
     * - tests
       - | |travis| |requires|
-        | |codecov|
+        | |codecov| |coveralls|
         | |landscape| |scrutinizer| |codacy| |codeclimate|
     * - package
       - |version| |downloads| |wheel| |supported-versions| |supported-implementations|
+
+
+.. |coveralls| image:: https://coveralls.io/repos/github/luzfcb/luzfcb_djdocuments/badge.svg?branch=master
+    :target: https://coveralls.io/github/luzfcb/luzfcb_djdocuments?branch=master
+    :alt: Coveralls Coverage Status
 
 .. |docs| image:: https://readthedocs.org/projects/luzfcb_djdocuments/badge/?style=flat
     :target: https://readthedocs.org/projects/luzfcb_djdocuments
@@ -29,7 +34,7 @@ Overview
     :target: https://requires.io/github/luzfcb/luzfcb_djdocuments/requirements/?branch=master
 
 .. |codecov| image:: https://codecov.io/github/luzfcb/luzfcb_djdocuments/coverage.svg?branch=master
-    :alt: Coverage Status
+    :alt: Codecov Coverage Status
     :target: https://codecov.io/github/luzfcb/luzfcb_djdocuments
 
 .. |landscape| image:: https://landscape.io/github/luzfcb/luzfcb_djdocuments/master/landscape.svg?style=flat
