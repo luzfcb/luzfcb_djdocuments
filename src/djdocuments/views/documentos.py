@@ -18,7 +18,9 @@ from django.views.decorators.cache import never_cache
 from django.views.generic.detail import SingleObjectMixin
 from luzfcb_dj_simplelock.views import LuzfcbLockMixin
 
-from ..forms import AssinarDocumentoForm, CriarDocumentoForm, CriarModeloDocumentoForm, DocumentoEditarForm
+from djdocuments.utils import get_grupo_assinante_backend
+from ..forms import AssinarDocumentoForm, CriarDocumentoForm, CriarModeloDocumentoForm, DocumentoEditarForm, \
+    AdicionarAssinantesForm
 from ..models import Assinatura, Documento
 from ..utils.module_loading import get_real_user_model_class
 from .auth_mixins import LoginRequiredMixin
@@ -162,30 +164,30 @@ class DocumentoCriar(LoginRequiredMixin, VinculateMixin, generic.FormView):
             editar_url = reverse('documentos:editar', kwargs={'slug': documento_novo.pk_uuid})
             return redirect(editar_url, permanent=True)
 
-    # def get_initial(self):
-    #     initial = super(DocumentoCriar, self).get_initial()
-    #     default_document_template = self.get_default_selected_document_template_pk()
-    #     if default_document_template:
-    #         initial.update({'modelo_documento': default_document_template})
-    #     else:
-    #         document_pk_modelo = self.request.GET.get(self.document_slug_url_kwarg)
-    #
-    #         if document_pk_modelo:
-    #             try:
-    #
-    #                 documento_modelo = Documento.objects.get(pk=document_pk_modelo)
-    #             except Documento.DoesNotExist:
-    #                 pass
-    #             else:
-    #                 print(documento_modelo)
-    #                 initial.update({
-    #                     'tipo_documento': documento_modelo.tipo_documento,
-    #                     'modelo_documento': documento_modelo.pk
-    #                 })
-    #     return initial
-    #
-    # def get_default_selected_document_template_pk(self):
-    #     return self.default_selected_document_template_pk
+            # def get_initial(self):
+            #     initial = super(DocumentoCriar, self).get_initial()
+            #     default_document_template = self.get_default_selected_document_template_pk()
+            #     if default_document_template:
+            #         initial.update({'modelo_documento': default_document_template})
+            #     else:
+            #         document_pk_modelo = self.request.GET.get(self.document_slug_url_kwarg)
+            #
+            #         if document_pk_modelo:
+            #             try:
+            #
+            #                 documento_modelo = Documento.objects.get(pk=document_pk_modelo)
+            #             except Documento.DoesNotExist:
+            #                 pass
+            #             else:
+            #                 print(documento_modelo)
+            #                 initial.update({
+            #                     'tipo_documento': documento_modelo.tipo_documento,
+            #                     'modelo_documento': documento_modelo.pk
+            #                 })
+            #     return initial
+            #
+            # def get_default_selected_document_template_pk(self):
+            #     return self.default_selected_document_template_pk
 
 
 class DocumentoModeloCriar(DocumentoCriar):
@@ -240,15 +242,61 @@ class VincularDocumentoBaseView(LoginRequiredMixin, SingleDocumentObjectMixin, S
         return False
 
 
+class DocumentoAssinaturasView(SingleDocumentObjectMixin, generic.ListView):
+    model = Assinatura
+    document_slug_field = 'pk_uuid'
+    template_name = 'luzfcb_djdocuments/assinaturas_pendentes.html'
+
+    def get_queryset(self):
+        document_object = self.get_document_object()
+
+        queryset = document_object.assinaturas.all()
+        ordering = self.get_ordering()
+        if ordering:
+            if isinstance(ordering, six.string_types):
+                ordering = (ordering,)
+            queryset = queryset.order_by(*ordering)
+        return queryset
+
+
+class AdicionarAssinantes(LoginRequiredMixin, SingleDocumentObjectMixin, generic.FormView):
+    form_class = AdicionarAssinantesForm
+    template_name = 'luzfcb_djdocuments/assinar_adicionar_assinantes.html'
+    success_url = reverse_lazy('documentos:list')
+
+    def get_form_kwargs(self):
+        kwargs = super(AdicionarAssinantes, self).get_form_kwargs()
+        grupos_ja_adicionados = self.document_object.grupos_assinates.all()
+        kwargs.update({'grupos_ja_adicionados': grupos_ja_adicionados})
+        return kwargs
+
+    def form_valid(self, form):
+        ret = super(AdicionarAssinantes, self).form_valid(form)
+
+        grupo_para_adicionar = form.cleaned_data.get('grupo_para_adicionar')
+        self.document_object.adicionar_grupos_assinantes(grupo_para_adicionar, self.request.user)
+        return ret
+
+
 class AssinarDocumentoView(LoginRequiredMixin, DocumentoAssinadoRedirectMixin, generic.FormView, generic.DetailView):
     template_name = 'luzfcb_djdocuments/documento_assinar.html'
     form_class = AssinarDocumentoForm
     model = Documento
-
+    slug_field = 'pk_uuid'
     success_url = reverse_lazy('documentos:list')
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
+        # self.object = Documento.objects.create()
+        # from djdocuments.backends import AuthGroupDocumentosBackend
+        # # Backend = get_grupo_assinante_backend()
+        # backend = AuthGroupDocumentosBackend()
+        # user = getattr(self.request, 'user', None)
+        # if not backend.grupo_ja_assinou(self.object, user):
+        #     backend.pode_assinar(document=self.object, usuario=user)
+        #     self.object = Documento.objects.create()
+        #     self.object.assi
+
         return super(AssinarDocumentoView, self).get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
@@ -279,70 +327,70 @@ class AssinarDocumentoView(LoginRequiredMixin, DocumentoAssinadoRedirectMixin, g
         kwargs['current_logged_user'] = current_logged_user
         return kwargs
 
-    def form_valid(self, form):
-        ret = super(AssinarDocumentoView, self).form_valid(form)
-        ###################################
-        # documento = form.save(False)
-        documento = self.object
-
-        assinado_por = form.cleaned_data.get('assinado_por')
-
-        # cria ou obten instancia de Assinatura para o usuario selecionado em  assinado_por
-        obj, created = Assinatura.objects.get_or_create(documento=documento,
-                                                        assinado_por=assinado_por,
-                                                        versao_numero=documento.versao_numero,
-                                                        esta_ativo=True,
-                                                        defaults={
-                                                            'documento': documento,
-                                                            'assinado_por': assinado_por,
-                                                            'versao_numero': documento.versao_numero + 1,
-                                                            'esta_ativo': True
-                                                        }
-                                                        )
-        if created:
-            print("criado : {}".format(obj.assinado_por.username))
-        else:
-            print("obtido")
-
-        if not obj.esta_assinado:
-            obj.assinar_documento()
-
-        # cria assinatura
-        usuarios_assinantes = form.cleaned_data.get('incluir_assinantes')
-        for usuario_assinante in usuarios_assinantes:
-            # Assinatura.objects.get
-            obj, created = Assinatura.objects.get_or_create(documento=documento,
-                                                            assinado_por=usuario_assinante,
-                                                            versao_numero=documento.versao_numero,
-                                                            defaults={
-                                                                'documento': documento,
-                                                                'assinado_por': usuario_assinante,
-                                                                'versao_numero': documento.versao_numero + 1,
-                                                                'esta_assinado': False
-                                                            }
-                                                            )
-            if created:
-                print("criado : {}".format(obj.assinado_por.username))
-                # notificar usuario
-            else:
-                print("obtido")
-
-        # documento.assinar_documento(
-        #     assinado_por=form.cleaned_data.get('assinado_por'),
-        #     current_logged_user=form.current_logged_user
-        # )
-
-        print(form.cleaned_data.get('incluir_assinantes'))
-        # return documento
-        ###################################
-        assinado_por = form.cleaned_data.get('assinado_por', None)
-
-        msg = 'Documento n°{} assinado com sucesso por {}'.format(
-            self.object.identificador_versao,
-            assinado_por.get_full_name().title()
-        )
-        messages.add_message(self.request, messages.INFO, msg)
-        return ret
+    # def form_valid(self, form):
+    #     ret = super(AssinarDocumentoView, self).form_valid(form)
+    #     ###################################
+    #     # documento = form.save(False)
+    #     documento = self.object
+    #
+    #     assinado_por = form.cleaned_data.get('assinado_por')
+    #
+    #     # cria ou obten instancia de Assinatura para o usuario selecionado em  assinado_por
+    #     obj, created = Assinatura.objects.get_or_create(documento=documento,
+    #                                                     assinado_por=assinado_por,
+    #                                                     versao_numero=documento.versao_numero,
+    #                                                     esta_ativo=True,
+    #                                                     defaults={
+    #                                                         'documento': documento,
+    #                                                         'assinado_por': assinado_por,
+    #                                                         'versao_numero': documento.versao_numero + 1,
+    #                                                         'esta_ativo': True
+    #                                                     }
+    #                                                     )
+    #     if created:
+    #         print("criado : {}".format(obj.assinado_por.username))
+    #     else:
+    #         print("obtido")
+    #
+    #     if not obj.esta_assinado:
+    #         obj.assinar_documento()
+    #
+    #     # cria assinatura
+    #     usuarios_assinantes = form.cleaned_data.get('incluir_assinantes')
+    #     for usuario_assinante in usuarios_assinantes:
+    #         # Assinatura.objects.get
+    #         obj, created = Assinatura.objects.get_or_create(documento=documento,
+    #                                                         assinado_por=usuario_assinante,
+    #                                                         versao_numero=documento.versao_numero,
+    #                                                         defaults={
+    #                                                             'documento': documento,
+    #                                                             'assinado_por': usuario_assinante,
+    #                                                             'versao_numero': documento.versao_numero + 1,
+    #                                                             'esta_assinado': False
+    #                                                         }
+    #                                                         )
+    #         if created:
+    #             print("criado : {}".format(obj.assinado_por.username))
+    #             # notificar usuario
+    #         else:
+    #             print("obtido")
+    #
+    #     # documento.assinar_documento(
+    #     #     assinado_por=form.cleaned_data.get('assinado_por'),
+    #     #     current_logged_user=form.current_logged_user
+    #     # )
+    #
+    #     print(form.cleaned_data.get('incluir_assinantes'))
+    #     # return documento
+    #     ###################################
+    #     assinado_por = form.cleaned_data.get('assinado_por', None)
+    #
+    #     msg = 'Documento n°{} assinado com sucesso por {}'.format(
+    #         self.object.identificador_versao,
+    #         assinado_por.get_full_name().title()
+    #     )
+    #     messages.add_message(self.request, messages.INFO, msg)
+    #     return ret
 
     def get_success_url(self):
         detail_url = reverse('documentos:validar-detail', kwargs={'pk': self.object.pk_uuid})

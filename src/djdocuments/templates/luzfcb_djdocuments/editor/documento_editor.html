@@ -83,11 +83,15 @@
 {#                                    <em class="glyphicon glyphicon-print"></em>Imprimir#}
 {#                                </a>#}
                                 {% url 'documentos:list' as documento_list_url %}
-                                {% url 'documentos:assinar' object.pk as documento_assinar_url %}
+                                {% url 'documentos:assinar' slug=object.pk_uuid as documento_assinar_url %}
+                                {% url 'documentos:assinaturas' slug=object.pk_uuid as documento_assinaturas %}
                                 {% spurl base=documento_assinar_url add_query="next={{ documento_list_url }}" as documento_assinar_url_com_parametros %}
                                 <a href="{{ documento_assinar_url_com_parametros }}"
                                    class="btn btn-default" {% if object.esta_assinado %}disabled="disabled" {% endif %}><em
                                         class="glyphicon glyphicon-pencil"></em>Assinar</a>
+                               <a href="{{ documento_assinaturas }}"
+                                   class="btn btn-default" {% if object.esta_assinado %}disabled="disabled" {% endif %}><em
+                                        class="glyphicon glyphicon-pencil"></em>Assinantes</a>
 
                             {% endif %}
                         </div>

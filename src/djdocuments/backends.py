@@ -1,14 +1,24 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function, unicode_literals
 
+from collections import Iterable
+
 from django.core.exceptions import ImproperlyConfigured
 from django.db.models import Q
 from django.utils import timezone
+from .utils import get_grupo_assinante_model_class
 
 
 class DocumentosBaseBackend(object):
     group_name_atrib = None
     group_label = None
+
+    def get_grupos(self, excludes=None):
+        if excludes:
+            if not isinstance(excludes, Iterable):
+                excludes = [excludes]
+            return get_grupo_assinante_model_class().objects.all().exclude(id__in=excludes)
+        return get_grupo_assinante_model_class().objects.all()
 
     def get_grupo_name(self, grupo):
         return getattr(grupo, self.group_name_atrib)
@@ -24,7 +34,7 @@ class DocumentosBaseBackend(object):
             )
         return self.group_label
 
-    def get_grupos(self, usuario):
+    def get_grupos_usuario(self, usuario):
         raise NotImplemented
 
     def pode_assinar(self, document, usuario, **kwargs):
@@ -54,6 +64,10 @@ class AuthGroupDocumentosBackend(DocumentosBaseBackend):
         grupos = tuple(usuario.groups.all().values_list('id', flat=True))
         return document.assinaturas.filter(grupo_assinante__in=grupos, esta_assinado=True).exists()
 
+    def get_assinaturas_pendentes(self, document, usuario, **kwargs):
+        grupos = tuple(usuario.groups.all().values_list('id', flat=True))
+        return document.assinaturas.filter(id__in=grupos)
+
     def pode_visualizar(self, document, usuario, **kwargs):
         """
         :param document: Uma instancia de Documento
@@ -81,12 +95,15 @@ class AuthGroupDocumentosBackend(DocumentosBaseBackend):
         grupos = tuple(usuario.groups.all().values_list('id', flat=True))
         return document.grupos_assinates.filter(id__in=grupos).exists()
 
-    def get_grupos(self, usuario):
+    def get_grupos_usuario(self, usuario):
         return usuario.groups.all()
 
 
 class SolarDefensoriaBackend(DocumentosBaseBackend):
     group_name_atrib = 'nome'
+
+    def get_grupos(self):
+        return self.group_model.objects.all(ativo=True)
 
     def grupo_ja_assinou(self, document, usuario, **kwargs):
         return NotImplemented
@@ -144,7 +161,7 @@ class SolarDefensoriaBackend(DocumentosBaseBackend):
 
         return bool(defensorias)
 
-    def get_grupos(self, usuario):
+    def get_grupos_usuario(self, usuario):
         agora = timezone.now()
         defensorias = usuario.servidor.defensor.all_atuacoes.filter(
             Q(ativo=True) &

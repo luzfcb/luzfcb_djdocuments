@@ -20,7 +20,6 @@ except ImportError:
 
 
 class BootstrapFormInputMixin(object):
-
     def __init__(self, *args, **kwargs):
         super(BootstrapFormInputMixin, self).__init__(*args, **kwargs)
         for field_name in self.fields:
@@ -65,13 +64,11 @@ class DocumentoEditarForm(forms.ModelForm):
 
 
 class TipoDocumentoTemplateModelChoiceField(forms.ModelChoiceField):
-
     def label_from_instance(self, obj):
         return obj.titulo
 
 
 class ModeloDocumentoTemplateModelChoiceField(forms.ModelChoiceField):
-
     def label_from_instance(self, obj):
         a = remover_tags_html(obj.titulo or 'Descricao modelo: {}'.format(obj.pk))
         print('ModeloDocumentoTemplateModelChoiceField:', a)
@@ -79,18 +76,16 @@ class ModeloDocumentoTemplateModelChoiceField(forms.ModelChoiceField):
 
 
 class GrupoModelChoiceField(forms.ModelChoiceField):
-
     def label_from_instance(self, obj):
         return get_grupo_assinante_backend().get_grupo_name(obj)
 
 
 class CriarDocumentoForm(BootstrapFormInputMixin, forms.Form):
-
     def __init__(self, *args, **kwargs):
         current_user = kwargs.pop('user')
         super(CriarDocumentoForm, self).__init__(*args, **kwargs)
         if current_user:
-            self.fields['grupo'].queryset = get_grupo_assinante_backend().get_grupos(current_user)
+            self.fields['grupo'].queryset = get_grupo_assinante_backend().get_grupos_usuario(current_user)
 
     # titulo = forms.CharField(max_length=500)]
     grupo = GrupoModelChoiceField(
@@ -144,29 +139,46 @@ class CriarModeloDocumentoForm(BootstrapFormInputMixin, forms.Form):
 
 
 class UserModelChoiceField(forms.ModelChoiceField):
-
     def label_from_instance(self, obj):
         return '{} ({})'.format(obj.get_full_name().title(), getattr(obj, obj.USERNAME_FIELD))
 
 
 class UserModelMultipleChoiceField(forms.ModelMultipleChoiceField):
-
     def label_from_instance(self, obj):
         return '{} ({})'.format(obj.get_full_name().title(), getattr(obj, obj.USERNAME_FIELD))
 
 
-class AssinarDocumentoForm(forms.ModelForm):
+class AdicionarAssinantesForm(BootstrapFormInputMixin, forms.Form):
+    def __init__(self, *args, **kwargs):
+        grupos_ja_adicionados = kwargs.pop('grupos_ja_adicionados')
+        super(AdicionarAssinantesForm, self).__init__(*args, **kwargs)
+        if grupos_ja_adicionados:
+            self.fields['grupo_para_adicionar'].queryset = get_grupo_assinante_backend().get_grupos(excludes=grupos_ja_adicionados)
+
+    grupo_para_adicionar = GrupoModelChoiceField(
+        label=get_grupo_assinante_backend().get_group_label(),
+        queryset=get_grupo_assinante_backend().get_grupos()
+    )
+
+
+class AssinarDocumentoForm(BootstrapFormInputMixin, forms.ModelForm):
+    # titulo = forms.CharField(max_length=500)]
+    grupo = GrupoModelChoiceField(
+        label=get_grupo_assinante_backend().get_group_label(),
+        queryset=get_grupo_assinante_model_class().objects.none()
+    )
+
     assinado_por = UserModelChoiceField(
         label="Assinante",
         help_text="Selecione o usuário que irá assinar o documento",
         queryset=get_real_user_model_class().objects.all().order_by('username'),
-        widget=autocomplete.ModelSelect2(url='documentos:user-autocomplete', attrs={'class': 'form-control'}),
+        widget=autocomplete.ModelSelect2(url='documentos:user-autocomplete'),
 
     )
 
     password = forms.CharField(label="Senha",
                                help_text="Digite a senha do usuário selecionado",
-                               widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+                               widget=forms.PasswordInput())
 
     incluir_assinantes = UserModelMultipleChoiceField(
         required=False,
@@ -174,7 +186,7 @@ class AssinarDocumentoForm(forms.ModelForm):
         help_text="Incluir assinantes e notificar",
         queryset=get_real_user_model_class().objects.all().order_by('username'),
         widget=autocomplete.ModelSelect2Multiple(url='documentos:user-autocomplete',
-                                                 attrs={'class': 'form-control'},
+
                                                  forward=('assinado_por',),
                                                  ),
 
@@ -189,11 +201,13 @@ class AssinarDocumentoForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.current_logged_user = kwargs.pop('current_logged_user')
         super(AssinarDocumentoForm, self).__init__(*args, **kwargs)
+        if self.current_logged_user:
+            self.fields['grupo'].queryset = get_grupo_assinante_backend().get_grupos_usuario(self.current_logged_user)
 
     class Meta:
         model = Documento
         # fields = '__all__'
-        fields = ('assinado_por',)
+        fields = ('grupo', 'assinado_por', 'password')
 
     def clean_assinado_por(self):
         assinado_por = self.cleaned_data.get('assinado_por')

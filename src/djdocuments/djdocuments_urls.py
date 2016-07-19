@@ -24,16 +24,23 @@ urlpatterns = [
         ),
     url(r'^d/create/$',
         documentos_views.DocumentoCriar.as_view(),
-        # documentos_views.criar_documento,
         name='create'
         ),
-    url(r'^editar/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/$',
+    url(r'^d/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/editar/$',
         documentos_views.DocumentoEditor.as_view(),
         name='editar'
         ),
-    url(r'^assinar/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/$',
+    url(r'^d/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/assinar/$',
         documentos_views.AssinarDocumentoView.as_view(),
         name='assinar'
+        ),
+    url(r'^d/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/assinaturas/$',
+        documentos_views.DocumentoAssinaturasView.as_view(),
+        name='assinaturas'
+        ),
+    url(r'^d/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/adicionar_assinantes/$',
+        documentos_views.AdicionarAssinantes.as_view(),
+        name='adicionar_assinantes'
         ),
     url(r'^d/create-template/$',
         documentos_views.DocumentoModeloCriar.as_view(),

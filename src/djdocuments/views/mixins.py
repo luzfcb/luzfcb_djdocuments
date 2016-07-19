@@ -96,13 +96,22 @@ class SingleDocumentObjectMixin(object):
     """
     Provides the ability to retrieve a single Document object for further manipulation.
     """
+    document_object = None
     document_model = Documento
     document_queryset = None
-    document_slug_field = 'slug'
-    document_context_object_name = None
+    document_slug_field = 'pk_uuid'
+    document_context_object_name = 'document_object'
     document_slug_url_kwarg = 'slug'
     document_pk_url_kwarg = 'document_pk'
     document_query_pk_and_slug = False
+
+    def get(self, request, *args, **kwargs):
+        self.document_object = self.get_document_object()
+        return super(SingleDocumentObjectMixin, self).get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        self.document_object = self.get_document_object()
+        return super(SingleDocumentObjectMixin, self).post(request, *args, **kwargs)
 
     def get_document_object(self, queryset=None):
         """
@@ -178,9 +187,21 @@ class SingleDocumentObjectMixin(object):
         else:
             return None
 
+    def get_context_data(self, **kwargs):
+        """
+        Insert the single object into the context dict.
+        """
+        context = super(SingleDocumentObjectMixin, self).get_context_data(**kwargs)
+        if self.document_object:
+            context['document_object'] = self.document_object
+            context_object_name = self.get_document_context_object_name(self.document_object)
+            if context_object_name:
+                context[context_object_name] = self.document_object
+        context.update(kwargs)
+        return super(SingleDocumentObjectMixin, self).get_context_data(**context)
+
 
 class AuditavelViewMixin(object):
-
     def form_valid(self, form):
         if hasattr(self.request, 'user') and not isinstance(self.request.user, AnonymousUser):
             if not form.instance.criado_por:
@@ -190,7 +211,6 @@ class AuditavelViewMixin(object):
 
 
 class PopupMixin(object):
-
     def get_initial(self):
         initial = super(PopupMixin, self).get_initial()
         initial.update({'is_popup': self.get_is_popup()})
@@ -214,7 +234,6 @@ class PopupMixin(object):
 
 
 class CopyDocumentContentMixin(object):
-
     def get_initial(self):
         initial = super(CopyDocumentContentMixin, self).get_initial()
         documento_instance = self.get_documento_instance()
@@ -241,11 +260,10 @@ class CopyDocumentContentMixin(object):
 
 
 class DocumentoAssinadoRedirectMixin(object):
-
     def get(self, request, *args, **kwargs):
         ret = super(DocumentoAssinadoRedirectMixin, self).get(request, *args, **kwargs)
         if self.object and self.object.esta_ativo and hasattr(self.request, 'user') and not isinstance(
-                self.request.user, AnonymousUser):
+            self.request.user, AnonymousUser):
 
             # assinatura = Assinatura.objects.filter(assinado_por=self.request.user, documento=self.object,
             #                                        versao_documento=self.object.versao_numero).first()
@@ -253,7 +271,7 @@ class DocumentoAssinadoRedirectMixin(object):
             #
 
             if get_grupo_assinante_backend().grupo_ja_assinou(
-                    document=self.object, usuario=self.request.user):
+                document=self.object, usuario=self.request.user):
                 detail_url = reverse('documentos:validar-detail', kwargs={'pk': self.object.pk_uuid})
                 messages.add_message(request, messages.INFO,
                                      'Você já assinou o documento {} em: {:%d-%m-%Y %H:%M}'.format(

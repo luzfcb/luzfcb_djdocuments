@@ -1,4 +1,4 @@
-{% extends "luzfcb_djdocuments/base.html" %}
+{% extends "luzfcb_djdocuments/bootstrap3/base.html" %}
 {% load staticfiles %}
 {% block titulo %}
     Listar Documentos
@@ -10,23 +10,53 @@
     {{ block.super }}
 
 
-    {% if object_list %}
 
-        <ul class="list-group">
-            {% for object in object_list %}
-                <li class="list-group-item">{{ object }} - doc: {{ object.documento }} <a class="btn btn-danger btn-xs djpopup" href="{% url 'documentos:editar' object.pk %}">Editar</a>
-                    - {% if object.esta_assinado %}
-                        Assinado
-                    {% else %}
-                        <a href="{% url 'documentos:assinar' object.pk %}">Assinar</a>
-                    {% endif %}
-                    <a href="{% url 'documentos:validar-detail' object.pk %}">Imprimir</a>
-                </li>
+    
+    <table class="table table-bordered table-striped table-hover">
+        <thead>
+        Assinaturas:
+        <tr>
+            <th>#</th>
+            <th>Assunto</th>
+            <th></th>
+            <th>Username</th>
+            <th>Status</th>
+        </tr>
+        </thead>
+
+
+        <tbody>
+        {% if object_list %}
+            {% for assinatura in object_list %}
+                <tr>
+                    <th scope="row"></th>
+                    <td>Mark - {{ assinatura.documento.assunto }}</td>
+                    <td>Otto - {{ assinatura.grupo_assinante.name }}</td>
+                    <td><a href="{% url 'documentos:assinar' slug=assinatura.documento.pk_uuid %}"
+                           class="btn btn-sm btn-primary">Assinar</a></td>
+                    <td>{{ assinatura.esta_assinado }}</td>
+                </tr>
             {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="4">Não há itens cadastrados</td>
+            </tr>
 
-        </ul>
-    {% else %}
-        Não há itens cadastrados
-    {% endif %}
+        {% endif %}
+        </tbody>
+
+
+        <tfoot>
+        <tr>
+            <th>#</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Username</th>
+            <th>Status</th>
+        </tr>
+        </tfoot>
+    </table>
+
+
 
 {% endblock conteudo_app %}
