@@ -9,9 +9,11 @@ from django.views.decorators.cache import never_cache
 from .. import models
 from ..templatetags.luzfcb_djdocuments_tags import remover_tags_html
 from ..views.documentos import USER_MODEL
+from ..utils import get_grupo_assinante_backend
+from ..views.auth_mixins import LoginRequiredMixin
 
 
-class UserAutocomplete(autocomplete.Select2QuerySetView):
+class GrupoAutoComplete(LoginRequiredMixin, autocomplete.Select2QuerySetView):
     """
     Autocomplete view to Django User Based
     """
@@ -20,18 +22,47 @@ class UserAutocomplete(autocomplete.Select2QuerySetView):
         # Don't forget to filter out results depending on the visitor !
         # if not self.request.user.is_authenticated():
         #     return USER_MODEL.objects.none()
-
+        backend = get_grupo_assinante_backend()
         assinado_por = self.forwarded.get('assinado_por', None)
+        grupo = self.forwarded.get('grupo', None)
 
-        qs = USER_MODEL.objects.all().order_by('first_name', 'last_name')
+        qs = backend.get_grupos_usuario(self.request.user)
+
+        if self.q:
+            paran_dict = {'{}__icontains'.format(backend.group_name_atrib): self.q}
+            qs = qs.filter(Q(paran_dict))
+
+        return qs
+
+    def get_result_label(self, result):
+        return get_grupo_assinante_backend().get_grupo_name(result)
+
+
+class UserAutocomplete(LoginRequiredMixin, autocomplete.Select2QuerySetView):
+    """
+    Autocomplete view to Django User Based
+    """
+
+    def get_queryset(self):
+        # Don't forget to filter out results depending on the visitor !
+        # if not self.request.user.is_authenticated():
+        #     return USER_MODEL.objects.none()
+        backend = get_grupo_assinante_backend()
+        assinado_por = self.forwarded.get('assinado_por', None)
+        grupo = self.forwarded.get('grupo', None)
+        if grupo:
+            qs = backend.get_usuarios_grupo(grupo).order_by('first_name', 'last_name')
+        else:
+            qs = USER_MODEL.objects.all().order_by('first_name', 'last_name')
 
         if self.q:
             qs = qs.filter(Q(first_name__icontains=self.q) | Q(last_name__icontains=self.q))
 
-        if assinado_por:
-            qs = qs.exclude(id=assinado_por)
-            # qs = qs.annotate(full_name=Concat('first_name', Value(' '), 'last_name', output_field=CharField()))
-            # qs = qs.filter(full_name__icontains=self.q)
+        # if assinado_por:
+        #     qs = qs.exclude(id=assinado_por)
+        #     # qs = qs.annotate(full_name=Concat('first_name', Value(' '), 'last_name', output_field=CharField()))
+        #     # qs = qs.filter(full_name__icontains=self.q)
+
         return qs
 
     def get_result_label(self, result):
@@ -63,7 +94,6 @@ class UserAutocomplete(autocomplete.Select2QuerySetView):
 
 
 class DocumentoCriarAutocomplete(autocomplete.Select2QuerySetView):
-
     @method_decorator(never_cache)
     def dispatch(self, request, *args, **kwargs):
         return super(DocumentoCriarAutocomplete, self).dispatch(request, *args, **kwargs)

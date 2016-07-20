@@ -153,7 +153,8 @@ class AdicionarAssinantesForm(BootstrapFormInputMixin, forms.Form):
         grupos_ja_adicionados = kwargs.pop('grupos_ja_adicionados')
         super(AdicionarAssinantesForm, self).__init__(*args, **kwargs)
         if grupos_ja_adicionados:
-            self.fields['grupo_para_adicionar'].queryset = get_grupo_assinante_backend().get_grupos(excludes=grupos_ja_adicionados)
+            self.fields['grupo_para_adicionar'].queryset = get_grupo_assinante_backend().get_grupos(
+                excludes=grupos_ja_adicionados)
 
     grupo_para_adicionar = GrupoModelChoiceField(
         label=get_grupo_assinante_backend().get_group_label(),
@@ -161,18 +162,21 @@ class AdicionarAssinantesForm(BootstrapFormInputMixin, forms.Form):
     )
 
 
-class AssinarDocumentoForm(BootstrapFormInputMixin, forms.ModelForm):
+class AssinarDocumentoForm(BootstrapFormInputMixin, forms.Form):
     # titulo = forms.CharField(max_length=500)]
     grupo = GrupoModelChoiceField(
         label=get_grupo_assinante_backend().get_group_label(),
-        queryset=get_grupo_assinante_model_class().objects.none()
+        queryset=get_grupo_assinante_model_class().objects.none(),
+        widget=autocomplete.ModelSelect2(url='documentos:grupos-autocomplete'),
+
     )
 
     assinado_por = UserModelChoiceField(
         label="Assinante",
         help_text="Selecione o usuário que irá assinar o documento",
         queryset=get_real_user_model_class().objects.all().order_by('username'),
-        widget=autocomplete.ModelSelect2(url='documentos:user-autocomplete'),
+        widget=ModelSelect2ForwardExtras(url='documentos:user-autocomplete',
+                                         forward=('grupo',), clear_on_change=('grupo',)),
 
     )
 
@@ -186,7 +190,6 @@ class AssinarDocumentoForm(BootstrapFormInputMixin, forms.ModelForm):
         help_text="Incluir assinantes e notificar",
         queryset=get_real_user_model_class().objects.all().order_by('username'),
         widget=autocomplete.ModelSelect2Multiple(url='documentos:user-autocomplete',
-
                                                  forward=('assinado_por',),
                                                  ),
 
@@ -200,9 +203,32 @@ class AssinarDocumentoForm(BootstrapFormInputMixin, forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         self.current_logged_user = kwargs.pop('current_logged_user')
+        grupo_escolhido_pk = kwargs.pop('grupo_escolhido_pk')
+        self.grupo_escolhido = None
+        # initial = kwargs.get('initial', None)
+        # grupo = {'grupo': self.grupo_escolhido}
+        # if not initial:
+        #     kwargs['initial'] = {}
+        #
+        # initial.update(
+        #     grupo
+        # )
         super(AssinarDocumentoForm, self).__init__(*args, **kwargs)
-        if self.current_logged_user:
-            self.fields['grupo'].queryset = get_grupo_assinante_backend().get_grupos_usuario(self.current_logged_user)
+        if grupo_escolhido_pk:
+            grupo_escolhido_queryset = get_grupo_assinante_backend().get_grupo(pk=grupo_escolhido_pk,
+                                                                               use_filter=True)
+            self.grupo_escolhido = grupo_escolhido_queryset[0]
+            # self.fields['grupo'].widget.attrs['disabled'] = 'true'
+            self.fields['grupo'].initial = self.grupo_escolhido
+            self.fields['grupo'].queryset = grupo_escolhido_queryset
+        # else:
+        #     if self.current_logged_user:
+        #         self.fields['grupo'].queryset = get_grupo_assinante_backend().get_grupos_usuario(
+        #             self.current_logged_user)
+
+    # def clean_grupo(self):
+    #     if self.grupo_escolhido:
+    #         self.cleaned_data['grupo'] = self.grupo_escolhido
 
     class Meta:
         model = Documento

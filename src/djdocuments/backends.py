@@ -6,6 +6,7 @@ from collections import Iterable
 from django.core.exceptions import ImproperlyConfigured
 from django.db.models import Q
 from django.utils import timezone
+from django.db import models
 from .utils import get_grupo_assinante_model_class
 
 
@@ -13,12 +14,24 @@ class DocumentosBaseBackend(object):
     group_name_atrib = None
     group_label = None
 
+    def get_usuarios_grupo(self, grupo, **kwargs):
+        raise NotImplemented
+
     def get_grupos(self, excludes=None):
         if excludes:
             if not isinstance(excludes, Iterable):
                 excludes = [excludes]
             return get_grupo_assinante_model_class().objects.all().exclude(id__in=excludes)
         return get_grupo_assinante_model_class().objects.all()
+
+    def get_grupo_model(self):
+        return get_grupo_assinante_model_class()
+
+    def get_grupo(self, **kwargs):
+        use_filter = kwargs.pop('use_filter', False)
+        if use_filter:
+            return get_grupo_assinante_model_class().objects.filter(**kwargs)
+        return get_grupo_assinante_model_class().objects.get(**kwargs)
 
     def get_grupo_name(self, grupo):
         return getattr(grupo, self.group_name_atrib)
@@ -56,6 +69,11 @@ class DocumentosBaseBackend(object):
 class AuthGroupDocumentosBackend(DocumentosBaseBackend):
     group_name_atrib = 'name'
     group_label = 'Grupo de usuario'
+
+    def get_usuarios_grupo(self, grupo, **kwargs):
+        if not isinstance(grupo, self.get_grupo_model()):
+            grupo = self.get_grupo_model().objects.get(pk=grupo)
+        return grupo.user_set.filter(**kwargs)
 
     def get_grupo_name(self, grupo):
         return getattr(grupo, self.group_name_atrib)

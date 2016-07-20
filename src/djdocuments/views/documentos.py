@@ -278,29 +278,30 @@ class AdicionarAssinantes(LoginRequiredMixin, SingleDocumentObjectMixin, generic
         return ret
 
 
-class AssinarDocumentoView(LoginRequiredMixin, DocumentoAssinadoRedirectMixin, generic.FormView, generic.DetailView):
+class AssinarDocumentoView(LoginRequiredMixin, DocumentoAssinadoRedirectMixin, SingleDocumentObjectMixin,
+                           generic.FormView):
     template_name = 'luzfcb_djdocuments/documento_assinar.html'
     form_class = AssinarDocumentoForm
     model = Documento
     slug_field = 'pk_uuid'
     success_url = reverse_lazy('documentos:list')
+    group_pk_url_kwarg = 'group_id'
 
-    def get(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        # self.object = Documento.objects.create()
-        # from djdocuments.backends import AuthGroupDocumentosBackend
-        # # Backend = get_grupo_assinante_backend()
-        # backend = AuthGroupDocumentosBackend()
-        # user = getattr(self.request, 'user', None)
-        # if not backend.grupo_ja_assinou(self.object, user):
-        #     backend.pode_assinar(document=self.object, usuario=user)
-        #     self.object = Documento.objects.create()
-        #     self.object.assi
-
-        return super(AssinarDocumentoView, self).get(request, *args, **kwargs)
-
+    # def get(self, request, *args, **kwargs):
+    #     self.object = self.get_object()
+    #     # self.object = Documento.objects.create()
+    #     # from djdocuments.backends import AuthGroupDocumentosBackend
+    #     # # Backend = get_grupo_assinante_backend()
+    #     # backend = AuthGroupDocumentosBackend()
+    #     # user = getattr(self.request, 'user', None)
+    #     # if not backend.grupo_ja_assinou(self.object, user):
+    #     #     backend.pode_assinar(document=self.object, usuario=user)
+    #     #     self.object = Documento.objects.create()
+    #     #     self.object.assi
+    #     ret = super(AssinarDocumentoView, self).get(request, *args, **kwargs)
+    #     return ret
+    #
     def post(self, request, *args, **kwargs):
-        self.object = self.get_object()
         return super(AssinarDocumentoView, self).post(request, *args, **kwargs)
 
     @method_decorator(never_cache)
@@ -309,26 +310,31 @@ class AssinarDocumentoView(LoginRequiredMixin, DocumentoAssinadoRedirectMixin, g
     def dispatch(self, request, *args, **kwargs):
         return super(AssinarDocumentoView, self).dispatch(request, *args, **kwargs)
 
-    def get_initial(self):
-        initial = super(AssinarDocumentoView, self).get_initial()
-        # copia o dicionario, para evitar mudar acidentalmente um dicionario mutavel
-        initial = initial.copy()
-        user = getattr(self.request, 'user', None)
-        if user and user.is_authenticated():
-            initial.update({
-                'assinado_por': user,
-            }
-            )
-        return initial
+    # def get_initial(self):
+    #     initial = super(AssinarDocumentoView, self).get_initial()
+    #     user = getattr(self.request, 'user', None)
+    #     if user and user.is_authenticated():
+    #         initial.update({
+    #             'assinado_por': user,
+    #         }
+    #         )
+    #     return initial
 
     def get_form_kwargs(self):
         kwargs = super(AssinarDocumentoView, self).get_form_kwargs()
         current_logged_user = self.request.user
         kwargs['current_logged_user'] = current_logged_user
+        group_id = self.kwargs.get(self.group_pk_url_kwarg, None)
+        # kwargs['grupo_escolhido'] = None
+        if group_id:
+            kwargs['grupo_escolhido_pk'] = group_id
+
         return kwargs
 
-    # def form_valid(self, form):
-    #     ret = super(AssinarDocumentoView, self).form_valid(form)
+    def get_context_data(self, **kwargs):
+        return super(AssinarDocumentoView, self).get_context_data(**kwargs)
+
+    # ret = super(AssinarDocumentoView, self).form_valid(form)
     #     ###################################
     #     # documento = form.save(False)
     #     documento = self.object

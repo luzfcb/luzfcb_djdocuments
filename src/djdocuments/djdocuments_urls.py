@@ -30,9 +30,15 @@ urlpatterns = [
         documentos_views.DocumentoEditor.as_view(),
         name='editar'
         ),
-    url(r'^d/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/assinar/$',
+    url(r'^d/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/assinaturas/assinar/$',
         documentos_views.AssinarDocumentoView.as_view(),
         name='assinar'
+        ),
+    url(
+        r'^d/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/assinaturas/assinar/(?P<group_id>[0-9]+)/$',
+        # noqa
+        documentos_views.AssinarDocumentoView.as_view(),
+        name='assinar_por_grupo'
         ),
     url(r'^d/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/assinaturas/$',
         documentos_views.DocumentoAssinaturasView.as_view(),
@@ -51,6 +57,11 @@ urlpatterns = [
         autocompletes.UserAutocomplete.as_view(),
         name='user-autocomplete'
         ),
+    url(r'^grupos-autocomplete/$',
+        autocompletes.GrupoAutoComplete.as_view(),
+        name='grupos-autocomplete'
+        ),
+
     url(r'^documento-criarautocomplete/$',
         autocompletes.DocumentoCriarAutocomplete.as_view(),
         name='documentocriar-autocomplete'
