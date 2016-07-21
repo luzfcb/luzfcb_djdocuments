@@ -242,21 +242,40 @@ class VincularDocumentoBaseView(LoginRequiredMixin, SingleDocumentObjectMixin, S
         return False
 
 
-class DocumentoAssinaturasView(SingleDocumentObjectMixin, generic.ListView):
+class DocumentoAssinaturasListView(LoginRequiredMixin, SingleDocumentObjectMixin, generic.ListView):
     model = Assinatura
     document_slug_field = 'pk_uuid'
     template_name = 'luzfcb_djdocuments/assinaturas_pendentes.html'
 
     def get_queryset(self):
-        document_object = self.get_document_object()
-
-        queryset = document_object.assinaturas.all()
+        queryset = self.document_object.assinaturas.select_related('grupo_assinante').all()
         ordering = self.get_ordering()
         if ordering:
             if isinstance(ordering, six.string_types):
                 ordering = (ordering,)
             queryset = queryset.order_by(*ordering)
         return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super(DocumentoAssinaturasListView, self).get_context_data(**kwargs)
+        backend = get_grupo_assinante_backend()
+        dados_processados = []
+        for assinatura in self.object_list:
+            pode_assinar = backend.pode_assinar(document=self.document_object,
+                                                usuario=self.request.user,
+                                                grupo_assinante=assinatura.grupo_assinante)
+            dados = {
+                'assinatura': assinatura,
+                'esta_assinado': assinatura.esta_assinado,
+                'pode_assinar': pode_assinar,
+                'grupo_assinante_nome': backend.get_grupo_name(assinatura.grupo_assinante),
+                'url_para_assinar': reverse_lazy('documentos:assinar_por_grupo',
+                                                 kwargs={'slug': self.document_object.pk_uuid,
+                                                         'group_id': assinatura.grupo_assinante.pk})
+            }
+            dados_processados.append(dados)
+        context['dados_processados'] = dados_processados
+        return context
 
 
 class AdicionarAssinantes(LoginRequiredMixin, SingleDocumentObjectMixin, generic.FormView):
@@ -310,15 +329,16 @@ class AssinarDocumentoView(LoginRequiredMixin, DocumentoAssinadoRedirectMixin, S
     def dispatch(self, request, *args, **kwargs):
         return super(AssinarDocumentoView, self).dispatch(request, *args, **kwargs)
 
-    # def get_initial(self):
-    #     initial = super(AssinarDocumentoView, self).get_initial()
-    #     user = getattr(self.request, 'user', None)
-    #     if user and user.is_authenticated():
-    #         initial.update({
-    #             'assinado_por': user,
-    #         }
-    #         )
-    #     return initial
+    def get_initial(self):
+        initial = super(AssinarDocumentoView, self).get_initial()
+        current_logged_user = self.request.user
+        initial['current_logged_user'] = current_logged_user
+        group_id = self.kwargs.get(self.group_pk_url_kwarg, None)
+        # kwargs['grupo_escolhido'] = None
+        if group_id:
+            initial['grupo_escolhido_pk'] = group_id
+
+        return initial
 
     def get_form_kwargs(self):
         kwargs = super(AssinarDocumentoView, self).get_form_kwargs()
@@ -332,7 +352,9 @@ class AssinarDocumentoView(LoginRequiredMixin, DocumentoAssinadoRedirectMixin, S
         return kwargs
 
     def get_context_data(self, **kwargs):
-        return super(AssinarDocumentoView, self).get_context_data(**kwargs)
+        context = super(AssinarDocumentoView, self).get_context_data(**kwargs)
+
+        return context
 
     # ret = super(AssinarDocumentoView, self).form_valid(form)
     #     ###################################

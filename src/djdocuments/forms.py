@@ -166,9 +166,9 @@ class AssinarDocumentoForm(BootstrapFormInputMixin, forms.Form):
     # titulo = forms.CharField(max_length=500)]
     grupo = GrupoModelChoiceField(
         label=get_grupo_assinante_backend().get_group_label(),
+        help_text="Selecione o {}".format(get_grupo_assinante_backend().get_group_label()),
         queryset=get_grupo_assinante_model_class().objects.none(),
         widget=autocomplete.ModelSelect2(url='documentos:grupos-autocomplete'),
-
     )
 
     assinado_por = UserModelChoiceField(
@@ -203,7 +203,9 @@ class AssinarDocumentoForm(BootstrapFormInputMixin, forms.Form):
 
     def __init__(self, *args, **kwargs):
         self.current_logged_user = kwargs.pop('current_logged_user')
-        grupo_escolhido_pk = kwargs.pop('grupo_escolhido_pk')
+        grupo_escolhido_pk = kwargs.get('grupo_escolhido_pk')
+        if grupo_escolhido_pk:
+            kwargs.pop('grupo_escolhido_pk')
         self.grupo_escolhido = None
         # initial = kwargs.get('initial', None)
         # grupo = {'grupo': self.grupo_escolhido}
@@ -218,7 +220,8 @@ class AssinarDocumentoForm(BootstrapFormInputMixin, forms.Form):
             grupo_escolhido_queryset = get_grupo_assinante_backend().get_grupo(pk=grupo_escolhido_pk,
                                                                                use_filter=True)
             self.grupo_escolhido = grupo_escolhido_queryset[0]
-            # self.fields['grupo'].widget.attrs['disabled'] = 'true'
+            self.fields['grupo'].widget.attrs['disabled'] = 'disabled'
+            self.fields['grupo'].widget.attrs['readonly'] = 'true'
             self.fields['grupo'].initial = self.grupo_escolhido
             self.fields['grupo'].queryset = grupo_escolhido_queryset
         # else:

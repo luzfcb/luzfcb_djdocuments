@@ -20,26 +20,44 @@
             <th>Versão do documento</th>
             <th>Defensoria assinantes</th>
             <th>Assinou?</th>
+            <th>Pendende desde</th>
             <th>Assinante</th>
             <th>Data/Hora assinatura</th>
-            <th></th>
+            <th>Ações</th>
         </tr>
         </thead>
 
 
         <tbody>
         {% if object_list %}
-            {% for assinatura in object_list %}
+            {% for dados in dados_processados %}
                 <tr>
                     <th scope="row"></th>
                     <td>{{ document_object.identificador_versao }}</td>
-                    <td>{{ assinatura.grupo_assinante.name }}</td>
-                    <td>{% if assinatura.esta_assinado %}<span class="label label-success">Assinado</span>{% else %}<span class="label label-warning">Pendente</span>{% endif %}</td>
-                    <td>{% if assinatura.esta_assinado %}{{ assinatura.assinado_nome }}{% else %}-{% endif %}</td>
-                    <td>{% if assinatura.esta_assinado %}{{ assinatura.assinado_em }}{% else %}-{% endif %}</td>
+                    <td>{{ dados.grupo_assinante_nome }}</td>
+                    <td>{{ dados.grupo_assinante_nome }}</td>
+                    <td>{% if dados.esta_assinado %}<span class="label label-success">Assinado</span>{% else %}
+                        <span class="label label-warning">Pendente</span>{% endif %}</td>
+                    {#                    <td>{% pode_assinar document_object user assinatura.grupo_assinante %}</td>#}
+                    <td>{% if dados.esta_assinado %}{{ dados.assinatura.assinado_nome }}{% else %}-{% endif %}</td>
+                    <td>{% if dados.esta_assinado %}{{ dados.assinatura.assinado_em }}{% else %}-{% endif %}</td>
 
-                    <td>{% if assinatura.esta_assinado %}-{% else %}<a href="{% url 'documentos:assinar_por_grupo' slug=assinatura.documento.pk_uuid group_id=assinatura.grupo_assinante.pk %}"
-                           class="btn btn-sm btn-primary">Assinar</a>{% endif %}</td>
+                    {#                    <td>{% if assinatura.esta_assinado %}-{% else %}<a href="{% url 'documentos:assinar_por_grupo' slug=assinatura.documento.pk_uuid group_id=assinatura.grupo_assinante.pk %}"#}
+                    {#                           class="btn btn-sm btn-primary">Assinar</a>{% endif %}</td>#}
+                    <td>
+                        <div class="btn-group">
+                            {% if not dados.esta_assinado %}
+                                {% if dados.pode_assinar %}<a href="{{ dados.url_para_assinar }}"
+                                                              class="btn btn-sm btn-primary">Assinar</a>
+                                {% else %}
+                                    <button class="btn btn-sm btn-primary" disabled="disabled" readonly="true">Assinar
+                                    </button>
+                                {% endif %}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </div>
+                    </td>
                 </tr>
             {% endfor %}
         {% else %}
@@ -57,6 +75,7 @@
             <th></th>
             <th>Defensoria assinantes</th>
             <th>Assinou?</th>
+            <th>Pendende desde</th>
             <th>Assinante</th>
             <th>Data/Hora assinatura</th>
             <th></th>

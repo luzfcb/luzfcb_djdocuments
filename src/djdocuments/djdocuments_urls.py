@@ -41,7 +41,7 @@ urlpatterns = [
         name='assinar_por_grupo'
         ),
     url(r'^d/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/assinaturas/$',
-        documentos_views.DocumentoAssinaturasView.as_view(),
+        documentos_views.DocumentoAssinaturasListView.as_view(),
         name='assinaturas'
         ),
     url(r'^d/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/adicionar_assinantes/$',
