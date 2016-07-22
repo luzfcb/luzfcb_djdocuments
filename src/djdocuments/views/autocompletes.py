@@ -26,7 +26,10 @@ class GruposAssinantesDoDocumentoAutoComplete(LoginRequiredMixin,
         # if not self.request.user.is_authenticated():
         #     return USER_MODEL.objects.none()
         backend = get_grupo_assinante_backend()
-        qs = self.document_object.grupos_assinates.all()
+
+        assinaturas = self.document_object.assinaturas.filter(assinado_por=None).values_list('grupo_assinante_id',
+                                                                                             flat=True)
+        qs = self.document_object.grupos_assinates.filter(id__in=assinaturas)
 
         if self.q:
             paran_dict = {'{}__icontains'.format(backend.group_name_atrib): self.q}
