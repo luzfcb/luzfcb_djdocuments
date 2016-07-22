@@ -54,7 +54,7 @@ class TipoDocumento(models.Model):
 class Assinatura(models.Model):
 
     def __str__(self):
-        return 'pk: {}'.format(self.pk)
+        return 'pk: {}, grupo_assinante: {}'.format(self.pk, self.grupo_assinante_id)
 
     # documento
     documento = models.ForeignKey('Documento', related_name='assinaturas')
@@ -287,7 +287,7 @@ class Documento(models.Model):
                 cadastrado_por=usuario_atual
             )
 
-    def assinar(self, grupo_assinante, usuario_assinante, senha):
+    def assinar(self, grupo_assinante, usuario_assinante, senha, usuario_atual=None):
         try:
             assinatura = self.assinaturas.get(
                 grupo_assinante=grupo_assinante,

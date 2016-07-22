@@ -11,9 +11,12 @@ from ..templatetags.luzfcb_djdocuments_tags import remover_tags_html
 from ..views.documentos import USER_MODEL
 from ..utils import get_grupo_assinante_backend
 from ..views.auth_mixins import LoginRequiredMixin
+from .mixins import SingleDocumentObjectMixin
 
 
-class GrupoAutoComplete(LoginRequiredMixin, autocomplete.Select2QuerySetView):
+class GruposAssinantesDoDocumentoAutoComplete(LoginRequiredMixin,
+                                              SingleDocumentObjectMixin,
+                                              autocomplete.Select2QuerySetView):
     """
     Autocomplete view to Django User Based
     """
@@ -23,9 +26,28 @@ class GrupoAutoComplete(LoginRequiredMixin, autocomplete.Select2QuerySetView):
         # if not self.request.user.is_authenticated():
         #     return USER_MODEL.objects.none()
         backend = get_grupo_assinante_backend()
-        assinado_por = self.forwarded.get('assinado_por', None)
-        grupo = self.forwarded.get('grupo', None)
+        qs = self.document_object.grupos_assinates.all()
 
+        if self.q:
+            paran_dict = {'{}__icontains'.format(backend.group_name_atrib): self.q}
+            qs = qs.filter(Q(paran_dict))
+
+        return qs
+
+    def get_result_label(self, result):
+        return get_grupo_assinante_backend().get_grupo_name(result)
+
+
+class GruposDoUsuarioAutoComplete(LoginRequiredMixin, autocomplete.Select2QuerySetView):
+    """
+    Autocomplete view to Django User Based
+    """
+
+    def get_queryset(self):
+        # Don't forget to filter out results depending on the visitor !
+        # if not self.request.user.is_authenticated():
+        #     return USER_MODEL.objects.none()
+        backend = get_grupo_assinante_backend()
         qs = backend.get_grupos_usuario(self.request.user)
 
         if self.q:
@@ -36,6 +58,33 @@ class GrupoAutoComplete(LoginRequiredMixin, autocomplete.Select2QuerySetView):
 
     def get_result_label(self, result):
         return get_grupo_assinante_backend().get_grupo_name(result)
+
+
+class UsersByGroupAutocomplete(LoginRequiredMixin, autocomplete.Select2QuerySetView):
+    """
+    UsersByGroupAutocomplete view to Django User Based filter by group
+    """
+
+    def get_queryset(self):
+        # Don't forget to filter out results depending on the visitor !
+        # if not self.request.user.is_authenticated():
+        #     return USER_MODEL.objects.none()
+        backend = get_grupo_assinante_backend()
+
+        grupo = self.forwarded.get('grupo', None)
+        if grupo:
+            qs = backend.get_usuarios_grupo(grupo).order_by('first_name', 'last_name')
+        else:
+            qs = USER_MODEL.objects.none()
+
+        if self.q:
+            qs = qs.filter(Q(first_name__icontains=self.q) | Q(last_name__icontains=self.q))
+
+        return qs
+
+    def get_result_label(self, result):
+        name, user_name = result.get_full_name().title(), getattr(result, result.USERNAME_FIELD)
+        return '{} ({})'.format(name, user_name)
 
 
 class UserAutocomplete(LoginRequiredMixin, autocomplete.Select2QuerySetView):
@@ -49,19 +98,18 @@ class UserAutocomplete(LoginRequiredMixin, autocomplete.Select2QuerySetView):
         #     return USER_MODEL.objects.none()
         backend = get_grupo_assinante_backend()
         assinado_por = self.forwarded.get('assinado_por', None)
-        grupo = self.forwarded.get('grupo', None)
+        grupo = self.forwarded.get('grupo', 'teste')
+        print("grupo:", grupo)
         if grupo:
-            qs = backend.get_usuarios_grupo(grupo).order_by('first_name', 'last_name')
+            if grupo == 'null':
+                qs = USER_MODEL.objects.none()
+            else:
+                qs = backend.get_usuarios_grupo(grupo).order_by('first_name', 'last_name')
         else:
             qs = USER_MODEL.objects.all().order_by('first_name', 'last_name')
 
         if self.q:
             qs = qs.filter(Q(first_name__icontains=self.q) | Q(last_name__icontains=self.q))
-
-        # if assinado_por:
-        #     qs = qs.exclude(id=assinado_por)
-        #     # qs = qs.annotate(full_name=Concat('first_name', Value(' '), 'last_name', output_field=CharField()))
-        #     # qs = qs.filter(full_name__icontains=self.q)
 
         return qs
 

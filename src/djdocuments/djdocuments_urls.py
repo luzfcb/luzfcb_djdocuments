@@ -53,13 +53,21 @@ urlpatterns = [
         # documentos_views.criar_documento,
         name='create-template'
         ),
-    url(r'^user-autocomplete/$',
+    url(r'^users-autocomplete/$',
         autocompletes.UserAutocomplete.as_view(),
         name='user-autocomplete'
         ),
+    url(r'^users-by-group-autocomplete/$',
+        autocompletes.UsersByGroupAutocomplete.as_view(),
+        name='user-by-group-autocomplete'
+        ),
     url(r'^grupos-autocomplete/$',
-        autocompletes.GrupoAutoComplete.as_view(),
+        autocompletes.GruposDoUsuarioAutoComplete.as_view(),
         name='grupos-autocomplete'
+        ),
+    url(r'^grupos-autocomplete/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/$',
+        autocompletes.GruposAssinantesDoDocumentoAutoComplete.as_view(),
+        name='grupos-assinantes-do-documento'
         ),
 
     url(r'^documento-criarautocomplete/$',
