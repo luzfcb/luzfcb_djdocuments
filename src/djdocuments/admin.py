@@ -48,6 +48,8 @@ class DocumentoAdmin(SimpleHistoryAdmin):
         # 'assinatura_hash', 'assinado_em', 'assinado_por', 'criado_em', 'criado_por', 'modificado_em', 'modificado_por',
         # 'revertido_em',
         # 'revertido_por', 'revertido_da_versao',
+        'pk_uuid',
+        'esta_assinado',
 
     )
     # readonly_fields = ('criado_em', 'criado_por', 'modificado_em', 'modificado_por', 'revertido_em', 'revertido_por',

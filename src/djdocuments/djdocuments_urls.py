@@ -26,6 +26,14 @@ urlpatterns = [
         documentos_views.DocumentoCriar.as_view(),
         name='create'
         ),
+    url(r'^d/validar/$',
+        documentos_views.DocumentoValidacaoView.as_view(),
+        name='validar'
+        ),
+    url(r'^d/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/validar-detail/$',
+        documentos_views.DocumentoDetailValidarView.as_view(),
+        name='validar-detail'
+        ),
     url(r'^d/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/editar/$',
         documentos_views.DocumentoEditor.as_view(),
         name='editar'

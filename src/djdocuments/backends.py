@@ -79,7 +79,11 @@ class AuthGroupDocumentosBackend(DocumentosBaseBackend):
         return getattr(grupo, self.group_name_atrib)
 
     def grupo_ja_assinou(self, document, usuario, **kwargs):
-        grupos = tuple(usuario.groups.all().values_list('id', flat=True))
+        grupo_assinante = kwargs.get('grupo_assinante')
+        if grupo_assinante:
+            grupos = [grupo_assinante.pk]
+        else:
+            grupos = tuple(usuario.groups.all().values_list('id', flat=True))
         return document.assinaturas.filter(grupo_assinante__in=grupos, esta_assinado=True).exists()
 
     def get_assinaturas_pendentes(self, document, usuario, **kwargs):

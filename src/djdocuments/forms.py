@@ -1,16 +1,18 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function, unicode_literals
 
+from captcha.fields import CaptchaField
 from dal import autocomplete
 from django import forms
 from django.contrib.auth.hashers import check_password
+from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 
 from .models import Assinatura, Documento, TipoDocumento
 from .templatetags.luzfcb_djdocuments_tags import remover_tags_html
 from .utils import get_grupo_assinante_backend, get_grupo_assinante_model_class
 from .utils.module_loading import get_real_user_model_class
-from .widgets import CkeditorTextAreadWidget, ModelSelect2ForwardExtras
+from .widgets import CkeditorTextAreadWidget, ModelSelect2ForwardExtras, SplitedHashField3
 
 # TODO: remove this ugly hack
 try:
@@ -162,148 +164,150 @@ class AdicionarAssinantesForm(BootstrapFormInputMixin, forms.Form):
     )
 
 
-class AssinarDocumentoForm(BootstrapFormInputMixin, forms.Form):
-    # titulo = forms.CharField(max_length=500)]
-    grupo = forms.ChoiceField(
-        label=get_grupo_assinante_backend().get_group_label(),
-        help_text="Selecione o {}".format(get_grupo_assinante_backend().get_group_label()),
-        # queryset=get_grupo_assinante_model_class().objects.all(),
-        widget=autocomplete.ModelSelect2(url='documentos:grupos-autocomplete', forward=('grupo',)),
-    )
-
-    assinado_por = UserModelChoiceField(
-        label="Assinante",
-        help_text="Selecione o usuário que irá assinar o documento",
-        # queryset=get_real_user_model_class().objects.all().order_by('username'),
-        queryset=get_real_user_model_class().objects.all().order_by('username'),
-        widget=ModelSelect2ForwardExtras(url='documentos:user-by-group-autocomplete',
-                                         forward=('grupo',), clear_on_change=('grupo',)),
-
-    )
-
-    password = forms.CharField(label="Senha",
-                               help_text="Digite a senha do usuário selecionado",
-                               widget=forms.PasswordInput())
-
-    incluir_assinantes = UserModelMultipleChoiceField(
-        required=False,
-        label="Incluir assinantes e notificar",
-        help_text="Incluir assinantes e notificar",
-        queryset=get_real_user_model_class().objects.all().order_by('username'),
-        widget=autocomplete.ModelSelect2Multiple(url='documentos:user-autocomplete',
-                                                 forward=('assinado_por',),
-                                                 ),
-
-    )
-
-    error_messages = {
-        'invalid_login': _("Please enter a correct %(username)s and password. "
-                           "Note that both fields may be case-sensitive."),
-        'inactive': _("This account is inactive."),
-    }
+class DocumetoValidarForm(BootstrapFormInputMixin, forms.Form):
+    # id = forms.CharField()
+    # codigo_crc = SplitedHashField(split_into=4)
+    # codigo_crc = forms.CharField(widget=SplitWidget(), initial='ABCDABCDABCDABCD')
+    # assinatura_hash = SplitedHashField2(label='Codigo CRC',
+    #                                     initial='ABCDABCDABCDABCD'
+    #                                     )
+    assinatura_hash = SplitedHashField3(label='Codigo CRC',
+                                        split_guide=(10, 10, 10, 10),
+                                        # initial='AAAABBBCCDDDDDD'
+                                        )
+    captcha = CaptchaField()
 
     def __init__(self, *args, **kwargs):
-        self.current_logged_user = kwargs.pop('current_logged_user')
-        grupo_escolhido_pk = kwargs.get('grupo_escolhido_pk')
-        if grupo_escolhido_pk:
-            kwargs.pop('grupo_escolhido_pk')
-        self.grupo_escolhido = None
-        super(AssinarDocumentoForm, self).__init__(*args, **kwargs)
+        super(DocumetoValidarForm, self).__init__(*args, **kwargs)
+        self.documento = None
 
-        if grupo_escolhido_pk:
-            self.initial['assinado_por'] = self.current_logged_user
-            backend = get_grupo_assinante_backend()
-            # grupo_escolhido_queryset = get_grupo_assinante_backend().get_grupo(pk=grupo_escolhido_pk,
-            #                                                                    use_filter=True)
-            grupo_escolhido_queryset = backend.get_grupo(pk=grupo_escolhido_pk,
-                                                                               use_filter=True)
-            if not grupo_escolhido_queryset:
-                pass
-                # raise backend.get_grupo_model.
-            self.grupo_escolhido = grupo_escolhido_queryset[0]
-            self.fields['grupo'] = GrupoModelChoiceField(
-                label=get_grupo_assinante_backend().get_group_label(),
-                help_text="Selecione o {}".format(get_grupo_assinante_backend().get_group_label()),
-                queryset=grupo_escolhido_queryset,
-                required=False,
-                empty_label=None,
-                initial=self.grupo_escolhido,
-                widget=forms.Select(attrs={'class': 'form-control', 'readonly': True, 'disabled': 'disabled'})
+    def clean_assinatura_hash(self):
+        assinatura_hash = self.cleaned_data['assinatura_hash']
+        assinatura_hash = "sha1$djdocumentos${}".format(assinatura_hash.lower())
+        try:
+            self.documento = Documento.objects.get(assinatura_hash=assinatura_hash)
+        except Exception:
+            raise forms.ValidationError(
+                "O documento não é valido"
             )
-            self.fields['assinado_por'].queryset = get_grupo_assinante_backend().get_usuarios_grupo(self.grupo_escolhido)
-
-    def clean_grupo(self):
-        if self.grupo_escolhido:
-            return self.grupo_escolhido
-        return self.cleaned_data['grupo']
+        return assinatura_hash
 
     class Meta:
         model = Documento
-        # fields = '__all__'
-        fields = ('grupo', 'assinado_por', 'password')
+        fields = ('assinatura_hash',)
+        # def clean_codigo_crc(self):
+        #     codigo_crc = self.cleaned_data.get('codigo_crc')
+        #     print('codigo_crc:', codigo_crc)
+        #     return codigo_crc
 
-    def clean_assinado_por(self):
-        assinado_por = self.cleaned_data.get('assinado_por')
-        print('AssinarDocumentoForm: pk', assinado_por.pk, 'username', assinado_por.get_full_name())
-        return assinado_por
 
-    def clean_password(self):
-        password = self.cleaned_data.get('password')
-        user = self.cleaned_data.get('assinado_por')
-        valid = check_password(password, user.password)
-        if not valid:
-            raise forms.ValidationError('Invalid password')
+def create_form_class_assinar(document_object):
 
-        return password
+    url_autocomplete = reverse('documentos:grupos-assinantes-do-documento',
+                               kwargs={'slug': document_object.pk_uuid})
+    grupos_ids = document_object.assinaturas.filter(assinado_por=None).values_list('grupo_assinante_id',
+                                                                                   flat=True)
+    grupos = document_object.grupos_assinates.filter(id__in=grupos_ids)
 
-    def save(self, commit=True):
-        documento = super(AssinarDocumentoForm, self).save(False)
-        # assinado_por = self.cleaned_data.get('assinado_por')
-        #
-        # # cria ou obten instancia de Assinatura para o usuario selecionado em  assinado_por
-        # obj, created = Assinatura.objects.get_or_create(documento=documento,
-        #                                                 assinado_por=assinado_por,
-        #                                                 versao_numero=documento.versao_numero,
-        #                                                 esta_ativo=True,
-        #                                                 defaults={
-        #                                                     'documento': documento,
-        #                                                     'assinado_por': assinado_por,
-        #                                                     'versao_numero': documento.versao_numero + 1,
-        #                                                     'esta_ativo': True
-        #                                                 }
-        #                                                 )
-        # if created:
-        #     print("criado : {}".format(obj.assinado_por.username))
-        # else:
-        #     print("obtido")
-        #
-        # if not obj.esta_assinado:
-        #     obj.assinar_documento()
-        #
-        # # cria assinatura
-        # usuarios_assinantes = self.cleaned_data.get('incluir_assinantes')
-        # for usuario_assinante in usuarios_assinantes:
-        #     # Assinatura.objects.get
-        #     obj, created = Assinatura.objects.get_or_create(documento=documento,
-        #                                                     assinado_por=usuario_assinante,
-        #                                                     versao_numero=documento.versao_numero,
-        #                                                     defaults={
-        #                                                         'documento': documento,
-        #                                                         'assinado_por': usuario_assinante,
-        #                                                         'versao_numero': documento.versao_numero + 1,
-        #                                                         'esta_assinado': False
-        #                                                     }
-        #                                                     )
-        #     if created:
-        #         print("criado : {}".format(obj.assinado_por.username))
-        #         # notificar usuario
-        #     else:
-        #         print("obtido")
-        #
-        # documento.assinar_documento(
-        #     assinado_por=self.cleaned_data.get('assinado_por'),
-        #     current_logged_user=self.current_logged_user
-        # )
-        #
-        # print(self.cleaned_data.get('incluir_assinantes'))
-        return documento
+    class AssinarDocumentoForm(BootstrapFormInputMixin, forms.Form):
+        # titulo = forms.CharField(max_length=500)]
+        grupo = forms.ChoiceField(
+            label=get_grupo_assinante_backend().get_group_label(),
+            help_text="Selecione o {}".format(get_grupo_assinante_backend().get_group_label()),
+            # queryset=get_grupo_assinante_model_class().objects.all(),
+            choices=grupos,
+            widget=autocomplete.ModelSelect2(url=url_autocomplete, forward=('grupo',)),
+        )
+
+        assinado_por = UserModelChoiceField(
+            label="Assinante",
+            help_text="Selecione o usuário que irá assinar o documento",
+            # queryset=get_real_user_model_class().objects.all().order_by('username'),
+            queryset=get_real_user_model_class().objects.all().order_by('username'),
+            widget=ModelSelect2ForwardExtras(url='documentos:user-by-group-autocomplete',
+                                             forward=('grupo',), clear_on_change=('grupo',)),
+
+        )
+
+        password = forms.CharField(label="Senha",
+                                   help_text="Digite a senha do usuário selecionado",
+                                   widget=forms.PasswordInput())
+
+        incluir_assinantes = UserModelMultipleChoiceField(
+            required=False,
+            label="Incluir assinantes e notificar",
+            help_text="Incluir assinantes e notificar",
+            queryset=get_real_user_model_class().objects.all().order_by('username'),
+            widget=autocomplete.ModelSelect2Multiple(url='documentos:user-autocomplete',
+                                                     forward=('assinado_por',),
+                                                     ),
+
+        )
+
+        error_messages = {
+            'invalid_login': _("Please enter a correct %(username)s and password. "
+                               "Note that both fields may be case-sensitive."),
+            'inactive': _("This account is inactive."),
+        }
+
+        def __init__(self, *args, **kwargs):
+            self.current_logged_user = kwargs.pop('current_logged_user')
+            grupo_escolhido_queryset = kwargs.get('grupo_escolhido_queryset')
+            grupo_escolhido = kwargs.get('grupo_escolhido')
+            if grupo_escolhido_queryset:
+                kwargs.pop('grupo_escolhido_queryset')
+                kwargs.pop('grupo_escolhido')
+            self.grupo_escolhido = grupo_escolhido
+            super(AssinarDocumentoForm, self).__init__(*args, **kwargs)
+
+            if grupo_escolhido_queryset:
+                self.initial['assinado_por'] = self.current_logged_user
+                backend = get_grupo_assinante_backend()
+                # grupo_escolhido_queryset = get_grupo_assinante_backend().get_grupo(pk=grupo_escolhido_pk,
+                #                                                                    use_filter=True)
+                # grupo_escolhido_queryset = backend.get_grupo(pk=grupo_escolhido_pk,
+                #                                              use_filter=True)
+                if not grupo_escolhido_queryset:
+                    pass
+                    # raise backend.get_grupo_model.
+                self.fields['grupo'] = GrupoModelChoiceField(
+                    label=get_grupo_assinante_backend().get_group_label(),
+                    help_text="Selecione o {}".format(get_grupo_assinante_backend().get_group_label()),
+                    queryset=grupo_escolhido_queryset,
+                    required=False,
+                    empty_label=None,
+                    initial=self.grupo_escolhido,
+                    widget=forms.Select(attrs={'class': 'form-control', 'readonly': True, 'disabled': 'disabled'})
+                )
+                self.fields['assinado_por'].queryset = get_grupo_assinante_backend().get_usuarios_grupo(
+                    self.grupo_escolhido)
+
+        def clean_grupo(self):
+            if self.grupo_escolhido:
+                return self.grupo_escolhido
+            return self.cleaned_data['grupo']
+
+        class Meta:
+            model = Documento
+            # fields = '__all__'
+            fields = ('grupo', 'assinado_por', 'password')
+
+        def clean_assinado_por(self):
+            assinado_por = self.cleaned_data.get('assinado_por')
+            print('AssinarDocumentoForm: pk', assinado_por.pk, 'username', assinado_por.get_full_name())
+            return assinado_por
+
+        def clean_password(self):
+            password = self.cleaned_data.get('password')
+            user = self.cleaned_data.get('assinado_por')
+            valid = check_password(password, user.password)
+            if not valid:
+                raise forms.ValidationError('Invalid password')
+
+            return password
+
+        def save(self, commit=True):
+            documento = super(AssinarDocumentoForm, self).save(False)
+            return documento
+
+    return AssinarDocumentoForm

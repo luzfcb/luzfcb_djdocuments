@@ -3,6 +3,9 @@ from __future__ import absolute_import, print_function, unicode_literals
 
 import logging
 
+import pyqrcode
+from captcha.helpers import captcha_image_url
+from captcha.models import CaptchaStore
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ImproperlyConfigured
@@ -11,6 +14,7 @@ from django.db import transaction
 from django.db.models import ManyToManyField
 from django.db.utils import IntegrityError
 from django.http import HttpResponseNotFound
+from django.http.response import JsonResponse, HttpResponseRedirect
 from django.shortcuts import redirect
 from django.utils import six
 from django.utils.decorators import method_decorator
@@ -18,10 +22,14 @@ from django.views import generic
 from django.views.decorators.cache import never_cache
 from django.views.generic.detail import SingleObjectMixin
 from luzfcb_dj_simplelock.views import LuzfcbLockMixin
+from urlobject import URLObject
+from wkhtmltopdf.views import PDFRenderMixin
 
+from djdocuments.templatetags.luzfcb_djdocuments_tags import absolute_uri
 from djdocuments.utils import get_grupo_assinante_backend
-from ..forms import AssinarDocumentoForm, CriarDocumentoForm, CriarModeloDocumentoForm, DocumentoEditarForm, \
-    AdicionarAssinantesForm
+from djdocuments.utils.base64utils import png_as_base64_str
+from ..forms import (CriarDocumentoForm, CriarModeloDocumentoForm, DocumentoEditarForm, AdicionarAssinantesForm,
+                     DocumetoValidarForm, create_form_class_assinar)
 from ..models import Assinatura, Documento
 from ..utils.module_loading import get_real_user_model_class
 from .auth_mixins import LoginRequiredMixin
@@ -306,6 +314,18 @@ class AssinarDocumentoView(LoginRequiredMixin, DocumentoAssinadoRedirectMixin, S
     slug_field = 'pk_uuid'
     success_url = reverse_lazy('documentos:list')
     group_pk_url_kwarg = 'group_id'
+    group_object = None
+    grupo_assinante_backend = None
+
+    def get(self, request, *args, **kwargs):
+        self.grupo_assinante_backend = get_grupo_assinante_backend()
+        group_id = self.kwargs.get(self.group_pk_url_kwarg, None)
+        self.group_object = self.grupo_assinante_backend.get_grupo_model().objects.get(pk=group_id)
+        ret = super(AssinarDocumentoView, self).get(request, *args, **kwargs)
+        if self.grupo_assinante_backend.grupo_ja_assinou(self.document_object, self.request.user):
+            return HttpResponseRedirect(
+                reverse('documentos:assinaturas', kwargs={'slug': self.document_object.pk_uuid}))
+        return ret
 
     @method_decorator(never_cache)
     @method_decorator(login_required)
@@ -314,118 +334,7 @@ class AssinarDocumentoView(LoginRequiredMixin, DocumentoAssinadoRedirectMixin, S
         return super(AssinarDocumentoView, self).dispatch(request, *args, **kwargs)
 
     def get_form_class(self):
-        from django import forms
-        from django.contrib.auth.hashers import check_password
-        from django.utils.translation import ugettext_lazy as _
-        from dal import autocomplete
-        from ..forms import (BootstrapFormInputMixin, UserModelChoiceField, UserModelMultipleChoiceField,
-                             GrupoModelChoiceField)
-        from ..widgets import ModelSelect2ForwardExtras
-        group_id = self.kwargs.get(self.group_pk_url_kwarg, None)
-
-        url_autocomplete = reverse('documentos:grupos-assinantes-do-documento', kwargs={'slug': self.document_object.pk_uuid})
-
-        class AssinarDocumentoForm(BootstrapFormInputMixin, forms.Form):
-            # titulo = forms.CharField(max_length=500)]
-            grupo = forms.ChoiceField(
-                label=get_grupo_assinante_backend().get_group_label(),
-                help_text="Selecione o {}".format(get_grupo_assinante_backend().get_group_label()),
-                # queryset=get_grupo_assinante_model_class().objects.all(),
-                widget=autocomplete.ModelSelect2(url=url_autocomplete, forward=('grupo',)),
-            )
-
-            assinado_por = UserModelChoiceField(
-                label="Assinante",
-                help_text="Selecione o usuário que irá assinar o documento",
-                # queryset=get_real_user_model_class().objects.all().order_by('username'),
-                queryset=get_real_user_model_class().objects.all().order_by('username'),
-                widget=ModelSelect2ForwardExtras(url='documentos:user-by-group-autocomplete',
-                                                 forward=('grupo',), clear_on_change=('grupo',)),
-
-            )
-
-            password = forms.CharField(label="Senha",
-                                       help_text="Digite a senha do usuário selecionado",
-                                       widget=forms.PasswordInput())
-
-            incluir_assinantes = UserModelMultipleChoiceField(
-                required=False,
-                label="Incluir assinantes e notificar",
-                help_text="Incluir assinantes e notificar",
-                queryset=get_real_user_model_class().objects.all().order_by('username'),
-                widget=autocomplete.ModelSelect2Multiple(url='documentos:user-autocomplete',
-                                                         forward=('assinado_por',),
-                                                         ),
-
-            )
-
-            error_messages = {
-                'invalid_login': _("Please enter a correct %(username)s and password. "
-                                   "Note that both fields may be case-sensitive."),
-                'inactive': _("This account is inactive."),
-            }
-
-            def __init__(self, *args, **kwargs):
-                self.current_logged_user = kwargs.pop('current_logged_user')
-                grupo_escolhido_queryset = kwargs.get('grupo_escolhido_queryset')
-                grupo_escolhido = kwargs.get('grupo_escolhido')
-                if grupo_escolhido_queryset:
-                    kwargs.pop('grupo_escolhido_queryset')
-                    kwargs.pop('grupo_escolhido')
-                self.grupo_escolhido = grupo_escolhido
-                super(AssinarDocumentoForm, self).__init__(*args, **kwargs)
-
-                if grupo_escolhido_queryset:
-                    self.initial['assinado_por'] = self.current_logged_user
-                    backend = get_grupo_assinante_backend()
-                    # grupo_escolhido_queryset = get_grupo_assinante_backend().get_grupo(pk=grupo_escolhido_pk,
-                    #                                                                    use_filter=True)
-                    # grupo_escolhido_queryset = backend.get_grupo(pk=grupo_escolhido_pk,
-                    #                                              use_filter=True)
-                    if not grupo_escolhido_queryset:
-                        pass
-                        # raise backend.get_grupo_model.
-                    self.fields['grupo'] = GrupoModelChoiceField(
-                        label=get_grupo_assinante_backend().get_group_label(),
-                        help_text="Selecione o {}".format(get_grupo_assinante_backend().get_group_label()),
-                        queryset=grupo_escolhido_queryset,
-                        required=False,
-                        empty_label=None,
-                        initial=self.grupo_escolhido,
-                        widget=forms.Select(attrs={'class': 'form-control', 'readonly': True, 'disabled': 'disabled'})
-                    )
-                    self.fields['assinado_por'].queryset = get_grupo_assinante_backend().get_usuarios_grupo(
-                        self.grupo_escolhido)
-
-            def clean_grupo(self):
-                if self.grupo_escolhido:
-                    return self.grupo_escolhido
-                return self.cleaned_data['grupo']
-
-            class Meta:
-                model = Documento
-                # fields = '__all__'
-                fields = ('grupo', 'assinado_por', 'password')
-
-            def clean_assinado_por(self):
-                assinado_por = self.cleaned_data.get('assinado_por')
-                print('AssinarDocumentoForm: pk', assinado_por.pk, 'username', assinado_por.get_full_name())
-                return assinado_por
-
-            def clean_password(self):
-                password = self.cleaned_data.get('password')
-                user = self.cleaned_data.get('assinado_por')
-                valid = check_password(password, user.password)
-                if not valid:
-                    raise forms.ValidationError('Invalid password')
-
-                return password
-
-            def save(self, commit=True):
-                documento = super(AssinarDocumentoForm, self).save(False)
-                return documento
-
-        return AssinarDocumentoForm
+        return create_form_class_assinar(self.document_object)
 
     # def get_initial(self):
     #     initial = super(AssinarDocumentoView, self).get_initial()
@@ -463,10 +372,117 @@ class AssinarDocumentoView(LoginRequiredMixin, DocumentoAssinadoRedirectMixin, S
         grupo_selecionado = form.cleaned_data['grupo']
         assinado_por = form.cleaned_data['assinado_por']
         senha = form.cleaned_data['password']
-        backend = get_grupo_assinante_backend()
         self.document_object.assinar(grupo_assinante=grupo_selecionado, usuario_assinante=assinado_por, senha=senha)
         return ret
 
     def get_success_url(self):
-        detail_url = reverse('documentos:validar-detail', kwargs={'pk': self.object.pk_uuid})
+        detail_url = reverse('documentos:validar-detail', kwargs={'slug': self.document_object.pk_uuid})
         return detail_url
+
+
+class DocumentoDetailView(NextURLMixin, PopupMixin, generic.DetailView):
+    template_name = 'luzfcb_djdocuments/documento_detail.html'
+    # template_name = 'luzfcb_djdocuments/documento_validacao_detail.html'
+    model = Documento
+    slug_field = 'pk_uuid'
+
+
+class DocumentoDetailValidarView(PDFRenderMixin, DocumentoDetailView):
+    template_name = 'luzfcb_djdocuments/documento_validacao_detail.html'
+
+    pdf_template_name = 'luzfcb_djdocuments/pdf/corpo.html'
+    pdf_header_template = 'luzfcb_djdocuments/pdf/cabecalho.html'
+    pdf_footer_template = 'luzfcb_djdocuments/pdf/rodape.html'
+
+    show_content_in_browser = True
+    cmd_options = {
+        'print-media-type': True,
+
+        # 'margin-top': '57.5mm',
+        'margin-top': '61.5mm',
+        # 'margin-left': '1.5mm',
+        'margin-left': '1.0mm',
+        # 'margin-right': '6.5mm',
+        'margin-right': '3.5mm',
+        # 'margin-bottom': '45.5mm',
+        'margin-bottom': '47.5mm',
+        # 'margin-bottom': '87.5mm',
+        # 'page-width': '210mm',
+        # 'page-height': '297mm',
+        # 'viewport-size': '210mmX297mm',
+        # 'orientation': 'Landscape',
+        'page-size': 'A4'
+    }
+
+    def get_context_data(self, **kwargs):
+        # http://stackoverflow.com/a/7389616/2975300
+        context = super(DocumentoDetailValidarView, self).get_context_data(**kwargs)
+
+        # possivel candidato para cache
+        url_validar = reverse('documentos:validar')
+        querystring = "{}={}".format('h', self.object.get_assinatura_hash_upper_limpo)
+        url_com_querystring = URLObject(url_validar).with_query(querystring)
+        url = absolute_uri(url_com_querystring, self.request)
+
+        codigo_qr = pyqrcode.create(url)
+        encoded_image = png_as_base64_str(qr_code=codigo_qr, scale=2)
+
+        img_tag = "<img src=data:image/png;base64,{}>".format(encoded_image)
+        #
+        context.update(
+            {
+                'qr_code_validation_html_img_tag': img_tag
+            }
+        )
+
+        return context
+
+    def render_to_response(self, context, **response_kwargs):
+        return super(DocumentoDetailValidarView, self).render_to_response(context, **response_kwargs)
+
+
+class DocumentoValidacaoView(generic.FormView):
+    template_name = 'luzfcb_djdocuments/documento_validacao.html'
+    model = Documento
+    form_class = DocumetoValidarForm
+
+    def __init__(self, *args, **kwargs):
+        super(DocumentoValidacaoView, self).__init__(*args, **kwargs)
+        self.documento_instance = None
+
+    @method_decorator(never_cache)
+    def dispatch(self, request, *args, **kwargs):
+        return super(DocumentoValidacaoView, self).dispatch(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        if self.request.is_ajax() and request.GET and 'refresh_captcha' in request.GET:
+            to_json_responce = dict()
+            to_json_responce['new_cptch_key'] = CaptchaStore.generate_key()
+            to_json_responce['new_cptch_image'] = captcha_image_url(to_json_responce['new_cptch_key'])
+
+            return JsonResponse(to_json_responce)
+        return super(DocumentoValidacaoView, self).get(request, *args, **kwargs)
+
+    def get_initial(self):
+        initial = super(DocumentoValidacaoView, self).get_initial()
+        assinatura_hash = self.request.GET.get('h')
+        if assinatura_hash:
+            cleaned_hash = assinatura_hash.split('$')[-1]
+            initial.update({
+                'assinatura_hash': cleaned_hash
+            })
+        # initial.update({
+        #     'codigo_crc': 'ABCD' * 4
+        # })
+        return initial
+
+    def get_success_url(self):
+        pk = self.get_object().pk
+        return reverse_lazy('documentos:validar-detail', kwargs={'slug': pk})
+
+    def get_object(self):
+        return self.documento_instance
+
+    def form_valid(self, form):
+        self.documento_instance = form.documento
+        return super(DocumentoValidacaoView, self).form_valid(form)

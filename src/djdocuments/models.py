@@ -21,7 +21,6 @@ from .utils import get_grupo_assinante_backend, get_grupo_assinante_model_class,
 
 logger = logging.getLogger()
 
-
 BackendGrupoAssinante = get_grupo_assinante_backend()
 
 
@@ -52,7 +51,6 @@ class TipoDocumento(models.Model):
 
 @python_2_unicode_compatible
 class Assinatura(models.Model):
-
     def __str__(self):
         return 'pk: {}, grupo_assinante: {}'.format(self.pk, self.grupo_assinante_id)
 
@@ -304,11 +302,13 @@ class Documento(models.Model):
                 except AssertionError as e:
                     logger.error(e)
                     raise e
+
             return assinatura
         except self.grupos_assinates.through.DoesNotExist as e:
             logger.error(e)
             raise GrupoNaoPodeAssinarException('GrupoNaoPodeAssinarException')
 
+    @property
     def possui_assinatura_pendente(self):
         """
         :return: bool
@@ -327,6 +327,12 @@ class Documento(models.Model):
     def gerar_hash(self):
         hashes = self.assinaturas.filter(ativo=True).values_list('hash_assinatura', flat=True)
         return 'Balackbah'
+
+    @property
+    def get_assinatura_hash_upper_limpo(self):
+        if self.assinatura_hash:
+            return self.assinatura_hash.upper().split('$')[-1]
+        return None
 
     def save(self, *args, **kwargs):
         if not self.pk_uuid:
