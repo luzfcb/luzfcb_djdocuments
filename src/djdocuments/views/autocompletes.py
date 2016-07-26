@@ -14,6 +14,34 @@ from ..views.auth_mixins import LoginRequiredMixin
 from .mixins import SingleDocumentObjectMixin
 
 
+class GrupoAindaNaoAssinantesDoDocumentoAutoComplete(LoginRequiredMixin,
+                                          SingleDocumentObjectMixin,
+                                          autocomplete.Select2QuerySetView):
+    """
+    Autocomplete view to Django User Based
+    """
+
+    def get_queryset(self):
+        # Don't forget to filter out results depending on the visitor !
+        # if not self.request.user.is_authenticated():
+        #     return USER_MODEL.objects.none()
+        backend = get_grupo_assinante_backend()
+
+        grupos_assinantes_ja_incluidos = self.document_object.grupos_assinates.values_list('id',
+                                                                                           flat=True)
+
+        qs = backend.get_grupos(excludes=grupos_assinantes_ja_incluidos)
+
+        if self.q:
+            paran_dict = {'{}__icontains'.format(backend.group_name_atrib): self.q}
+            qs = qs.filter(Q(paran_dict))
+
+        return qs
+
+    def get_result_label(self, result):
+        return get_grupo_assinante_backend().get_grupo_name(result)
+
+
 class GruposAssinantesDoDocumentoAutoComplete(LoginRequiredMixin,
                                               SingleDocumentObjectMixin,
                                               autocomplete.Select2QuerySetView):

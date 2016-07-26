@@ -23,12 +23,13 @@ class DocumentoAdmin(SimpleHistoryAdmin):
             qs = qs.order_by(*ordering)
         return qs
 
-    list_filter = ['eh_template']
+    list_filter = ['eh_template', 'esta_assinado']
     # form = DocumentoEditarForm
     list_display = (
         # 'criado_em', 'criado_por', 'versao_numero', 'visualizar_versao'
 
-        'identificador_documento', 'pk', 'assunto', 'versao_numero', 'identificador_versao', 'visualizar_versao', 'eh_template',
+        'identificador_documento', 'pk', 'pk_uuid', 'assunto', 'versao_numero', 'identificador_versao',
+        'visualizar_versao', 'eh_template',
         # 'esta_assinado', 'assinatura_hash', 'criado_por', 'criado_em', 'visualizar_titulo',
         # 'modificado_em',
         # 'tipo_documento',
@@ -109,30 +110,36 @@ class TipoDocumentoAdmin(admin.ModelAdmin):
     pass
 
 
-# @admin.register(models.Assinatura)
-# class AssinaturaDocumentoAdmin(admin.ModelAdmin):
-#     objects = models.AssinaturaAdminManager()
-#
-#     list_display = (
-#         'documento',
-#         'assinado_por',
-#         'versao_numero',
-#         'assinatura_hash',
-#         'assinado_em',
-#         'esta_assinado',
-#         'esta_ativo'
-#
-#     )
-#
-#     readonly_fields = (
-#         'documento',
-#         'assinado_por',
-#         'versao_numero',
-#         'assinatura_hash',
-#         'assinado_em',
-#         'esta_assinado'
-#
-#     )
-#
-#     def get_queryset(self, request):
-#         return self.model.admin_objects.get_queryset()
+@admin.register(models.Assinatura)
+class AssinaturaDocumentoAdmin(admin.ModelAdmin):
+    list_display = (
+        'documento',
+        'nome_defensoria',
+        'assinado_nome',
+        'versao_documento',
+        'hash_assinatura',
+        'assinado_em',
+        'esta_assinado',
+        'esta_ativo'
+
+    )
+
+    def visualizar_pk_uuid(self, obj):
+        return obj.documento.pk_uuid
+
+    visualizar_pk_uuid.short_description = 'PK_UUID'
+    readonly_fields = (
+        'cadastrado_por',
+        'nome_cadastrado_por',
+        'assinado_por',
+        'grupo_assinante',
+        'nome_defensoria',
+        'documento',
+        'visualizar_pk_uuid',
+        'assinado_nome',
+        'versao_documento',
+        'hash_assinatura',
+        'assinado_em',
+        'esta_assinado',
+        'nome_excluido_por'
+    )

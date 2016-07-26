@@ -1,4 +1,5 @@
 {% extends "luzfcb_djdocuments/bootstrap3/base.html" %}
+{% load luzfcb_djdocuments_tags %}
 {% load staticfiles %}
 {% block titulo %}
     Listar Documentos
@@ -9,8 +10,9 @@
 {% block conteudo_app %}
     {{ block.super }}
 
-
-
+    {% url 'documentos:adicionar_assinantes' slug=document_object.pk_uuid as adicionar_assinantes_url %}
+    <a href="{{ adicionar_assinantes_url }}"
+       class="btn btn-sm btn-primary">Adicionar outro grupo assinante</a>
 
     <table class="table table-bordered table-striped table-hover">
         <thead>
@@ -82,8 +84,79 @@
         </tr>
         </tfoot>
     </table>
+    {% if not document_object.possui_assinatura_pendente %}
+        <div class="panel panel-info">
+            <div class="panel-heading">Finalizar Documento</div>
+            <div class="panel-body">
+                <form class="form-horizontal" method="post">
+                    <fieldset>
+                        <legend>Tem certeza que deseja finalizar o documento "{{ object.titulo|remover_tags_html }}"
+                            número: {{ object.identificador_versao }}?
+                        </legend>
+                        {% csrf_token %}
+                        {% if form.non_field_errors %}
+                            <div class="form-group">
+                                <div class="col-sm-12">
+                                    <div class="alert alert-danger alert-dismissible" role="alert">
+                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                        {% for error in form.non_field_errors %}
+                                            {{ error }}{% if not forloop.last %}<br>{% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                        {% for form_field in form %}
+                            <div class="form-group {% if form_field.errors %}has-error{% endif %}">
+                                <label for="{{ form_field.id_for_label }}"
+                                       class="col-sm-2 control-label">{{ form_field.label }}:</label>
+                                <div class="col-sm-10">
+                                    {{ form_field }}
 
-    
+                                    <span id="helpBlock2">
+
+
+                                    {% if form_field.errors %}
+                                        {% for error in form_field.errors %}
+                                            <p id="error_{{ forloop.counter }}_{{ form_field.auto_id }}"
+                                               class="help-block">
+                                                <strong>{{ error }}</strong></p>
+                                        {% endfor %}
+                                    {% endif %}
+                                        {% if form_field.help_text %}
+                                            <p id="hint_{{ form_field.auto_id }}"
+                                               class="help-block">{{ form_field.help_text|safe }}</p>
+                                        {% endif %}
+                                </span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        <div class="form-group">
+                            <div class="col-sm-offset-2 col-sm-10">
+                                <button type="submit" class="btn btn-success">Finalizar Documento</button>
+                            </div>
+                        </div>
+                    </fieldset>
+                </form>
+
+            </div>
+        </div>
+
+    {% endif %}
 
 
 {% endblock conteudo_app %}
+
+
+
+
+{% block js_app %}
+
+
+    {% if form %}
+        {{ form.media }}
+    {% endif %}
+
+{% endblock js_app %}

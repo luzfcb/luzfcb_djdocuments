@@ -5,6 +5,7 @@ import logging
 import uuid
 from collections import Iterable
 
+from django.core import checks
 from django.contrib.auth.hashers import SHA1PasswordHasher, check_password
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -91,9 +92,9 @@ class Assinatura(models.Model):
 
     excluido_por = models.ForeignKey(to='auth.User',
                                      related_name="%(app_label)s_%(class)s_excluido_por",
-                                     null=True)
+                                     null=True, blank=True)
     nome_excluido_por = models.CharField(max_length=255, blank=True)
-    data_exclusao = models.DateTimeField(null=True)
+    data_exclusao = models.DateTimeField(null=True, blank=True)
 
     def pode_assinar(self, grupo_assinante, usuario_assinante, agora):
         return BackendGrupoAssinante.pode_assinar(
@@ -313,11 +314,15 @@ class Documento(models.Model):
         """
         :return: bool
         """
-        return self.assinaturas.filter(ativo=True, esta_assinado=False).exists()
+        if self.assinaturas.filter(ativo=True).exists():
+            return self.assinaturas.filter(ativo=True, esta_assinado=False).exists()
+        return True
 
     def finalizar_documento(self, usuario):
         if self.possui_assinatura_pendente():
             raise ExitemAssinaturasPendentes('Impossivel finalizar documento, ainda existem assinaturas pendentes')
+        self.modificado_por = usuario
+        self.finalizado_por = usuario
         self.assinatura_hash = self.gerar_hash()
         self.data_assinado = timezone.now()
         self.esta_assinado = True

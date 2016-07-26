@@ -150,18 +150,23 @@ class UserModelMultipleChoiceField(forms.ModelMultipleChoiceField):
         return '{} ({})'.format(obj.get_full_name().title(), getattr(obj, obj.USERNAME_FIELD))
 
 
-class AdicionarAssinantesForm(BootstrapFormInputMixin, forms.Form):
-    def __init__(self, *args, **kwargs):
-        grupos_ja_adicionados = kwargs.pop('grupos_ja_adicionados')
-        super(AdicionarAssinantesForm, self).__init__(*args, **kwargs)
-        if grupos_ja_adicionados:
-            self.fields['grupo_para_adicionar'].queryset = get_grupo_assinante_backend().get_grupos(
-                excludes=grupos_ja_adicionados)
+def create_form_class_adicionar_assinantes(document_object):
+    url_autocomplete = reverse('documentos:grupos_ainda_nao_assinantes_do_documento_autocomplete',
+                               kwargs={'slug': document_object.pk_uuid})
 
-    grupo_para_adicionar = GrupoModelChoiceField(
-        label=get_grupo_assinante_backend().get_group_label(),
-        queryset=get_grupo_assinante_backend().get_grupos()
-    )
+    class AdicionarAssinantesForm(BootstrapFormInputMixin, forms.Form):
+        def __init__(self, *args, **kwargs):
+            grupo_para_adicionar_queryset = kwargs.pop('grupo_para_adicionar_queryset')
+            super(AdicionarAssinantesForm, self).__init__(*args, **kwargs)
+            self.fields['grupo_para_adicionar'].queryset = grupo_para_adicionar_queryset
+
+        grupo_para_adicionar = GrupoModelChoiceField(
+            label=get_grupo_assinante_backend().get_group_label(),
+            queryset=get_grupo_assinante_backend().get_grupos(),
+            widget=autocomplete.ModelSelect2(url=url_autocomplete)
+        )
+
+    return AdicionarAssinantesForm
 
 
 class DocumetoValidarForm(BootstrapFormInputMixin, forms.Form):
@@ -201,9 +206,26 @@ class DocumetoValidarForm(BootstrapFormInputMixin, forms.Form):
         #     return codigo_crc
 
 
-def create_form_class_assinar(document_object):
+class FinalizarDocumento(forms.Form):
+    def __init__(self, *args, **kwargs):
+        self.current_logged_user = kwargs.pop('current_logged_user')
+        super(FinalizarDocumento, self).__init__(*args, **kwargs)
 
-    url_autocomplete = reverse('documentos:grupos-assinantes-do-documento',
+    password = forms.CharField(label="Senha",
+                               help_text="Digite a senha do usuário atual",
+                               widget=forms.PasswordInput())
+
+    def clean_password(self):
+        password = self.cleaned_data.get('password')
+        valid = check_password(password, self.current_logged_user.password)
+        if not valid:
+            raise forms.ValidationError('Invalid password')
+
+        return password
+
+
+def create_form_class_assinar(document_object):
+    url_autocomplete = reverse('documentos:grupos_assinantes_do_documento_autocomplete',
                                kwargs={'slug': document_object.pk_uuid})
     grupos_ids = document_object.assinaturas.filter(assinado_por=None).values_list('grupo_assinante_id',
                                                                                    flat=True)
@@ -232,17 +254,6 @@ def create_form_class_assinar(document_object):
         password = forms.CharField(label="Senha",
                                    help_text="Digite a senha do usuário selecionado",
                                    widget=forms.PasswordInput())
-
-        incluir_assinantes = UserModelMultipleChoiceField(
-            required=False,
-            label="Incluir assinantes e notificar",
-            help_text="Incluir assinantes e notificar",
-            queryset=get_real_user_model_class().objects.all().order_by('username'),
-            widget=autocomplete.ModelSelect2Multiple(url='documentos:user-autocomplete',
-                                                     forward=('assinado_por',),
-                                                     ),
-
-        )
 
         error_messages = {
             'invalid_login': _("Please enter a correct %(username)s and password. "
@@ -287,11 +298,6 @@ def create_form_class_assinar(document_object):
                 return self.grupo_escolhido
             return self.cleaned_data['grupo']
 
-        class Meta:
-            model = Documento
-            # fields = '__all__'
-            fields = ('grupo', 'assinado_por', 'password')
-
         def clean_assinado_por(self):
             assinado_por = self.cleaned_data.get('assinado_por')
             print('AssinarDocumentoForm: pk', assinado_por.pk, 'username', assinado_por.get_full_name())
@@ -305,9 +311,5 @@ def create_form_class_assinar(document_object):
                 raise forms.ValidationError('Invalid password')
 
             return password
-
-        def save(self, commit=True):
-            documento = super(AssinarDocumentoForm, self).save(False)
-            return documento
 
     return AssinarDocumentoForm

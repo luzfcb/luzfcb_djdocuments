@@ -28,8 +28,9 @@ from wkhtmltopdf.views import PDFRenderMixin
 from djdocuments.templatetags.luzfcb_djdocuments_tags import absolute_uri
 from djdocuments.utils import get_grupo_assinante_backend
 from djdocuments.utils.base64utils import png_as_base64_str
-from ..forms import (CriarDocumentoForm, CriarModeloDocumentoForm, DocumentoEditarForm, AdicionarAssinantesForm,
-                     DocumetoValidarForm, create_form_class_assinar)
+from ..forms import (CriarDocumentoForm, CriarModeloDocumentoForm, DocumentoEditarForm,
+                     DocumetoValidarForm, create_form_class_assinar, FinalizarDocumento,
+                     create_form_class_adicionar_assinantes)
 from ..models import Assinatura, Documento
 from ..utils.module_loading import get_real_user_model_class
 from .auth_mixins import LoginRequiredMixin
@@ -251,10 +252,22 @@ class VincularDocumentoBaseView(LoginRequiredMixin, SingleDocumentObjectMixin, S
         return False
 
 
-class DocumentoAssinaturasListView(LoginRequiredMixin, SingleDocumentObjectMixin, generic.ListView):
+class DocumentoAssinaturasListView(LoginRequiredMixin, SingleDocumentObjectMixin, generic.ListView, generic.FormView):
     model = Assinatura
+    form_class = FinalizarDocumento
     document_slug_field = 'pk_uuid'
     template_name = 'luzfcb_djdocuments/assinaturas_pendentes.html'
+
+    def get_form_kwargs(self):
+        kwargs = super(DocumentoAssinaturasListView, self).get_form_kwargs()
+        kwargs['current_logged_user'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        # form.cleaned_data[]
+        # if self.document_object.finalizar_documento(self.request.user):
+
+        return super(DocumentoAssinaturasListView, self).form_valid(form)
 
     def get_queryset(self):
         queryset = self.document_object.assinaturas.select_related('grupo_assinante').all()
@@ -288,14 +301,18 @@ class DocumentoAssinaturasListView(LoginRequiredMixin, SingleDocumentObjectMixin
 
 
 class AdicionarAssinantes(LoginRequiredMixin, SingleDocumentObjectMixin, generic.FormView):
-    form_class = AdicionarAssinantesForm
     template_name = 'luzfcb_djdocuments/assinar_adicionar_assinantes.html'
     success_url = reverse_lazy('documentos:list')
+
+    def get_form_class(self):
+        return create_form_class_adicionar_assinantes(self.document_object)
 
     def get_form_kwargs(self):
         kwargs = super(AdicionarAssinantes, self).get_form_kwargs()
         grupos_ja_adicionados = self.document_object.grupos_assinates.all()
-        kwargs.update({'grupos_ja_adicionados': grupos_ja_adicionados})
+        grupo_para_adicionar_queryset = get_grupo_assinante_backend().get_grupos(
+            excludes=grupos_ja_adicionados)
+        kwargs.update({'grupo_para_adicionar_queryset': grupo_para_adicionar_queryset})
         return kwargs
 
     def form_valid(self, form):
@@ -320,9 +337,11 @@ class AssinarDocumentoView(LoginRequiredMixin, DocumentoAssinadoRedirectMixin, S
     def get(self, request, *args, **kwargs):
         self.grupo_assinante_backend = get_grupo_assinante_backend()
         group_id = self.kwargs.get(self.group_pk_url_kwarg, None)
-        self.group_object = self.grupo_assinante_backend.get_grupo_model().objects.get(pk=group_id)
+        if group_id:
+            self.group_object = self.grupo_assinante_backend.get_grupo_model().objects.get(pk=group_id)
         ret = super(AssinarDocumentoView, self).get(request, *args, **kwargs)
-        if self.grupo_assinante_backend.grupo_ja_assinou(self.document_object, self.request.user):
+        if self.group_object and self.grupo_assinante_backend.grupo_ja_assinou(self.document_object, self.request.user,
+                                                                               grupo_assinante=self.group_object):
             return HttpResponseRedirect(
                 reverse('documentos:assinaturas', kwargs={'slug': self.document_object.pk_uuid}))
         return ret
@@ -364,7 +383,7 @@ class AssinarDocumentoView(LoginRequiredMixin, DocumentoAssinadoRedirectMixin, S
 
     def get_context_data(self, **kwargs):
         context = super(AssinarDocumentoView, self).get_context_data(**kwargs)
-
+        context['group_object'] = self.group_object
         return context
 
     def form_valid(self, form):
