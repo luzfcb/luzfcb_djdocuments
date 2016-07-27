@@ -11,7 +11,6 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.db import transaction
-from django.db.models import ManyToManyField
 from django.db.utils import IntegrityError
 from django.http import HttpResponseNotFound
 from django.http.response import JsonResponse, HttpResponseRedirect
@@ -64,7 +63,7 @@ class DocumentoDashboardView(generic.TemplateView):
         return context
 
 
-class DocumentoListView(LoginRequiredMixin, generic.ListView):
+class DocumentoListView(generic.ListView):
     template_name = 'luzfcb_djdocuments/documento_list.html'
     model = Documento
     paginate_by = 5
@@ -146,7 +145,7 @@ def create_from_template(current_user, documento_template, assunto):
     return documento_novo
 
 
-class DocumentoCriar(LoginRequiredMixin, VinculateMixin, generic.FormView):
+class DocumentoCriar(VinculateMixin, generic.FormView):
     template_name = 'luzfcb_djdocuments/documento_create2.html'
     form_class = CriarDocumentoForm
     default_selected_document_template_pk = None
@@ -204,7 +203,7 @@ class DocumentoModeloCriar(DocumentoCriar):
     form_class = CriarModeloDocumentoForm
 
 
-class VincularDocumentoBaseView(LoginRequiredMixin, SingleDocumentObjectMixin, SingleObjectMixin, generic.View):
+class VincularDocumentoBaseView(SingleDocumentObjectMixin, SingleObjectMixin, generic.View):
     model = None
     documents_field_name = None
 
@@ -252,7 +251,7 @@ class VincularDocumentoBaseView(LoginRequiredMixin, SingleDocumentObjectMixin, S
         return False
 
 
-class DocumentoAssinaturasListView(LoginRequiredMixin, SingleDocumentObjectMixin, generic.ListView, generic.FormView):
+class DocumentoAssinaturasListView(SingleDocumentObjectMixin, generic.FormView, generic.ListView):
     model = Assinatura
     form_class = FinalizarDocumento
     document_slug_field = 'pk_uuid'
@@ -265,7 +264,7 @@ class DocumentoAssinaturasListView(LoginRequiredMixin, SingleDocumentObjectMixin
 
     def form_valid(self, form):
         # form.cleaned_data[]
-        # if self.document_object.finalizar_documento(self.request.user):
+        self.document_object.finalizar_documento(self.request.user)
 
         return super(DocumentoAssinaturasListView, self).form_valid(form)
 
@@ -297,10 +296,16 @@ class DocumentoAssinaturasListView(LoginRequiredMixin, SingleDocumentObjectMixin
             }
             dados_processados.append(dados)
         context['dados_processados'] = dados_processados
+        context['url_para_visualizar'] = reverse('documentos:validar-detail',
+                                                 kwargs={'slug': self.document_object.pk_uuid})
+        context['form'] = self.get_form()
         return context
 
+    def get_success_url(self):
+        return reverse('documentos:assinaturas', kwargs={'slug': self.document_object.pk_uuid})
 
-class AdicionarAssinantes(LoginRequiredMixin, SingleDocumentObjectMixin, generic.FormView):
+
+class AdicionarAssinantes(SingleDocumentObjectMixin, generic.FormView):
     template_name = 'luzfcb_djdocuments/assinar_adicionar_assinantes.html'
     success_url = reverse_lazy('documentos:list')
 
@@ -323,7 +328,7 @@ class AdicionarAssinantes(LoginRequiredMixin, SingleDocumentObjectMixin, generic
         return ret
 
 
-class AssinarDocumentoView(LoginRequiredMixin, DocumentoAssinadoRedirectMixin, SingleDocumentObjectMixin,
+class AssinarDocumentoView(DocumentoAssinadoRedirectMixin, SingleDocumentObjectMixin,
                            generic.FormView):
     template_name = 'luzfcb_djdocuments/documento_assinar.html'
     # form_class = AssinarDocumentoForm
@@ -496,8 +501,8 @@ class DocumentoValidacaoView(generic.FormView):
         return initial
 
     def get_success_url(self):
-        pk = self.get_object().pk
-        return reverse_lazy('documentos:validar-detail', kwargs={'slug': pk})
+        pk_uuid = self.get_object().pk_uuid
+        return reverse_lazy('documentos:validar-detail', kwargs={'slug': pk_uuid})
 
     def get_object(self):
         return self.documento_instance

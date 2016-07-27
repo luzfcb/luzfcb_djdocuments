@@ -82,6 +82,11 @@ class GrupoModelChoiceField(forms.ModelChoiceField):
         return get_grupo_assinante_backend().get_grupo_name(obj)
 
 
+class GrupoModelMultipleChoiceField(forms.ModelMultipleChoiceField):
+    def label_from_instance(self, obj):
+        return get_grupo_assinante_backend().get_grupo_name(obj)
+
+
 class CriarDocumentoForm(BootstrapFormInputMixin, forms.Form):
     def __init__(self, *args, **kwargs):
         current_user = kwargs.pop('user')
@@ -160,10 +165,10 @@ def create_form_class_adicionar_assinantes(document_object):
             super(AdicionarAssinantesForm, self).__init__(*args, **kwargs)
             self.fields['grupo_para_adicionar'].queryset = grupo_para_adicionar_queryset
 
-        grupo_para_adicionar = GrupoModelChoiceField(
+        grupo_para_adicionar = GrupoModelMultipleChoiceField(
             label=get_grupo_assinante_backend().get_group_label(),
             queryset=get_grupo_assinante_backend().get_grupos(),
-            widget=autocomplete.ModelSelect2(url=url_autocomplete)
+            widget=autocomplete.ModelSelect2Multiple(url=url_autocomplete)
         )
 
     return AdicionarAssinantesForm
@@ -206,7 +211,7 @@ class DocumetoValidarForm(BootstrapFormInputMixin, forms.Form):
         #     return codigo_crc
 
 
-class FinalizarDocumento(forms.Form):
+class FinalizarDocumento(BootstrapFormInputMixin, forms.Form):
     def __init__(self, *args, **kwargs):
         self.current_logged_user = kwargs.pop('current_logged_user')
         super(FinalizarDocumento, self).__init__(*args, **kwargs)

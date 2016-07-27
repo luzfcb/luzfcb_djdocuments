@@ -34,7 +34,7 @@ class GrupoAindaNaoAssinantesDoDocumentoAutoComplete(LoginRequiredMixin,
 
         if self.q:
             paran_dict = {'{}__icontains'.format(backend.group_name_atrib): self.q}
-            qs = qs.filter(Q(paran_dict))
+            qs = qs.filter(Q(**paran_dict))
 
         return qs
 
@@ -61,7 +61,7 @@ class GruposAssinantesDoDocumentoAutoComplete(LoginRequiredMixin,
 
         if self.q:
             paran_dict = {'{}__icontains'.format(backend.group_name_atrib): self.q}
-            qs = qs.filter(Q(paran_dict))
+            qs = qs.filter(Q(**paran_dict))
 
         return qs
 

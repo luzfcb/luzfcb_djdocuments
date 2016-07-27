@@ -1,5 +1,7 @@
 {% extends "luzfcb_djdocuments/bootstrap3/base.html" %}
 {% load luzfcb_djdocuments_tags %}
+{% load spurl %}
+{% load humanize %}
 {% load staticfiles %}
 {% block titulo %}
     Listar Documentos
@@ -10,21 +12,77 @@
 {% block conteudo_app %}
     {{ block.super }}
 
-    {% url 'documentos:adicionar_assinantes' slug=document_object.pk_uuid as adicionar_assinantes_url %}
-    <a href="{{ adicionar_assinantes_url }}"
-       class="btn btn-sm btn-primary">Adicionar outro grupo assinante</a>
-
-    <table class="table table-bordered table-striped table-hover">
+    <div class="form-horizontal" role="form">
+        <div class="form-group">
+            <label for="inputEmail3" class="col-sm-2 control-label">
+                Documento N°:
+            </label>
+            <div class="col-sm-10">
+                <span class="form-control" id="inputEmail3">
+                    <a href="{{ url_para_visualizar }}">{{ document_object.identificador_versao }}</a></span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputEmail3" class="col-sm-2 control-label">
+                Assunto:
+            </label>
+            <div class="col-sm-10">
+                <span class="form-control" id="inputEmail3">{{ document_object.assunto }}</span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputEmail3" class="col-sm-2 control-label">
+                Criado por:
+            </label>
+            <div class="col-sm-10">
+                <span class="form-control" id="inputEmail3">{{ document_object.criado_por_nome|safe }}</span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputEmail3" class="col-sm-2 control-label">
+                Estado Documental:
+            </label>
+            <div class="col-sm-10">
+                    <span class="form-control" id="inputEmail3">
+                        {% if document_object.possui_assinatura_pendente %}
+                            <span class="label label-warning">Possui assinaturas pendentes</span>
+                        {% elif document_object.esta_assinado %}
+                            <span class="label label-success">Assinado e Finalizado</span>
+                        {% else %}
+                            <span class="label label-success">Pronto para Finalizar</span>
+                        {% endif %}
+                    </span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputEmail3" class="col-sm-2 control-label">
+                Codigo de validação:
+            </label>
+            <div class="col-sm-10">
+                <span class="form-control" id="inputEmail3">
+                    {% if document_object.esta_assinado %}
+                    {% url 'documentos:validar' as validar_url_view %}
+                    {% spurl base=validar_url_view query="h={{ document_object.get_assinatura_hash_upper_limpo }}" as validar_url %}
+                    <a href="{{ validar_url }}">{{ document_object.get_assinatura_hash_upper_limpo }}</a></span>
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+    {% if not document_object.esta_assinado %}
+        {% url 'documentos:adicionar_assinantes' slug=document_object.pk_uuid as adicionar_assinantes_url %}
+        <a href="{{ adicionar_assinantes_url }}"
+           class="btn btn-sm btn-primary">Adicionar outro grupo assinante</a>
+    {% endif %}
+    <table class="table table-bordered table-striped table-hover table-condensed">
         <thead>
-        Documento: {{ document_object.identificador_versao }}
         <tr>
-            <th>#</th>
-            <th>Versão do documento</th>
             <th>Defensoria assinantes</th>
-            <th>Assinou?</th>
+            <th>Solicitante</th>
             <th>Pendende desde</th>
             <th>Assinante</th>
             <th>Data/Hora assinatura</th>
+            <th>Assinou?</th>
             <th>Ações</th>
         </tr>
         </thead>
@@ -34,18 +92,19 @@
         {% if object_list %}
             {% for dados in dados_processados %}
                 <tr>
-                    <th scope="row"></th>
-                    <td>{{ document_object.identificador_versao }}</td>
                     <td>{{ dados.grupo_assinante_nome }}</td>
-                    <td>{{ dados.grupo_assinante_nome }}</td>
-                    <td>{% if dados.esta_assinado %}<span class="label label-success">Assinado</span>{% else %}
-                        <span class="label label-warning">Pendente</span>{% endif %}</td>
+                    <td>{{ dados.assinatura.nome_cadastrado_por }}</td>
+                    <td>{% if dados.esta_assinado %}-{% else %}
+                        {{ dados.assinatura.cadastrado_em|naturaltime }}{% endif %}</td>
                     {#                    <td>{% pode_assinar document_object user assinatura.grupo_assinante %}</td>#}
                     <td>{% if dados.esta_assinado %}{{ dados.assinatura.assinado_nome }}{% else %}-{% endif %}</td>
                     <td>{% if dados.esta_assinado %}{{ dados.assinatura.assinado_em }}{% else %}-{% endif %}</td>
 
                     {#                    <td>{% if assinatura.esta_assinado %}-{% else %}<a href="{% url 'documentos:assinar_por_grupo' slug=assinatura.documento.pk_uuid group_id=assinatura.grupo_assinante.pk %}"#}
                     {#                           class="btn btn-sm btn-primary">Assinar</a>{% endif %}</td>#}
+                    <td>{% if dados.esta_assinado %}<span class="label label-success">Assinado</span>{% else %}
+                        <span class="label label-warning">Pendente</span>{% endif %}
+                    </td>
                     <td>
                         <div class="btn-group">
                             {% if not dados.esta_assinado %}
@@ -56,7 +115,7 @@
                                     </button>
                                 {% endif %}
                             {% else %}
-                                -
+                                <span class="label label-success">Assinado</span>
                             {% endif %}
                         </div>
                     </td>
@@ -73,25 +132,25 @@
 
         <tfoot>
         <tr>
-            <th>#</th>
-            <th></th>
             <th>Defensoria assinantes</th>
-            <th>Assinou?</th>
+            <th>Solicitante</th>
             <th>Pendende desde</th>
             <th>Assinante</th>
             <th>Data/Hora assinatura</th>
-            <th></th>
+            <th>Assinou?</th>
+            <th>Ações</th>
         </tr>
         </tfoot>
     </table>
-    {% if not document_object.possui_assinatura_pendente %}
+    {% if not document_object.possui_assinatura_pendente and not document_object.esta_assinado and form %}
         <div class="panel panel-info">
             <div class="panel-heading">Finalizar Documento</div>
             <div class="panel-body">
                 <form class="form-horizontal" method="post">
                     <fieldset>
-                        <legend>Tem certeza que deseja finalizar o documento "{{ object.titulo|remover_tags_html }}"
-                            número: {{ object.identificador_versao }}?
+                        <legend>Tem certeza que deseja finalizar o documento
+                            "{{ document_object.titulo|remover_tags_html }}"
+                            número: {{ document_object.identificador_versao }}?
                         </legend>
                         {% csrf_token %}
                         {% if form.non_field_errors %}

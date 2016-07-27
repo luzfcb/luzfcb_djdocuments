@@ -123,8 +123,9 @@ class AuthGroupDocumentosBackend(DocumentosBaseBackend):
 
 class SolarDefensoriaBackend(DocumentosBaseBackend):
     group_name_atrib = 'nome'
+    group_label = 'Defensoria'
 
-    def get_grupos(self):
+    def get_grupos(self, ):
         return self.group_model.objects.all(ativo=True)
 
     def grupo_ja_assinou(self, document, usuario, **kwargs):

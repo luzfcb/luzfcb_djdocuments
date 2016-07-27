@@ -198,7 +198,7 @@ class SingleDocumentObjectMixin(object):
             if context_object_name:
                 context[context_object_name] = self.document_object
         context.update(kwargs)
-        return super(SingleDocumentObjectMixin, self).get_context_data(**context)
+        return context
 
 
 class AuditavelViewMixin(object):

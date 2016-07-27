@@ -87,7 +87,7 @@ class Assinatura(models.Model):
     cadastrado_por = models.ForeignKey(to='auth.User',
                                        related_name="%(app_label)s_%(class)s_cadastrado_por",
                                        editable=False)
-    data_cadastro = models.DateTimeField(auto_now_add=True, editable=False)
+    cadastrado_em = models.DateTimeField(auto_now_add=True, editable=False)
     nome_cadastrado_por = models.CharField(max_length=255, blank=True)
 
     excluido_por = models.ForeignKey(to='auth.User',
@@ -161,6 +161,7 @@ class Assinatura(models.Model):
                 self.nome_defensoria = self.grupo_assinante.name
         if self.cadastrado_por:
             if not self.pk:
+                self.cadastrado_em = timezone.now()
                 self.nome_cadastrado_por = self.cadastrado_por.get_full_name()
         super(Assinatura, self).save(args, kwargs)
         # post save
@@ -277,6 +278,13 @@ class Documento(models.Model):
                                                     cadastrado_por=cadastrado_por)
                 obj.save()
 
+    def remover_grupos_assinantes(self, grupos_assinantes, removido_por):
+        if not isinstance(grupos_assinantes, Iterable):
+            grupos_assinantes = [grupos_assinantes]
+        grupos_assinantes_pk_list = [g.pk for g in grupos_assinantes if not g.assinado_por]
+        for assinatura in self.assinaturas.filter(grupo_assinante__in=grupos_assinantes_pk_list, assinado_por=None):
+            assinatura.revogar(usuario_atual=removido_por)
+
     def revogar_assinaturas(self, usuario_atual):
         assinaturas = self.assinaturas.filter(ativo=True, esta_assinado=True)
         for assinatura in assinaturas:
@@ -319,19 +327,24 @@ class Documento(models.Model):
         return True
 
     def finalizar_documento(self, usuario):
-        if self.possui_assinatura_pendente():
+        if self.possui_assinatura_pendente:
             raise ExitemAssinaturasPendentes('Impossivel finalizar documento, ainda existem assinaturas pendentes')
         self.modificado_por = usuario
-        self.finalizado_por = usuario
-        self.assinatura_hash = self.gerar_hash()
+        self.modificado_por_nome = self.modificado_por.get_full_name()
         self.data_assinado = timezone.now()
+        self.assinatura_hash = self.gerar_hash(self.data_assinado)
         self.esta_assinado = True
 
         self.save()
 
-    def gerar_hash(self):
+    def gerar_hash(self, data_assinado):
         hashes = self.assinaturas.filter(ativo=True).values_list('hash_assinatura', flat=True)
-        return 'Balackbah'
+        para_hash = "".join(hashes)
+        para_hash = "{}-{}".format(data_assinado.strftime("%Y-%m-%d %H:%M:%S.%f"), para_hash)
+        password_hasher = SHA1PasswordHasher()
+        assinatura_hash = password_hasher.encode(para_hash, 'djdocumentos')
+
+        return assinatura_hash
 
     @property
     def get_assinatura_hash_upper_limpo(self):
@@ -360,6 +373,9 @@ class Documento(models.Model):
                         'app_label': self._meta.app_label,
                         'cls': self.__class__.__name__
                     })
+        if not self.criado_por_nome:
+            if self.criado_por:
+                self.criado_por_nome = self.criado_por.get_full_name()
         if not self.esta_assinado:
             self.assinatura_hash = None
         super(Documento, self).save(*args, **kwargs)
