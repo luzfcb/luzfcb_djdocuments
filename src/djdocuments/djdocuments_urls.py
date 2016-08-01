@@ -31,6 +31,10 @@ urlpatterns = [
         login_required(documentos_views.DocumentoValidacaoView.as_view()),
         name='validar'
         ),
+    url(r'^d/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/validar-detail/pdf$',
+        login_required(documentos_views.PrintPDFDocumentoDetailValidarView.as_view()),
+        name='validar_detail_pdf'
+        ),
     url(r'^d/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/validar-detail/$',
         login_required(documentos_views.DocumentoDetailValidarView.as_view()),
         name='validar-detail'
@@ -82,7 +86,7 @@ urlpatterns = [
         r'^grupos-nao-assintantes-autocomplete/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/$',
         login_required(autocompletes.GrupoAindaNaoAssinantesDoDocumentoAutoComplete.as_view()),
         name='grupos_ainda_nao_assinantes_do_documento_autocomplete'
-        ),
+    ),
 
     url(r'^documento-criarautocomplete/$',
         login_required(autocompletes.DocumentoCriarAutocomplete.as_view()),

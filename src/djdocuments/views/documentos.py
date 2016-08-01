@@ -40,8 +40,8 @@ from .mixins import (
     NextURLMixin,
     PopupMixin,
     SingleDocumentObjectMixin,
-    VinculateMixin
-)
+    VinculateMixin,
+    QRCodeValidacaoMixin)
 
 logger = logging.getLogger(__name__)
 
@@ -410,15 +410,28 @@ class DocumentoDetailView(NextURLMixin, PopupMixin, generic.DetailView):
     model = Documento
     slug_field = 'pk_uuid'
 
+    def get_context_data(self, **kwargs):
+        context = super(DocumentoDetailView, self).get_context_data(**kwargs)
 
-class DocumentoDetailValidarView(PDFRenderMixin, DocumentoDetailView):
+        context['url_imprimir_pdf'] = reverse('documentos:validar_detail_pdf',
+                                              kwargs={'slug': self.object.pk_uuid})
+        return context
+
+
+class DocumentoDetailValidarView(QRCodeValidacaoMixin, DocumentoDetailView):
     template_name = 'luzfcb_djdocuments/documento_validacao_detail.html'
 
+    def render_to_response(self, context, **response_kwargs):
+        return super(DocumentoDetailValidarView, self).render_to_response(context, **response_kwargs)
+
+
+class PrintPDFDocumentoDetailValidarView(PDFRenderMixin, DocumentoDetailValidarView):
     pdf_template_name = 'luzfcb_djdocuments/pdf/corpo.html'
     pdf_header_template = 'luzfcb_djdocuments/pdf/cabecalho.html'
     pdf_footer_template = 'luzfcb_djdocuments/pdf/rodape.html'
 
     show_content_in_browser = True
+    pdf_default_response_is_pdf = True
     cmd_options = {
         'print-media-type': True,
 
@@ -438,31 +451,8 @@ class DocumentoDetailValidarView(PDFRenderMixin, DocumentoDetailView):
         'page-size': 'A4'
     }
 
-    def get_context_data(self, **kwargs):
-        # http://stackoverflow.com/a/7389616/2975300
-        context = super(DocumentoDetailValidarView, self).get_context_data(**kwargs)
-
-        # possivel candidato para cache
-        url_validar = reverse('documentos:validar')
-        querystring = "{}={}".format('h', self.object.get_assinatura_hash_upper_limpo)
-        url_com_querystring = URLObject(url_validar).with_query(querystring)
-        url = absolute_uri(url_com_querystring, self.request)
-
-        codigo_qr = pyqrcode.create(url)
-        encoded_image = png_as_base64_str(qr_code=codigo_qr, scale=2)
-
-        img_tag = "<img src=data:image/png;base64,{}>".format(encoded_image)
-        #
-        context.update(
-            {
-                'qr_code_validation_html_img_tag': img_tag
-            }
-        )
-
-        return context
-
     def render_to_response(self, context, **response_kwargs):
-        return super(DocumentoDetailValidarView, self).render_to_response(context, **response_kwargs)
+        return super(PrintPDFDocumentoDetailValidarView, self).render_to_response(context, **response_kwargs)
 
 
 class DocumentoValidacaoView(generic.FormView):

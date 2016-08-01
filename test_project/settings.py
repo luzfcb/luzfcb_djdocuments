@@ -62,6 +62,7 @@ LUZFCB_DJDOCUMENTS_APPS = [
 
     # development dependencies
     'debug_toolbar',
+    'django_extensions',
     # end development dependencies
 
     # 'luzfcb_djdocuments',

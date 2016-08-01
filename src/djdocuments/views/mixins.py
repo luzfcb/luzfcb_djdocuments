@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function, unicode_literals
 
+import pyqrcode
 import status
 from django.contrib import messages
 from django.contrib.auth.models import AnonymousUser
@@ -12,9 +13,37 @@ from django.http.response import Http404
 from django.shortcuts import redirect, resolve_url
 from django.utils import six
 from django.utils.translation import ugettext as _
+from urlobject import URLObject
 
+from djdocuments.utils.base64utils import png_as_base64_str
+from ..templatetags.luzfcb_djdocuments_tags import absolute_uri
 from ..models import Assinatura, Documento
 from ..utils import get_grupo_assinante_backend
+
+
+class QRCodeValidacaoMixin(object):
+    def get_context_data(self, **kwargs):
+        # http://stackoverflow.com/a/7389616/2975300
+        context = super(QRCodeValidacaoMixin, self).get_context_data(**kwargs)
+
+        # possivel candidato para cache
+        url_validar = reverse('documentos:validar')
+        querystring = "{}={}".format('h', self.object.get_assinatura_hash_upper_limpo)
+        url_com_querystring = URLObject(url_validar).with_query(querystring)
+        url = absolute_uri(url_com_querystring, self.request)
+
+        codigo_qr = pyqrcode.create(url)
+        encoded_image = png_as_base64_str(qr_code=codigo_qr, scale=2)
+
+        img_tag = "<img src=data:image/png;base64,{}>".format(encoded_image)
+        #
+        context.update(
+            {
+                'qr_code_validation_html_img_tag': img_tag
+            }
+        )
+
+        return context
 
 
 class NextURLMixin(object):
