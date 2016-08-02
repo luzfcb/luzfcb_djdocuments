@@ -1,0 +1,53 @@
+{% extends "luzfcb_djdocuments/bootstrap3/base.html" %}
+{% load luzfcb_djdocuments_tags %}
+{% load spurl %}
+{% load humanize %}
+{% load staticfiles %}
+{% block titulo %}
+    Listar Documentos
+{% endblock titulo %}
+
+
+
+{% block conteudo_app %}
+    {{ block.super }}
+
+
+    <div class="panel panel-info">
+        <div class="panel-heading">Remover assinatura</div>
+        <div class="panel-body">
+            <form class="form-horizontal" method="post"
+                  action="{{ form_action }}">
+                <fieldset>
+                    <legend>Tem certeza que deseja remover a pendencia de assinatura do documento
+                        "{{ document_object.titulo|remover_tags_html }}"
+                        número: {{ document_object.identificador_versao }} para
+                        o {{ assinatura.grupo_assinante_nome|capfirst }}?
+                    </legend>
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <div class="col-sm-offset-2 col-sm-10">
+                            <button type="submit" class="btn btn-success">Excluir?</button>
+                        </div>
+                    </div>
+                </fieldset>
+            </form>
+
+        </div>
+    </div>
+
+
+
+{% endblock conteudo_app %}
+
+
+
+
+{% block js_app %}
+
+
+    {% if form %}
+        {{ form.media }}
+    {% endif %}
+
+{% endblock js_app %}

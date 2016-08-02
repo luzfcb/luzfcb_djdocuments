@@ -75,7 +75,8 @@
 
 
 {% block conteudo_app %}
-
+    {% url 'documentos:validar' as validar_url_view %}
+    {% spurl base=validar_url_view query="h={{ object.get_assinatura_hash_upper_limpo }}" as validar_url %}
     <div class="row center-block conteudo" id="conteudo">
         <div class="a4-pagina">
             <div class="documento">
@@ -98,9 +99,7 @@
                         {% if object.esta_assinado %}
                             <div class="documento-assinaturas">
                                 <hr class="assinantes-borda">
-                                {% url 'documentos:validar' as validar_url_view %}
-                                {% spurl base=validar_url_view query="h={{ object.assinatura_hash_upper_limpo }}" as validar_url %}
-                                {% for assinatura in object.assinaturas.all %}
+                                {% for assinatura in assinaturas %}
                                     {% if assinatura.esta_assinado %}
                                         <table>
                                             <tbody>
@@ -115,7 +114,7 @@
                                                     <p style="margin:0;text-align: left; font-size:11pt;font-family: Times New Roman;">
                                                         {% if object.esta_assinado %}
                                                             Documento assinado eletronicamente por
-                                                            <b>{{ assinatura.assinado_por.get_full_name }}</b>,
+                                                            <b>{{ assinatura.assinado_nome }}</b>,
                                                             em {{ assinatura.assinado_em|date:"d/m/Y H:m:s" }}, conforme
                                                             art.
                                                             1º,
@@ -167,7 +166,7 @@
                                                 {{ validar_url_view|absolute_uri:request|urlize }} informando o código
                                                 verificador:
                                                 <div style="text-align: center;">
-                                                    <span><b>{{ object.assinatura_hash_upper_limpo|dividir_a_cada:10 }}</b></span>
+                                                    <span><b>{{ object.get_assinatura_hash_upper_limpo|dividir_a_cada:10 }}</b></span>
                                                 </div>
                                             {% endif %}
                                         </p>

@@ -44,12 +44,14 @@
             </label>
             <div class="col-sm-10">
                     <span class="form-control" id="inputEmail3">
-                        {% if document_object.possui_assinatura_pendente %}
+                        {% if document_object.possui_assinatura_pendente == 0 %}
+                            <span class="label label-danger">Ainda não possui assinantes cadastrados</span>
+                        {% elif document_object.possui_assinatura_pendente == 1 %}
                             <span class="label label-warning">Possui assinaturas pendentes</span>
-                        {% elif document_object.esta_assinado %}
-                            <span class="label label-success">Assinado e Finalizado</span>
-                        {% else %}
+                        {% elif document_object.pronto_para_finalizar %}
                             <span class="label label-success">Pronto para Finalizar</span>
+                        {% else %}
+                            <span class="label label-success">Assinado e Finalizado</span>
                         {% endif %}
                     </span>
             </div>
@@ -61,9 +63,9 @@
             <div class="col-sm-10">
                 <span class="form-control" id="inputEmail3">
                     {% if document_object.esta_assinado %}
-                    {% url 'documentos:validar' as validar_url_view %}
-                    {% spurl base=validar_url_view query="h={{ document_object.get_assinatura_hash_upper_limpo }}" as validar_url %}
-                    <a href="{{ validar_url }}">{{ document_object.get_assinatura_hash_upper_limpo }}</a></span>
+                        {% url 'documentos:validar' as validar_url_view %}
+                        {% spurl base=validar_url_view query="h={{ document_object.get_assinatura_hash_upper_limpo }}" as validar_url %}
+                        <a href="{{ validar_url }}">{{ document_object.get_assinatura_hash_upper_limpo }}</a></span>
                     {% endif %}
                 </span>
             </div>
@@ -114,6 +116,9 @@
                                     <button class="btn btn-sm btn-primary" disabled="disabled" readonly="true">Assinar
                                     </button>
                                 {% endif %}
+                                {#                                somente o grupo dono do documento #}
+                                <a href="{{ dados.url_remover_assinatura }}"
+                                   class="btn btn-sm btn-danger">Remover</a>
                             {% else %}
                                 <span class="label label-success">Assinado</span>
                             {% endif %}
@@ -142,11 +147,12 @@
         </tr>
         </tfoot>
     </table>
-    {% if not document_object.possui_assinatura_pendente and not document_object.esta_assinado and form %}
+    {% if document_object.pronto_para_finalizar and form %}
         <div class="panel panel-info">
             <div class="panel-heading">Finalizar Documento</div>
             <div class="panel-body">
-                <form class="form-horizontal" method="post">
+                <form class="form-horizontal" method="post"
+                      action="{% url 'documentos:finalizar_assinatura' slug=document_object.pk_uuid %}">
                     <fieldset>
                         <legend>Tem certeza que deseja finalizar o documento
                             "{{ document_object.titulo|remover_tags_html }}"

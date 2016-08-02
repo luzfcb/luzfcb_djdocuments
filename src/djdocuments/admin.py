@@ -16,6 +16,8 @@ class DocumentoAdmin(SimpleHistoryAdmin):
     manager_field = 'objects'  # utilize para caso voce use mais de um manager no model
     ordering = ()
 
+    search_fields = ('id', 'pk_uuid', 'assunto')
+
     def get_queryset(self, request):
         qs = getattr(self.model, self.manager_field).get_queryset()
         ordering = self.ordering or ()
@@ -114,7 +116,7 @@ class TipoDocumentoAdmin(admin.ModelAdmin):
 class AssinaturaDocumentoAdmin(admin.ModelAdmin):
     list_display = (
         'documento',
-        'nome_defensoria',
+        'grupo_assinante_nome',
         'assinado_nome',
         'versao_documento',
         'hash_assinatura',
@@ -133,7 +135,7 @@ class AssinaturaDocumentoAdmin(admin.ModelAdmin):
         'nome_cadastrado_por',
         'assinado_por',
         'grupo_assinante',
-        'nome_defensoria',
+        'grupo_assinante_nome',
         'documento',
         'visualizar_pk_uuid',
         'assinado_nome',

@@ -11,6 +11,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Max, Q
 from django.utils import timezone
+from django.utils.functional import cached_property
 from django.utils.encoding import python_2_unicode_compatible
 from simple_history.models import HistoricalRecords
 from simple_history.views import MissingHistoryRecordsField
@@ -64,7 +65,7 @@ class Assinatura(models.Model):
                                         related_name="%(app_label)s_%(class)s_assinaturas",
                                         )
 
-    nome_defensoria = models.CharField(max_length=255, blank=True)
+    grupo_assinante_nome = models.CharField(max_length=255, blank=True)
 
     # Usuario Assinante
     assinado_por = models.ForeignKey(to='auth.User',
@@ -102,6 +103,13 @@ class Assinatura(models.Model):
             grupo_assinante=grupo_assinante,
             usuario=usuario_assinante,
             now_datetime=agora
+        )
+
+    def pode_remover_assinatura(self, usuario_atual):
+        return BackendGrupoAssinante.pode_remover_assinatura(
+            document=self.documento,
+            assinatura=self,
+            usuario_atual=usuario_atual
         )
 
     def assinar(self, usuario_assinante, senha):
@@ -156,9 +164,10 @@ class Assinatura(models.Model):
     def save(self, *args, **kwargs):
         # pre save
 
-        if self.grupo_assinante:
+        if self.grupo_assinante and not self.grupo_assinante_nome:
             if not self.pk:
-                self.nome_defensoria = self.grupo_assinante.name
+                backend = get_grupo_assinante_backend()
+                self.grupo_assinante_nome = backend.get_grupo_name(self.grupo_assinante)
         if self.cadastrado_por:
             if not self.pk:
                 self.cadastrado_em = timezone.now()
@@ -196,7 +205,11 @@ class Documento(models.Model):
     grupos_assinates = models.ManyToManyField(to=get_grupo_assinante_model_str(),
                                               through='Assinatura',
                                               )
-
+    # Defensoria
+    grupo_dono = models.ForeignKey(to=get_grupo_assinante_model_str(),
+                                   related_name="%(app_label)s_%(class)s_donos",
+                                   null=True
+                                   )
     versao_numero = models.PositiveIntegerField(default=1, auto_created=True, editable=False)
     tipo_documento = models.ForeignKey(TipoDocumento, null=True, on_delete=models.SET_NULL,
                                        verbose_name='Tipo do Documento')
@@ -317,17 +330,29 @@ class Documento(models.Model):
             logger.error(e)
             raise GrupoNaoPodeAssinarException('GrupoNaoPodeAssinarException')
 
-    @property
+    @cached_property
     def possui_assinatura_pendente(self):
         """
-        :return: bool
+        :return: -1
         """
-        if self.assinaturas.filter(ativo=True).exists():
-            return self.assinaturas.filter(ativo=True, esta_assinado=False).exists()
-        return True
+        if not self.assinaturas.filter(ativo=True).exists():
+            # ainda nao tem assinantes cadastrados
+            return 0
+        else:
+            if self.assinaturas.filter(ativo=True, esta_assinado=False).exists():
+                return 1
+            else:
+                # nao possui
+                return -1
+
+    @cached_property
+    def pronto_para_finalizar(self):
+        if self.possui_assinatura_pendente < 0 and not self.esta_assinado:
+            return True
+        return False
 
     def finalizar_documento(self, usuario):
-        if self.possui_assinatura_pendente:
+        if not self.pronto_para_finalizar:
             raise ExitemAssinaturasPendentes('Impossivel finalizar documento, ainda existem assinaturas pendentes')
         self.modificado_por = usuario
         self.modificado_por_nome = self.modificado_por.get_full_name()
@@ -339,7 +364,7 @@ class Documento(models.Model):
 
     def gerar_hash(self, data_assinado):
         hashes = self.assinaturas.filter(ativo=True).values_list('hash_assinatura', flat=True)
-        para_hash = "".join(hashes)
+        para_hash = "&".join(hashes)
         para_hash = "{}-{}".format(data_assinado.strftime("%Y-%m-%d %H:%M:%S.%f"), para_hash)
         password_hasher = SHA1PasswordHasher()
         assinatura_hash = password_hasher.encode(para_hash, 'djdocumentos')

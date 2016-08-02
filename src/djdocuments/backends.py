@@ -14,6 +14,9 @@ class DocumentosBaseBackend(object):
     group_name_atrib = None
     group_label = None
 
+    def pode_remover_assinatura(self, document, assinatura, usuario_atual, **kwargs):
+        raise NotImplemented
+
     def get_usuarios_grupo(self, grupo, **kwargs):
         raise NotImplemented
 
@@ -70,6 +73,12 @@ class AuthGroupDocumentosBackend(DocumentosBaseBackend):
     group_name_atrib = 'name'
     group_label = 'Grupo de usuario'
 
+    def pode_remover_assinatura(self, document, assinatura, usuario_atual, **kwargs):
+        if document == assinatura.documento:
+            pks_grupos = tuple(self.get_grupos_usuario(usuario=usuario_atual).values_list('id', flat=True))
+            return True if document.grupo_dono.pk in pks_grupos else False
+        return False
+
     def get_usuarios_grupo(self, grupo, **kwargs):
         if not isinstance(grupo, self.get_grupo_model()):
             grupo = self.get_grupo_model().objects.get(pk=grupo)
@@ -125,8 +134,8 @@ class SolarDefensoriaBackend(DocumentosBaseBackend):
     group_name_atrib = 'nome'
     group_label = 'Defensoria'
 
-    def get_grupos(self, ):
-        return self.group_model.objects.all(ativo=True)
+    def get_grupos(self, excludes=None):
+        return self.get_grupo_model().objects.all(ativo=True)
 
     def grupo_ja_assinou(self, document, usuario, **kwargs):
         return NotImplemented

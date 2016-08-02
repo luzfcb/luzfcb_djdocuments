@@ -8,12 +8,12 @@ from captcha.helpers import captcha_image_url
 from captcha.models import CaptchaStore
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import ImproperlyConfigured
+from django.core.exceptions import ImproperlyConfigured, PermissionDenied
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.db import transaction
 from django.db.utils import IntegrityError
 from django.http import HttpResponseNotFound
-from django.http.response import JsonResponse, HttpResponseRedirect
+from django.http.response import JsonResponse, HttpResponseRedirect, HttpResponseForbidden
 from django.shortcuts import redirect
 from django.utils import six
 from django.utils.decorators import method_decorator
@@ -28,7 +28,7 @@ from djdocuments.templatetags.luzfcb_djdocuments_tags import absolute_uri
 from djdocuments.utils import get_grupo_assinante_backend
 from djdocuments.utils.base64utils import png_as_base64_str
 from ..forms import (CriarDocumentoForm, CriarModeloDocumentoForm, DocumentoEditarForm,
-                     DocumetoValidarForm, create_form_class_assinar, FinalizarDocumento,
+                     DocumetoValidarForm, create_form_class_assinar, FinalizarDocumentoForm,
                      create_form_class_adicionar_assinantes)
 from ..models import Assinatura, Documento
 from ..utils.module_loading import get_real_user_model_class
@@ -125,7 +125,7 @@ class DocumentoEditor(LoginRequiredMixin,
         return super(DocumentoEditor, self).post(request, *args, **kwargs)
 
 
-def create_from_template(current_user, documento_template, assunto):
+def create_from_template(current_user, grupo, documento_template, assunto):
     # template_documento = Documento.objects.get(pk=documento_template.pk)
 
     document_kwargs = {
@@ -136,6 +136,7 @@ def create_from_template(current_user, documento_template, assunto):
         'tipo_documento': documento_template.tipo_documento,
         'criado_por': current_user,
         'modificado_por': current_user,
+        'grupo_dono': grupo,
         'assunto': assunto,
     }
 
@@ -161,7 +162,10 @@ class DocumentoCriar(VinculateMixin, generic.FormView):
         modelo_documento = form.cleaned_data['modelo_documento']
         grupo = form.cleaned_data['grupo']
         assunto = form.cleaned_data['assunto']
-        documento_novo = create_from_template(self.request.user, modelo_documento, assunto)
+        documento_novo = create_from_template(current_user=self.request.user,
+                                              grupo=grupo,
+                                              documento_template=modelo_documento,
+                                              assunto=assunto)
         # vinculate_view_name = self.request.GET.get(self.vinculate_view_field, None)
         # vinculate_value = self.request.GET.get(self.vinculate_value_field, None)
 
@@ -251,22 +255,32 @@ class VincularDocumentoBaseView(SingleDocumentObjectMixin, SingleObjectMixin, ge
         return False
 
 
-class DocumentoAssinaturasListView(SingleDocumentObjectMixin, generic.FormView, generic.ListView):
-    model = Assinatura
-    form_class = FinalizarDocumento
-    document_slug_field = 'pk_uuid'
-    template_name = 'luzfcb_djdocuments/assinaturas_pendentes.html'
+class FinalizarDocumentoFormView(SingleDocumentObjectMixin, generic.FormView):
+    form_class = FinalizarDocumentoForm
+    http_method_names = ['post']
 
     def get_form_kwargs(self):
-        kwargs = super(DocumentoAssinaturasListView, self).get_form_kwargs()
+        kwargs = super(FinalizarDocumentoFormView, self).get_form_kwargs()
         kwargs['current_logged_user'] = self.request.user
         return kwargs
 
     def form_valid(self, form):
         # form.cleaned_data[]
-        self.document_object.finalizar_documento(self.request.user)
+        if self.document_object.pronto_para_finalizar:
+            self.document_object.finalizar_documento(self.request.user)
+        else:
+            raise PermissionDenied()
 
-        return super(DocumentoAssinaturasListView, self).form_valid(form)
+        return super(FinalizarDocumentoFormView, self).form_valid(form)
+
+    def get_success_url(self):
+        return reverse('documentos:assinaturas', kwargs={'slug': self.document_object.pk_uuid})
+
+
+class DocumentoAssinaturasListView(SingleDocumentObjectMixin, generic.ListView):
+    model = Assinatura
+    document_slug_field = 'pk_uuid'
+    template_name = 'luzfcb_djdocuments/assinaturas_pendentes.html'
 
     def get_queryset(self):
         queryset = self.document_object.assinaturas.select_related('grupo_assinante').all()
@@ -292,22 +306,21 @@ class DocumentoAssinaturasListView(SingleDocumentObjectMixin, generic.FormView, 
                 'grupo_assinante_nome': backend.get_grupo_name(assinatura.grupo_assinante),
                 'url_para_assinar': reverse_lazy('documentos:assinar_por_grupo',
                                                  kwargs={'slug': self.document_object.pk_uuid,
-                                                         'group_id': assinatura.grupo_assinante.pk})
+                                                         'group_id': assinatura.grupo_assinante.pk}),
+                'url_remover_assinatura': reverse_lazy('documentos:remover_assinatura',
+                                                       kwargs={'document_slug': self.document_object.pk_uuid,
+                                                               'pk': assinatura.pk})
             }
             dados_processados.append(dados)
         context['dados_processados'] = dados_processados
         context['url_para_visualizar'] = reverse('documentos:validar-detail',
                                                  kwargs={'slug': self.document_object.pk_uuid})
-        context['form'] = self.get_form()
+        context['form'] = FinalizarDocumentoForm(current_logged_user=self.request.user)
         return context
-
-    def get_success_url(self):
-        return reverse('documentos:assinaturas', kwargs={'slug': self.document_object.pk_uuid})
 
 
 class AdicionarAssinantes(SingleDocumentObjectMixin, generic.FormView):
     template_name = 'luzfcb_djdocuments/assinar_adicionar_assinantes.html'
-    success_url = reverse_lazy('documentos:list')
 
     def get_form_class(self):
         return create_form_class_adicionar_assinantes(self.document_object)
@@ -326,6 +339,9 @@ class AdicionarAssinantes(SingleDocumentObjectMixin, generic.FormView):
         grupo_para_adicionar = form.cleaned_data.get('grupo_para_adicionar')
         self.document_object.adicionar_grupos_assinantes(grupo_para_adicionar, self.request.user)
         return ret
+
+    def get_success_url(self):
+        return reverse('documentos:assinaturas', kwargs={'slug': self.document_object.pk_uuid})
 
 
 class AssinarDocumentoView(DocumentoAssinadoRedirectMixin, SingleDocumentObjectMixin,
@@ -410,11 +426,18 @@ class DocumentoDetailView(NextURLMixin, PopupMixin, generic.DetailView):
     model = Documento
     slug_field = 'pk_uuid'
 
+    def get_queryset(self):
+        qs = super(DocumentoDetailView, self).get_queryset()
+
+        return qs
+
     def get_context_data(self, **kwargs):
         context = super(DocumentoDetailView, self).get_context_data(**kwargs)
 
         context['url_imprimir_pdf'] = reverse('documentos:validar_detail_pdf',
                                               kwargs={'slug': self.object.pk_uuid})
+        # context['assinaturas'] = self.object.assinaturas.select_related('assinado_por').all()
+        context['assinaturas'] = self.object.assinaturas.all()
         return context
 
 
@@ -423,6 +446,28 @@ class DocumentoDetailValidarView(QRCodeValidacaoMixin, DocumentoDetailView):
 
     def render_to_response(self, context, **response_kwargs):
         return super(DocumentoDetailValidarView, self).render_to_response(context, **response_kwargs)
+
+
+class AssinaturaDeleteView(SingleDocumentObjectMixin, generic.DeleteView):
+    template_name = 'luzfcb_djdocuments/assinatura_confirm_delete.html'
+    model = Assinatura
+    document_slug_url_kwarg = 'document_slug'
+
+    def get(self, request, *args, **kwargs):
+        response = super(AssinaturaDeleteView, self).get(request, *args, **kwargs)
+        if not self.object.pode_remover_assinatura(self.request.user):
+            raise PermissionDenied
+        return response
+
+    def get_context_data(self, **kwargs):
+        context = super(AssinaturaDeleteView, self).get_context_data(**kwargs)
+        context['form_action'] = reverse_lazy('documentos:remover_assinatura',
+                                              kwargs={'document_slug': self.document_object.pk_uuid,
+                                                      'pk': self.object.pk})
+        return context
+
+    def get_success_url(self):
+        return reverse('documentos:assinaturas', kwargs={'slug': self.document_object.pk_uuid})
 
 
 class PrintPDFDocumentoDetailValidarView(PDFRenderMixin, DocumentoDetailValidarView):

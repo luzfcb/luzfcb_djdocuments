@@ -28,15 +28,15 @@ urlpatterns = [
         name='create'
         ),
     url(r'^d/validar/$',
-        login_required(documentos_views.DocumentoValidacaoView.as_view()),
+        documentos_views.DocumentoValidacaoView.as_view(),
         name='validar'
         ),
     url(r'^d/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/validar-detail/pdf$',
-        login_required(documentos_views.PrintPDFDocumentoDetailValidarView.as_view()),
+        documentos_views.PrintPDFDocumentoDetailValidarView.as_view(),
         name='validar_detail_pdf'
         ),
     url(r'^d/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/validar-detail/$',
-        login_required(documentos_views.DocumentoDetailValidarView.as_view()),
+        documentos_views.DocumentoDetailValidarView.as_view(),
         name='validar-detail'
         ),
     url(r'^d/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/editar/$',
@@ -48,14 +48,24 @@ urlpatterns = [
         name='assinar'
         ),
     url(
-        r'^d/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/assinaturas/assinar/(?P<group_id>[0-9]+)/$',
+        r'^d/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/assinaturas/assinar/(?P<group_id>\d+)/$',
         # noqa
         login_required(documentos_views.AssinarDocumentoView.as_view()),
         name='assinar_por_grupo'
     ),
+    url(
+        r'^d/(?P<document_slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/assinaturas/remover/(?P<pk>\d+)/$',
+        # noqa
+        login_required(documentos_views.AssinaturaDeleteView.as_view()),
+        name='remover_assinatura'
+    ),
     url(r'^d/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/assinaturas/$',
         login_required(documentos_views.DocumentoAssinaturasListView.as_view()),
         name='assinaturas'
+        ),
+    url(r'^d/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/assinaturas/finalizar/$',
+        login_required(documentos_views.FinalizarDocumentoFormView.as_view()),
+        name='finalizar_assinatura'
         ),
     url(r'^d/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/adicionar_assinantes/$',
         login_required(documentos_views.AdicionarAssinantes.as_view()),

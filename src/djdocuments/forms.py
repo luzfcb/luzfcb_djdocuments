@@ -211,10 +211,10 @@ class DocumetoValidarForm(BootstrapFormInputMixin, forms.Form):
         #     return codigo_crc
 
 
-class FinalizarDocumento(BootstrapFormInputMixin, forms.Form):
+class FinalizarDocumentoForm(BootstrapFormInputMixin, forms.Form):
     def __init__(self, *args, **kwargs):
         self.current_logged_user = kwargs.pop('current_logged_user')
-        super(FinalizarDocumento, self).__init__(*args, **kwargs)
+        super(FinalizarDocumentoForm, self).__init__(*args, **kwargs)
 
     password = forms.CharField(label="Senha",
                                help_text="Digite a senha do usuário atual",
