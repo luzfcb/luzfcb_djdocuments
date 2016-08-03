@@ -291,29 +291,13 @@ class CopyDocumentContentMixin(object):
 class DocumentoAssinadoRedirectMixin(object):
     def get(self, request, *args, **kwargs):
         ret = super(DocumentoAssinadoRedirectMixin, self).get(request, *args, **kwargs)
-        # if self.object and self.object.esta_ativo and hasattr(self.request, 'user') and not isinstance(
-        #     self.request.user, AnonymousUser):
-        #
-        #     # assinatura = Assinatura.objects.filter(assinado_por=self.request.user, documento=self.object,
-        #     #                                        versao_documento=self.object.versao_numero).first()
-        #     #
-        #     #
-        #
-        #     if get_grupo_assinante_backend().grupo_ja_assinou(
-        #         document=self.object, usuario=self.request.user):
-        #         detail_url = reverse('documentos:validar-detail', kwargs={'pk': self.object.pk_uuid})
-        #         messages.add_message(request, messages.INFO,
-        #                              'Você já assinou o documento {} em: {:%d-%m-%Y %H:%M}'.format(
-        #                                  assinatura.documento.identificador_documento,
-        #                                  assinatura.assinado_em))
-        #         # if self.object.esta_assinado:
-        #         # for assinante in assinantes
-        #         # if self.object.esta_assinado:
-        #         #     detail_url = reverse('documentos:validar-detail', kwargs={'pk': self.object.pk_uuid})
-        #         #     messages.add_message(request, messages.INFO,
-        #         #                          'Documentos assinados só podem ser visualizados - {}'.format(
-        #         #                              self.__class__.__name__))
-        #         return redirect(detail_url, permanent=False)
+
+        if self.object.esta_assinado:
+            detail_url = reverse('documentos:validar-detail', kwargs={'slug': self.object.pk_uuid})
+            messages.add_message(request, messages.INFO,
+                                 'Documentos assinados só podem ser visualizados - {}'.format(
+                                     self.__class__.__name__))
+            return redirect(detail_url, permanent=False)
         return ret
 
 

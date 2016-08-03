@@ -351,6 +351,11 @@ class Documento(models.Model):
             return True
         return False
 
+    def esta_finalizado(self):
+        if not self.esta_assinado and not self.assinatura_hash:
+            return False
+        return True
+
     def finalizar_documento(self, usuario):
         if not self.pronto_para_finalizar:
             raise ExitemAssinaturasPendentes('Impossivel finalizar documento, ainda existem assinaturas pendentes')

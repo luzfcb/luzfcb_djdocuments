@@ -85,8 +85,7 @@ class DocumentoListView(generic.ListView):
         return qs
 
 
-class DocumentoEditor(LoginRequiredMixin,
-                      AjaxFormPostMixin,
+class DocumentoEditor(AjaxFormPostMixin,
                       DocumentoAssinadoRedirectMixin,
                       AuditavelViewMixin,
                       NextURLMixin,
@@ -142,6 +141,7 @@ def create_from_template(current_user, grupo, documento_template, assunto):
 
     documento_novo = Documento(**document_kwargs)
     documento_novo.save()
+    documento_novo.adicionar_grupos_assinantes(grupo, current_user)
 
     return documento_novo
 
@@ -350,7 +350,6 @@ class AssinarDocumentoView(DocumentoAssinadoRedirectMixin, SingleDocumentObjectM
     # form_class = AssinarDocumentoForm
     model = Documento
     slug_field = 'pk_uuid'
-    success_url = reverse_lazy('documentos:list')
     group_pk_url_kwarg = 'group_id'
     group_object = None
     grupo_assinante_backend = None
@@ -416,8 +415,7 @@ class AssinarDocumentoView(DocumentoAssinadoRedirectMixin, SingleDocumentObjectM
         return ret
 
     def get_success_url(self):
-        detail_url = reverse('documentos:validar-detail', kwargs={'slug': self.document_object.pk_uuid})
-        return detail_url
+        return reverse('documentos:assinaturas', kwargs={'slug': self.document_object.pk_uuid})
 
 
 class DocumentoDetailView(NextURLMixin, PopupMixin, generic.DetailView):

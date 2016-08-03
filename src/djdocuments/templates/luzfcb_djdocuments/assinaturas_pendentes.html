@@ -14,12 +14,20 @@
 
     <div class="form-horizontal" role="form">
         <div class="form-group">
-            <label for="inputEmail3" class="col-sm-2 control-label">
+            <label for="numero_documento" class="col-sm-2 control-label">
                 Documento N°:
             </label>
             <div class="col-sm-10">
-                <span class="form-control" id="inputEmail3">
+                <span class="form-control" id="numero_documento">
                     <a href="{{ url_para_visualizar }}">{{ document_object.identificador_versao }}</a></span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="dono_documento" class="col-sm-2 control-label">
+                Pertence a:
+            </label>
+            <div class="col-sm-10">
+                <span class="form-control" id="dono_documento">{{ document_object.grupo_dono }}</span>
             </div>
         </div>
         <div class="form-group">
