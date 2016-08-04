@@ -97,6 +97,8 @@ class Assinatura(models.Model):
     nome_excluido_por = models.CharField(max_length=255, blank=True)
     data_exclusao = models.DateTimeField(null=True, blank=True)
 
+    objects = managers.AssinaturaManager()
+
     def pode_assinar(self, grupo_assinante, usuario_assinante, agora):
         return BackendGrupoAssinante.pode_assinar(
             document=self.documento,

@@ -3,17 +3,15 @@ from __future__ import absolute_import, print_function, unicode_literals
 
 import logging
 
-import pyqrcode
 from captcha.helpers import captcha_image_url
 from captcha.models import CaptchaStore
-from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ImproperlyConfigured, PermissionDenied
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.db import transaction
 from django.db.utils import IntegrityError
 from django.http import HttpResponseNotFound
-from django.http.response import JsonResponse, HttpResponseRedirect, HttpResponseForbidden
+from django.http.response import JsonResponse, HttpResponseRedirect
 from django.shortcuts import redirect
 from django.utils import six
 from django.utils.decorators import method_decorator
@@ -21,18 +19,9 @@ from django.views import generic
 from django.views.decorators.cache import never_cache
 from django.views.generic.detail import SingleObjectMixin
 from luzfcb_dj_simplelock.views import LuzfcbLockMixin
-from urlobject import URLObject
 from wkhtmltopdf.views import PDFRenderMixin
 
-from djdocuments.templatetags.luzfcb_djdocuments_tags import absolute_uri
 from djdocuments.utils import get_grupo_assinante_backend
-from djdocuments.utils.base64utils import png_as_base64_str
-from ..forms import (CriarDocumentoForm, CriarModeloDocumentoForm, DocumentoEditarForm,
-                     DocumetoValidarForm, create_form_class_assinar, FinalizarDocumentoForm,
-                     create_form_class_adicionar_assinantes)
-from ..models import Assinatura, Documento
-from ..utils.module_loading import get_real_user_model_class
-from .auth_mixins import LoginRequiredMixin
 from .mixins import (
     AjaxFormPostMixin,
     AuditavelViewMixin,
@@ -42,6 +31,11 @@ from .mixins import (
     SingleDocumentObjectMixin,
     VinculateMixin,
     QRCodeValidacaoMixin)
+from ..forms import (CriarDocumentoForm, CriarModeloDocumentoForm, DocumentoEditarForm,
+                     DocumetoValidarForm, create_form_class_assinar, FinalizarDocumentoForm,
+                     create_form_class_adicionar_assinantes)
+from ..models import Assinatura, Documento
+from ..utils.module_loading import get_real_user_model_class
 
 logger = logging.getLogger(__name__)
 
@@ -124,7 +118,7 @@ class DocumentoEditor(AjaxFormPostMixin,
         return super(DocumentoEditor, self).post(request, *args, **kwargs)
 
 
-def create_from_template(current_user, grupo, documento_template, assunto):
+def create_document_from_document_template(current_user, grupo, documento_template, assunto):
     # template_documento = Documento.objects.get(pk=documento_template.pk)
 
     document_kwargs = {
@@ -162,10 +156,10 @@ class DocumentoCriar(VinculateMixin, generic.FormView):
         modelo_documento = form.cleaned_data['modelo_documento']
         grupo = form.cleaned_data['grupo']
         assunto = form.cleaned_data['assunto']
-        documento_novo = create_from_template(current_user=self.request.user,
-                                              grupo=grupo,
-                                              documento_template=modelo_documento,
-                                              assunto=assunto)
+        documento_novo = create_document_from_document_template(current_user=self.request.user,
+                                                                grupo=grupo,
+                                                                documento_template=modelo_documento,
+                                                                assunto=assunto)
         # vinculate_view_name = self.request.GET.get(self.vinculate_view_field, None)
         # vinculate_value = self.request.GET.get(self.vinculate_value_field, None)
 
@@ -446,7 +440,8 @@ class DocumentoDetailValidarView(QRCodeValidacaoMixin, DocumentoDetailView):
         return super(DocumentoDetailValidarView, self).render_to_response(context, **response_kwargs)
 
 
-class AssinaturaDeleteView(SingleDocumentObjectMixin, generic.DeleteView):
+# class AssinaturaDeleteView(SingleDocumentObjectMixin, generic.DeleteView):
+class AssinaturaDeleteView(generic.DeleteView):
     template_name = 'luzfcb_djdocuments/assinatura_confirm_delete.html'
     model = Assinatura
     document_slug_url_kwarg = 'document_slug'
@@ -460,12 +455,12 @@ class AssinaturaDeleteView(SingleDocumentObjectMixin, generic.DeleteView):
     def get_context_data(self, **kwargs):
         context = super(AssinaturaDeleteView, self).get_context_data(**kwargs)
         context['form_action'] = reverse_lazy('documentos:remover_assinatura',
-                                              kwargs={'document_slug': self.document_object.pk_uuid,
+                                              kwargs={'document_slug': self.object.documento.pk_uuid,
                                                       'pk': self.object.pk})
         return context
 
     def get_success_url(self):
-        return reverse('documentos:assinaturas', kwargs={'slug': self.document_object.pk_uuid})
+        return reverse('documentos:assinaturas', kwargs={'slug': self.object.documento.pk_uuid})
 
 
 class PrintPDFDocumentoDetailValidarView(PDFRenderMixin, DocumentoDetailValidarView):
