@@ -7,8 +7,7 @@
         <div class="panel panel-info">
             <div class="panel-heading">Selecione um dos modelos abaixo para criar um novo documento</div>
             <div class="panel-body">
-                {% url 'documentos:create' as base_document_create_url %}
-                {% spurl base=base_document_create_url add_query="{{ vinculate_view_kwarg }}" add_query="{{ vinculate_value_kwarg }}" as document_create_url %}
+                {% spurl base=form_action add_query="{{ vinculate_view_kwarg }}" add_query="{{ vinculate_value_kwarg }}" as document_create_url %}
 
                 <form class="form-horizontal" action="{{ document_create_url }}" method="post">
                     <fieldset>

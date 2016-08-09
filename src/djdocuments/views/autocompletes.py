@@ -10,16 +10,18 @@ from .. import models
 from ..templatetags.luzfcb_djdocuments_tags import remover_tags_html
 from ..views.documentos import USER_MODEL
 from ..utils import get_grupo_assinante_backend
-from ..views.auth_mixins import LoginRequiredMixin
 from .mixins import SingleDocumentObjectMixin
 
 
-class GrupoAindaNaoAssinantesDoDocumentoAutoComplete(LoginRequiredMixin,
-                                          SingleDocumentObjectMixin,
-                                          autocomplete.Select2QuerySetView):
+class GrupoAindaNaoAssinantesDoDocumentoAutoComplete(SingleDocumentObjectMixin,
+                                                     autocomplete.Select2QuerySetView):
     """
     Autocomplete view to Django User Based
     """
+
+    @method_decorator(never_cache)
+    def dispatch(self, request, *args, **kwargs):
+        return super(GrupoAindaNaoAssinantesDoDocumentoAutoComplete, self).dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
         # Don't forget to filter out results depending on the visitor !
@@ -42,12 +44,15 @@ class GrupoAindaNaoAssinantesDoDocumentoAutoComplete(LoginRequiredMixin,
         return get_grupo_assinante_backend().get_grupo_name(result)
 
 
-class GruposAssinantesDoDocumentoAutoComplete(LoginRequiredMixin,
-                                              SingleDocumentObjectMixin,
+class GruposAssinantesDoDocumentoAutoComplete(SingleDocumentObjectMixin,
                                               autocomplete.Select2QuerySetView):
     """
     Autocomplete view to Django User Based
     """
+
+    @method_decorator(never_cache)
+    def dispatch(self, request, *args, **kwargs):
+        return super(GruposAssinantesDoDocumentoAutoComplete, self).dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
         # Don't forget to filter out results depending on the visitor !
@@ -69,10 +74,14 @@ class GruposAssinantesDoDocumentoAutoComplete(LoginRequiredMixin,
         return get_grupo_assinante_backend().get_grupo_name(result)
 
 
-class GruposDoUsuarioAutoComplete(LoginRequiredMixin, autocomplete.Select2QuerySetView):
+class GruposDoUsuarioAutoComplete(autocomplete.Select2QuerySetView):
     """
     Autocomplete view to Django User Based
     """
+
+    @method_decorator(never_cache)
+    def dispatch(self, request, *args, **kwargs):
+        return super(GruposDoUsuarioAutoComplete, self).dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
         # Don't forget to filter out results depending on the visitor !
@@ -91,10 +100,14 @@ class GruposDoUsuarioAutoComplete(LoginRequiredMixin, autocomplete.Select2QueryS
         return get_grupo_assinante_backend().get_grupo_name(result)
 
 
-class UsersByGroupAutocomplete(LoginRequiredMixin, autocomplete.Select2QuerySetView):
+class UsersByGroupAutocomplete(autocomplete.Select2QuerySetView):
     """
     UsersByGroupAutocomplete view to Django User Based filter by group
     """
+
+    @method_decorator(never_cache)
+    def dispatch(self, request, *args, **kwargs):
+        return super(UsersByGroupAutocomplete, self).dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
         # Don't forget to filter out results depending on the visitor !
@@ -118,10 +131,14 @@ class UsersByGroupAutocomplete(LoginRequiredMixin, autocomplete.Select2QuerySetV
         return '{} ({})'.format(name, user_name)
 
 
-class UserAutocomplete(LoginRequiredMixin, autocomplete.Select2QuerySetView):
+class UserAutocomplete(autocomplete.Select2QuerySetView):
     """
     Autocomplete view to Django User Based
     """
+
+    @method_decorator(never_cache)
+    def dispatch(self, request, *args, **kwargs):
+        return super(UserAutocomplete, self).dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
         # Don't forget to filter out results depending on the visitor !

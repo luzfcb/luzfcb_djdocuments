@@ -310,6 +310,7 @@ class DocumentAssinaturasTestCase(InjetarDadosIniciaisMixin, TestCase):
 
     # def test_remover_grupo_assinante_ja_adicionado_previamente(self):
     #     with self.login(username=self.user1.username, password=self.senha):
+    #         self.documento1.adicionar_grupos_assinantes(grupos_assinantes=self.grupo2, cadastrado_por=self.user1)
     #         remover_assinatura_named_url = reverse(self.documento_remover_assinatura_named_url,
     #                                                kwargs={'document_slug': self.documento1.pk_uuid,
     #                                                        'pk': self.grupo1.pk})

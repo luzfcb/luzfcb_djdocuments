@@ -230,6 +230,120 @@ class SingleDocumentObjectMixin(object):
         return context
 
 
+class SingleGroupObjectMixin(object):
+    """
+    Provides the ability to retrieve a single 'Group' object for further manipulation.
+    """
+    group_object = None
+    group_model = None
+    group_queryset = None
+    group_slug_field = 'slug'
+    group_context_object_name = 'group_object'
+    group_slug_url_kwarg = 'group_slug'
+    group_pk_url_kwarg = 'group_pk'
+    group_query_pk_and_slug = False
+
+    def __init__(self):
+        from ..utils import get_grupo_assinante_model_class
+        self.group_model = get_grupo_assinante_model_class()
+        super(SingleGroupObjectMixin, self).__init__()
+
+    def get(self, request, *args, **kwargs):
+        self.group_object = self.get_group_object()
+        return super(SingleGroupObjectMixin, self).get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        self.group_object = self.get_group_object()
+        return super(SingleGroupObjectMixin, self).post(request, *args, **kwargs)
+
+    def get_group_object(self, queryset=None):
+        """
+        Returns the object the view is displaying.
+
+        By default this requires `self.queryset` and a `pk` or `slug` argument
+        in the URLconf, but subclasses can override this to return any object.
+        """
+        # Use a custom queryset if provided; this is required for subclasses
+        # like DateDetailView
+        if queryset is None:
+            queryset = self.get_group_queryset()
+
+        # Next, try looking up by primary key.
+        pk = self.kwargs.get(self.group_pk_url_kwarg, None)
+        slug = self.kwargs.get(self.group_slug_url_kwarg, None)
+        if pk is not None:
+            queryset = queryset.filter(pk=pk)
+
+        # Next, try looking up by slug.
+        if slug is not None and (pk is None or self.group_query_pk_and_slug):
+            slug_field = self.get_group_slug_field()
+            queryset = queryset.filter(**{slug_field: slug})
+
+        # If none of those are defined, it's an error.
+        if pk is None and slug is None:
+            raise AttributeError("Generic detail view %s must be called with "
+                                 "either an object pk or a slug."
+                                 % self.__class__.__name__)
+
+        try:
+            # Get the single item from the filtered queryset
+            obj = queryset.get()
+        except queryset.model.DoesNotExist:
+            raise Http404(_("No %(verbose_name)s found matching the query") %
+                          {'verbose_name': queryset.model._meta.verbose_name})
+        return obj
+
+    def get_group_queryset(self):
+        """
+        Return the `QuerySet` that will be used to look up the object.
+
+        Note that this method is called by the default implementation of
+        `get_object` and may not be called if `get_object` is overridden.
+        """
+        if self.group_queryset is None:
+            if self.group_model:
+                return self.group_model._default_manager.all()
+            else:
+                raise ImproperlyConfigured(
+                    "%(cls)s is missing a QuerySet. Define "
+                    "%(cls)s.model, %(cls)s.queryset, or override "
+                    "%(cls)s.get_queryset()." % {
+                        'cls': self.__class__.__name__
+                    }
+                )
+        return self.group_queryset.all()
+
+    def get_group_slug_field(self):
+        """
+        Get the name of a slug field to be used to look up by slug.
+        """
+        return self.group_slug_field
+
+    def get_group_context_object_name(self, obj):
+        """
+        Get the name to use for the object.
+        """
+        if self.group_context_object_name:
+            return self.group_context_object_name
+        elif isinstance(obj, models.Model):
+            return obj._meta.model_name
+        else:
+            return None
+
+    def get_context_data(self, **kwargs):
+        """
+        Insert the single object into the context dict.
+        """
+        context = super(SingleGroupObjectMixin, self).get_context_data(**kwargs)
+        if self.group_object:
+            context['group_object'] = self.group_object
+            context_object_name = self.get_group_context_object_name(self.group_object)
+            if context_object_name:
+                context[context_object_name] = self.group_object
+        context.update(kwargs)
+        return context
+
+
 class AuditavelViewMixin(object):
     def form_valid(self, form):
         if hasattr(self.request, 'user') and not isinstance(self.request.user, AnonymousUser):
@@ -292,12 +406,12 @@ class DocumentoAssinadoRedirectMixin(object):
     def get(self, request, *args, **kwargs):
         ret = super(DocumentoAssinadoRedirectMixin, self).get(request, *args, **kwargs)
 
-        if self.object.esta_assinado:
-            detail_url = reverse('documentos:validar-detail', kwargs={'slug': self.object.pk_uuid})
-            messages.add_message(request, messages.INFO,
-                                 'Documentos assinados só podem ser visualizados - {}'.format(
-                                     self.__class__.__name__))
-            return redirect(detail_url, permanent=False)
+        # if self.object.esta_assinado:
+        #     detail_url = reverse('documentos:validar-detail', kwargs={'slug': self.object.pk_uuid})
+        #     messages.add_message(request, messages.INFO,
+        #                          'Documentos assinados só podem ser visualizados - {}'.format(
+        #                              self.__class__.__name__))
+        #     return redirect(detail_url, permanent=False)
         return ret
 
 

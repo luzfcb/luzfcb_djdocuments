@@ -13,7 +13,7 @@ from .templatetags.luzfcb_djdocuments_tags import remover_tags_html
 
 @admin.register(models.Documento)
 class DocumentoAdmin(SimpleHistoryAdmin):
-    manager_field = 'objects'  # utilize para caso voce use mais de um manager no model
+    manager_field = 'admin_objects'  # utilize para caso voce use mais de um manager no model
     ordering = ()
 
     search_fields = ('id', 'pk_uuid', 'assunto')
@@ -31,7 +31,7 @@ class DocumentoAdmin(SimpleHistoryAdmin):
         # 'criado_em', 'criado_por', 'versao_numero', 'visualizar_versao'
 
         'identificador_documento', 'pk', 'pk_uuid', 'assunto', 'versao_numero', 'identificador_versao',
-        'visualizar_versao', 'eh_template',
+        'visualizar_versao', 'eh_template', 'template_descricao',
         # 'esta_assinado', 'assinatura_hash', 'criado_por', 'criado_em', 'visualizar_titulo',
         # 'modificado_em',
         # 'tipo_documento',
@@ -41,7 +41,7 @@ class DocumentoAdmin(SimpleHistoryAdmin):
 
         # 'template_descricao',
         # 'modificado_por', 'revertido_em', 'revertido_por',
-        # 'revertido_da_versao', 'esta_ativo', 'esta_bloqueado',
+        # 'revertido_da_versao', 'esta_ativo',
         # 'assinado_em', 'assinado_por', 'assinatura_removida_em', 'assinatura_removida_por',
 
     )

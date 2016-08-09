@@ -54,7 +54,7 @@ class TipoDocumento(models.Model):
 @python_2_unicode_compatible
 class Assinatura(models.Model):
     def __str__(self):
-        return 'pk: {}, grupo_assinante: {}'.format(self.pk, self.grupo_assinante_id)
+        return 'pk: {}, grupo_assinante: {}'.format(self.pk, self.grupo_assinante.pk)
 
     # documento
     documento = models.ForeignKey('Documento', related_name='assinaturas')
@@ -210,7 +210,8 @@ class Documento(models.Model):
     # Defensoria
     grupo_dono = models.ForeignKey(to=get_grupo_assinante_model_str(),
                                    related_name="%(app_label)s_%(class)s_donos",
-                                   null=True
+                                   null=True,
+                                   blank=True,
                                    )
     versao_numero = models.PositiveIntegerField(default=1, auto_created=True, editable=False)
     tipo_documento = models.ForeignKey(TipoDocumento, null=True, on_delete=models.SET_NULL,

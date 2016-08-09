@@ -23,6 +23,10 @@ urlpatterns = [
         login_required(documentos_views.DocumentoListView.as_view()),
         name='list'
         ),
+    url(r'^d/create/(?P<group_pk>\d+)/$',
+        login_required(documentos_views.DocumentoCriarParaGrupo.as_view()),
+        name='create-para-grupo'
+        ),
     url(r'^d/create/$',
         login_required(documentos_views.DocumentoCriar.as_view()),
         name='create'
@@ -59,6 +63,10 @@ urlpatterns = [
         login_required(documentos_views.AssinaturaDeleteView.as_view()),
         name='remover_assinatura'
     ),
+    url(r'^d/assinaturas-pendentes/$',
+        login_required(documentos_views.AssinaturasPendentesGrupo.as_view()),
+        name='pendentes'
+        ),
     url(r'^d/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/assinaturas/$',
         login_required(documentos_views.DocumentoAssinaturasListView.as_view()),
         name='assinaturas'

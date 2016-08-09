@@ -11,7 +11,7 @@ from django.core.urlresolvers import reverse, reverse_lazy
 from django.db import transaction
 from django.db.utils import IntegrityError
 from django.http import HttpResponseNotFound
-from django.http.response import JsonResponse, HttpResponseRedirect
+from django.http.response import JsonResponse, HttpResponseRedirect, HttpResponseForbidden
 from django.shortcuts import redirect
 from django.utils import six
 from django.utils.decorators import method_decorator
@@ -30,7 +30,7 @@ from .mixins import (
     PopupMixin,
     SingleDocumentObjectMixin,
     VinculateMixin,
-    QRCodeValidacaoMixin)
+    QRCodeValidacaoMixin, SingleGroupObjectMixin)
 from ..forms import (CriarDocumentoForm, CriarModeloDocumentoForm, DocumentoEditarForm,
                      DocumetoValidarForm, create_form_class_assinar, FinalizarDocumentoForm,
                      create_form_class_adicionar_assinantes)
@@ -140,11 +140,32 @@ def create_document_from_document_template(current_user, grupo, documento_templa
     return documento_novo
 
 
-class DocumentoCriar(VinculateMixin, generic.FormView):
+class FormActionViewMixin(object):
+    form_action = None
+
+    def get_form_action(self):
+        if not self.form_action:
+            raise ImproperlyConfigured(
+                "%(cls)s is missing a 'form_action'. Define "
+                "%(cls)s.form_action, or override "
+                "%(cls)s.get_form_action()." % {
+                    'cls': self.__class__.__name__
+                }
+            )
+        return self.form_action
+
+    def get_context_data(self, **kwargs):
+        context = super(FormActionViewMixin, self).get_context_data(**kwargs)
+        context['form_action'] = self.get_form_action()
+        return context
+
+
+class DocumentoCriar(VinculateMixin, FormActionViewMixin, generic.FormView):
     template_name = 'luzfcb_djdocuments/documento_create2.html'
     form_class = CriarDocumentoForm
     default_selected_document_template_pk = None
     document_slug_url_kwarg = 'document_pk'
+    form_action = reverse_lazy('documentos:create')
 
     def get_form_kwargs(self):
         kwargs = super(DocumentoCriar, self).get_form_kwargs()
@@ -156,6 +177,7 @@ class DocumentoCriar(VinculateMixin, generic.FormView):
         modelo_documento = form.cleaned_data['modelo_documento']
         grupo = form.cleaned_data['grupo']
         assunto = form.cleaned_data['assunto']
+        print('{} - grupo: {}'.format(self.__class__.__name__, grupo))
         documento_novo = create_document_from_document_template(current_user=self.request.user,
                                                                 grupo=grupo,
                                                                 documento_template=modelo_documento,
@@ -171,30 +193,89 @@ class DocumentoCriar(VinculateMixin, generic.FormView):
             editar_url = reverse('documentos:editar', kwargs={'slug': documento_novo.pk_uuid})
             return redirect(editar_url, permanent=True)
 
-            # def get_initial(self):
-            #     initial = super(DocumentoCriar, self).get_initial()
-            #     default_document_template = self.get_default_selected_document_template_pk()
-            #     if default_document_template:
-            #         initial.update({'modelo_documento': default_document_template})
-            #     else:
-            #         document_pk_modelo = self.request.GET.get(self.document_slug_url_kwarg)
-            #
-            #         if document_pk_modelo:
-            #             try:
-            #
-            #                 documento_modelo = Documento.objects.get(pk=document_pk_modelo)
-            #             except Documento.DoesNotExist:
-            #                 pass
-            #             else:
-            #                 print(documento_modelo)
-            #                 initial.update({
-            #                     'tipo_documento': documento_modelo.tipo_documento,
-            #                     'modelo_documento': documento_modelo.pk
-            #                 })
-            #     return initial
-            #
-            # def get_default_selected_document_template_pk(self):
-            #     return self.default_selected_document_template_pk
+
+class DocumentoCriarParaGrupo(SingleGroupObjectMixin, DocumentoCriar):
+    def get_form_action(self):
+        return reverse('documentos:create-para-grupo',
+                       kwargs={'group_pk': self.group_object.pk})
+
+    def get_form_kwargs(self):
+        kwargs = super(DocumentoCriarParaGrupo, self).get_form_kwargs()
+        if self.group_object:
+            grupo_escolhido_queryset = self.group_model.objects.filter(pk=self.group_object.pk)
+            kwargs['grupo_escolhido_queryset'] = grupo_escolhido_queryset
+            kwargs['grupo_escolhido'] = self.group_object
+        return kwargs
+
+    def get_initial(self):
+        initial = super(DocumentoCriarParaGrupo, self).get_initial()
+        initial['grupo'] = self.group_object
+        return initial
+
+    def get_form_class(self):
+        from ..forms import (GrupoModelChoiceField, BootstrapFormInputMixin, TipoDocumentoTemplateModelChoiceField, \
+                             ModeloDocumentoTemplateModelChoiceField)
+        from ..widgets import ModelSelect2ForwardExtras
+        from ..models import TipoDocumento
+        from django import forms
+        grupo_model = self.group_model
+
+        class CriarDocumentoParaGrupoForm(BootstrapFormInputMixin, forms.Form):
+            def __init__(self, *args, **kwargs):
+                current_user = kwargs.pop('user')
+                grupo_escolhido_queryset = kwargs.get('grupo_escolhido_queryset')
+                grupo_escolhido = kwargs.get('grupo_escolhido')
+                if grupo_escolhido_queryset:
+                    kwargs.pop('grupo_escolhido_queryset')
+                    kwargs.pop('grupo_escolhido')
+                self.grupo_escolhido = grupo_escolhido
+                super(CriarDocumentoParaGrupoForm, self).__init__(*args, **kwargs)
+                if current_user:
+                    self.fields['grupo'].queryset = grupo_escolhido_queryset
+                if grupo_escolhido:
+                    self.fields['grupo'] = GrupoModelChoiceField(
+                        label=get_grupo_assinante_backend().get_group_label(),
+                        help_text="Selecione o {}".format(get_grupo_assinante_backend().get_group_label()),
+                        queryset=grupo_escolhido_queryset,
+                        required=False,
+                        empty_label=None,
+                        initial=self.grupo_escolhido,
+                        widget=forms.Select(attrs={'class': 'form-control', 'readonly': True, 'disabled': 'disabled'})
+                    )
+
+            # titulo = forms.CharField(max_length=500)]
+            grupo = GrupoModelChoiceField(
+                label=get_grupo_assinante_backend().get_group_label(),
+                queryset=grupo_model.objects.none()
+            )
+
+            tipo_documento = TipoDocumentoTemplateModelChoiceField(
+                label='Tipo de Documento',
+                queryset=TipoDocumento.objects.all(),
+
+            )
+            modelo_documento = ModeloDocumentoTemplateModelChoiceField(
+                label='Modelo de Documento',
+                queryset=Documento.admin_objects.all(),
+                widget=ModelSelect2ForwardExtras(url='documentos:documentocriar-autocomplete',
+                                                 forward=('tipo_documento',),
+                                                 clear_on_change=('tipo_documento',)
+                                                 ),
+
+            )
+
+            assunto = forms.CharField(
+                label='Assunto do Documento',
+                max_length=70,
+
+            )
+
+        return CriarDocumentoParaGrupoForm
+
+    def form_valid(self, form):
+        form = super(DocumentoCriarParaGrupo, self).form_valid(form)
+        a = form
+        return form
 
 
 class DocumentoModeloCriar(DocumentoCriar):
@@ -263,7 +344,8 @@ class FinalizarDocumentoFormView(SingleDocumentObjectMixin, generic.FormView):
         if self.document_object.pronto_para_finalizar:
             self.document_object.finalizar_documento(self.request.user)
         else:
-            raise PermissionDenied()
+            # raise PermissionDenied()
+            return HttpResponseForbidden()
 
         return super(FinalizarDocumentoFormView, self).form_valid(form)
 
@@ -271,10 +353,56 @@ class FinalizarDocumentoFormView(SingleDocumentObjectMixin, generic.FormView):
         return reverse('documentos:assinaturas', kwargs={'slug': self.document_object.pk_uuid})
 
 
+class AssinaturasPendentesGrupo(generic.ListView):
+    model = Assinatura
+    template_name = 'luzfcb_djdocuments/assinaturas_pendentes_por_grupo.html'
+
+    @method_decorator(never_cache)
+    def dispatch(self, request, *args, **kwargs):
+        return super(AssinaturasPendentesGrupo, self).dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        queryset = super(AssinaturasPendentesGrupo, self).get_queryset()
+        backend = get_grupo_assinante_backend()
+        grupos = tuple(backend.get_grupos_usuario(self.request.user).values_list('id', flat=True))
+        queryset = queryset.select_related('documento', 'grupo_assinante')
+
+        queryset = queryset.filter(grupo_assinante_id__in=grupos, assinado_por=None, ativo=True)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super(AssinaturasPendentesGrupo, self).get_context_data(**kwargs)
+        backend = get_grupo_assinante_backend()
+        dados_processados = []
+        for assinatura in self.object_list:
+            pode_assinar = backend.pode_assinar(document=assinatura.documento,
+                                                usuario=self.request.user,
+                                                grupo_assinante=assinatura.grupo_assinante)
+            dados = {
+                'identificador_documento': assinatura.documento.identificador_documento,
+                'assunto': assinatura.documento.assunto,
+                'assinatura': assinatura,
+                'esta_assinado': assinatura.esta_assinado,
+                'pode_assinar': pode_assinar,
+                'grupo_assinante_nome': backend.get_grupo_name(assinatura.grupo_assinante),
+                'url_para_assinar': reverse_lazy('documentos:assinar_por_grupo',
+                                                 kwargs={'slug': assinatura.documento.pk_uuid,
+                                                         'group_id': assinatura.grupo_assinante.pk}),
+                'url_remover_assinatura': reverse_lazy('documentos:remover_assinatura',
+                                                       kwargs={'document_slug': assinatura.documento.pk_uuid,
+                                                               'pk': assinatura.pk}),
+                'url_para_visualizar': reverse('documentos:validar-detail',
+                                               kwargs={'slug': assinatura.documento.pk_uuid})
+            }
+            dados_processados.append(dados)
+        context['dados_processados'] = dados_processados
+        return context
+
+
 class DocumentoAssinaturasListView(SingleDocumentObjectMixin, generic.ListView):
     model = Assinatura
     document_slug_field = 'pk_uuid'
-    template_name = 'luzfcb_djdocuments/assinaturas_pendentes.html'
+    template_name = 'luzfcb_djdocuments/documento_assinaturas_pendentes.html'
 
     def get_queryset(self):
         queryset = self.document_object.assinaturas.select_related('grupo_assinante').all()
@@ -356,8 +484,10 @@ class AssinarDocumentoView(DocumentoAssinadoRedirectMixin, SingleDocumentObjectM
         ret = super(AssinarDocumentoView, self).get(request, *args, **kwargs)
         if self.group_object and self.grupo_assinante_backend.grupo_ja_assinou(self.document_object, self.request.user,
                                                                                grupo_assinante=self.group_object):
+            logger.error(msg='Grupo ja assinou, redirecionando')
             return HttpResponseRedirect(
                 reverse('documentos:assinaturas', kwargs={'slug': self.document_object.pk_uuid}))
+        logger.error(msg='AssinarDocumentoView, retornou normal')
         return ret
 
     @method_decorator(never_cache)

@@ -1,0 +1,172 @@
+{% extends "luzfcb_djdocuments/bootstrap3/base.html" %}
+{% load luzfcb_djdocuments_tags %}
+{% load spurl %}
+{% load humanize %}
+{% load staticfiles %}
+{% block titulo %}
+    Listar Documentos
+{% endblock titulo %}
+
+
+
+{% block conteudo_app %}
+    {{ block.super }}
+
+
+    <table class="table table-bordered table-striped table-hover table-condensed">
+        <thead>
+        <tr>
+            <th>Documento</th>
+            <th>Assunto</th>
+            <th>Defensoria assinantes</th>
+            <th>Solicitante</th>
+            <th>Pendende desde</th>
+            <th>Assinante</th>
+            <th>Data/Hora assinatura</th>
+            <th>Assinou?</th>
+            <th>Ações</th>
+        </tr>
+        </thead>
+
+
+        <tbody>
+        {% if object_list %}
+            {% for dados in dados_processados %}
+                <tr>
+                    <td>
+                        <a href="{{ dados.url_para_visualizar }}">{{ dados.assinatura.documento.identificador_versao }}</a>
+                    </td>
+                    <td><a href="{{ dados.url_para_visualizar }}">{{ dados.assunto }}</a></td>
+                    <td>{{ dados.grupo_assinante_nome }}</td>
+                    <td>{{ dados.assinatura.nome_cadastrado_por }}</td>
+                    <td>{% if dados.esta_assinado %}-{% else %}
+                        {{ dados.assinatura.cadastrado_em|naturaltime }}{% endif %}</td>
+                    {#                    <td>{% pode_assinar document_object user assinatura.grupo_assinante %}</td>#}
+                    <td>{% if dados.esta_assinado %}{{ dados.assinatura.assinado_nome }}{% else %}-{% endif %}</td>
+                    <td>{% if dados.esta_assinado %}{{ dados.assinatura.assinado_em }}{% else %}-{% endif %}</td>
+
+                    {#                    <td>{% if assinatura.esta_assinado %}-{% else %}<a href="{% url 'documentos:assinar_por_grupo' slug=assinatura.documento.pk_uuid group_id=assinatura.grupo_assinante.pk %}"#}
+                    {#                           class="btn btn-sm btn-primary">Assinar</a>{% endif %}</td>#}
+                    <td>{% if dados.esta_assinado %}<span class="label label-success">Assinado</span>{% else %}
+                        <span class="label label-warning">Pendente</span>{% endif %}
+                    </td>
+                    <td>
+                        <div class="btn-group">
+                            {% if not dados.esta_assinado %}
+                                {% if dados.pode_assinar %}<a href="{{ dados.url_para_assinar }}"
+                                                              class="btn btn-sm btn-primary">Assinar</a>
+                                {% else %}
+                                    <button class="btn btn-sm btn-primary" disabled="disabled" readonly="true">Assinar
+                                    </button>
+                                {% endif %}
+                                {#                                somente o grupo dono do documento #}
+                                <a href="{{ dados.url_remover_assinatura }}"
+                                   class="btn btn-sm btn-danger">Remover</a>
+                            {% else %}
+                                <span class="label label-success">Assinado</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="4">Não há itens cadastrados</td>
+            </tr>
+
+        {% endif %}
+        </tbody>
+
+
+        <tfoot>
+        <tr>
+            <th>Documento</th>
+            <th>Assunto</th>
+            <th>Defensoria assinantes</th>
+            <th>Solicitante</th>
+            <th>Pendende desde</th>
+            <th>Assinante</th>
+            <th>Data/Hora assinatura</th>
+            <th>Assinou?</th>
+            <th>Ações</th>
+        </tr>
+        </tfoot>
+    </table>
+    {% if document_object.pronto_para_finalizar and form %}
+        <div class="panel panel-info">
+            <div class="panel-heading">Finalizar Documento</div>
+            <div class="panel-body">
+                <form class="form-horizontal" method="post"
+                      action="{% url 'documentos:finalizar_assinatura' slug=document_object.pk_uuid %}">
+                    <fieldset>
+                        <legend>Tem certeza que deseja finalizar o documento
+                            "{{ document_object.titulo|remover_tags_html }}"
+                            número: {{ document_object.identificador_versao }}?
+                        </legend>
+                        {% csrf_token %}
+                        {% if form.non_field_errors %}
+                            <div class="form-group">
+                                <div class="col-sm-12">
+                                    <div class="alert alert-danger alert-dismissible" role="alert">
+                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                        {% for error in form.non_field_errors %}
+                                            {{ error }}{% if not forloop.last %}<br>{% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                        {% for form_field in form %}
+                            <div class="form-group {% if form_field.errors %}has-error{% endif %}">
+                                <label for="{{ form_field.id_for_label }}"
+                                       class="col-sm-2 control-label">{{ form_field.label }}:</label>
+                                <div class="col-sm-10">
+                                    {{ form_field }}
+
+                                    <span id="helpBlock2">
+
+
+                                    {% if form_field.errors %}
+                                        {% for error in form_field.errors %}
+                                            <p id="error_{{ forloop.counter }}_{{ form_field.auto_id }}"
+                                               class="help-block">
+                                                <strong>{{ error }}</strong></p>
+                                        {% endfor %}
+                                    {% endif %}
+                                        {% if form_field.help_text %}
+                                            <p id="hint_{{ form_field.auto_id }}"
+                                               class="help-block">{{ form_field.help_text|safe }}</p>
+                                        {% endif %}
+                                </span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        <div class="form-group">
+                            <div class="col-sm-offset-2 col-sm-10">
+                                <button type="submit" class="btn btn-success">Finalizar Documento</button>
+                            </div>
+                        </div>
+                    </fieldset>
+                </form>
+
+            </div>
+        </div>
+
+    {% endif %}
+
+
+{% endblock conteudo_app %}
+
+
+
+
+{% block js_app %}
+
+
+    {% if form %}
+        {{ form.media }}
+    {% endif %}
+
+{% endblock js_app %}
