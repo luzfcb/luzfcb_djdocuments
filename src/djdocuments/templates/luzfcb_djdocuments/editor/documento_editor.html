@@ -83,9 +83,8 @@
 {#                                    <em class="glyphicon glyphicon-print"></em>Imprimir#}
 {#                                </a>#}
                                 {% url 'documentos:list' as documento_list_url %}
-                                {% url 'documentos:assinar' slug=object.pk_uuid as documento_assinar_url %}
                                 {% url 'documentos:assinaturas' slug=object.pk_uuid as documento_assinaturas %}
-                                {% spurl base=documento_assinar_url add_query="next={{ documento_list_url }}" as documento_assinar_url_com_parametros %}
+                                {% spurl base=url_para_assinar add_query="next={{ documento_list_url }}" as documento_assinar_url_com_parametros %}
                                 <a href="{{ documento_assinar_url_com_parametros }}"
                                    class="btn btn-default" {% if object.esta_assinado %}disabled="disabled" {% endif %}><em
                                         class="glyphicon glyphicon-pencil"></em>Assinar</a>
@@ -105,7 +104,7 @@
                     <div class="center-block a4-pagina">
                         <table>
                             <div class="col-md-12">
-                                {% url 'documentos:editar' pk=object.pk as base_documento_update_url %}
+                                {% url 'documentos:editar' slug=object.pk_uuid as base_documento_update_url %}
                                 {% spurl base=base_documento_update_url add_query="{{ next_page_paran }}" add_query="{{ popup_paran }}" as documento_update_url %}
                                 <form role="form" method="post" id="formulario"
                                       action="{{ documento_update_url }}">

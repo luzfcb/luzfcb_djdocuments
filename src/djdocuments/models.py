@@ -79,10 +79,7 @@ class Assinatura(models.Model):
     hash_assinatura = models.TextField(blank=True)
     esta_assinado = models.BooleanField(default=False, editable=False)
 
-    esta_ativo = models.NullBooleanField(default=True, editable=False)
-
-    #
-    ativo = models.BooleanField(default=True)
+    ativo = models.NullBooleanField(default=True, editable=False)
 
     # auditoria
     cadastrado_por = models.ForeignKey(to='auth.User',

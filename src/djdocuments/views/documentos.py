@@ -33,7 +33,7 @@ from .mixins import (
     QRCodeValidacaoMixin, SingleGroupObjectMixin)
 from ..forms import (CriarDocumentoForm, CriarModeloDocumentoForm, DocumentoEditarForm,
                      DocumetoValidarForm, create_form_class_assinar, FinalizarDocumentoForm,
-                     create_form_class_adicionar_assinantes)
+                     create_form_class_adicionar_assinantes, CriarDocumentoParaGrupoForm)
 from ..models import Assinatura, Documento
 from ..utils.module_loading import get_real_user_model_class
 
@@ -98,6 +98,13 @@ class DocumentoEditor(AjaxFormPostMixin,
     form_class = DocumentoEditarForm
     success_url = reverse_lazy('documentos:list')
 
+    def get_context_data(self, **kwargs):
+        context = super(DocumentoEditor, self).get_context_data(**kwargs)
+        context['url_para_assinar'] = reverse_lazy('documentos:assinar_por_grupo',
+                                                   kwargs={'slug': self.object.pk_uuid,
+                                                           'group_id': self.object.grupo_dono.pk})
+        return context
+
     @method_decorator(never_cache)
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
@@ -107,12 +114,18 @@ class DocumentoEditor(AjaxFormPostMixin,
         return reverse('documentos:detail', kwargs={'slug': self.object.pk_uuid})
 
     def form_valid(self, form):
+        if not self.object.pode_editar(usuario_atual=self.request.user):
+            raise PermissionDenied()
         return super(DocumentoEditor, self).form_valid(form)
 
         # success_url = None
 
     def get(self, request, *args, **kwargs):
-        return super(DocumentoEditor, self).get(request, *args, **kwargs)
+        response = super(DocumentoEditor, self).get(request, *args, **kwargs)
+
+        if not self.object.pode_editar(usuario_atual=self.request.user):
+            raise PermissionDenied()
+        return response
 
     def post(self, request, *args, **kwargs):
         return super(DocumentoEditor, self).post(request, *args, **kwargs)
@@ -195,6 +208,15 @@ class DocumentoCriar(VinculateMixin, FormActionViewMixin, generic.FormView):
 
 
 class DocumentoCriarParaGrupo(SingleGroupObjectMixin, DocumentoCriar):
+    form_class = CriarDocumentoParaGrupoForm
+
+    def get(self, request, *args, **kwargs):
+        response = super(DocumentoCriarParaGrupo, self).get(request, *args, **kwargs)
+        backend = get_grupo_assinante_backend()
+        if not backend.pode_criar_documento_para_grupo(usuario=self.request.user, grupo=self.group_object):
+            raise PermissionDenied('Voce nao possui permissao para criar um documento para')
+        return response
+
     def get_form_action(self):
         return reverse('documentos:create-para-grupo',
                        kwargs={'group_pk': self.group_object.pk})
@@ -211,66 +233,6 @@ class DocumentoCriarParaGrupo(SingleGroupObjectMixin, DocumentoCriar):
         initial = super(DocumentoCriarParaGrupo, self).get_initial()
         initial['grupo'] = self.group_object
         return initial
-
-    def get_form_class(self):
-        from ..forms import (GrupoModelChoiceField, BootstrapFormInputMixin, TipoDocumentoTemplateModelChoiceField, \
-                             ModeloDocumentoTemplateModelChoiceField)
-        from ..widgets import ModelSelect2ForwardExtras
-        from ..models import TipoDocumento
-        from django import forms
-        grupo_model = self.group_model
-
-        class CriarDocumentoParaGrupoForm(BootstrapFormInputMixin, forms.Form):
-            def __init__(self, *args, **kwargs):
-                current_user = kwargs.pop('user')
-                grupo_escolhido_queryset = kwargs.get('grupo_escolhido_queryset')
-                grupo_escolhido = kwargs.get('grupo_escolhido')
-                if grupo_escolhido_queryset:
-                    kwargs.pop('grupo_escolhido_queryset')
-                    kwargs.pop('grupo_escolhido')
-                self.grupo_escolhido = grupo_escolhido
-                super(CriarDocumentoParaGrupoForm, self).__init__(*args, **kwargs)
-                if current_user:
-                    self.fields['grupo'].queryset = grupo_escolhido_queryset
-                if grupo_escolhido:
-                    self.fields['grupo'] = GrupoModelChoiceField(
-                        label=get_grupo_assinante_backend().get_group_label(),
-                        help_text="Selecione o {}".format(get_grupo_assinante_backend().get_group_label()),
-                        queryset=grupo_escolhido_queryset,
-                        required=False,
-                        empty_label=None,
-                        initial=self.grupo_escolhido,
-                        widget=forms.Select(attrs={'class': 'form-control', 'readonly': True, 'disabled': 'disabled'})
-                    )
-
-            # titulo = forms.CharField(max_length=500)]
-            grupo = GrupoModelChoiceField(
-                label=get_grupo_assinante_backend().get_group_label(),
-                queryset=grupo_model.objects.none()
-            )
-
-            tipo_documento = TipoDocumentoTemplateModelChoiceField(
-                label='Tipo de Documento',
-                queryset=TipoDocumento.objects.all(),
-
-            )
-            modelo_documento = ModeloDocumentoTemplateModelChoiceField(
-                label='Modelo de Documento',
-                queryset=Documento.admin_objects.all(),
-                widget=ModelSelect2ForwardExtras(url='documentos:documentocriar-autocomplete',
-                                                 forward=('tipo_documento',),
-                                                 clear_on_change=('tipo_documento',)
-                                                 ),
-
-            )
-
-            assunto = forms.CharField(
-                label='Assunto do Documento',
-                max_length=70,
-
-            )
-
-        return CriarDocumentoParaGrupoForm
 
     def form_valid(self, form):
         form = super(DocumentoCriarParaGrupo, self).form_valid(form)

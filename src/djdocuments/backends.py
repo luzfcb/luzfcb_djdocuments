@@ -7,13 +7,15 @@ from django.core.exceptions import ImproperlyConfigured
 from django.db.models import Q
 from django.utils import timezone
 
-
 from .utils import get_grupo_assinante_model_class
 
 
 class DocumentosBaseBackend(object):
     group_name_atrib = None
     group_label = None
+
+    def pode_criar_documento_para_grupo(self, usuario, grupo):
+        raise NotImplemented()
 
     def pode_remover_assinatura(self, document, assinatura, usuario_atual, **kwargs):
         raise NotImplemented()
@@ -129,4 +131,3 @@ class AuthGroupDocumentosBackend(DocumentosBaseBackend):
 
     def get_grupos_usuario(self, usuario):
         return usuario.groups.all()
-

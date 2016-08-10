@@ -122,7 +122,7 @@ class AssinaturaDocumentoAdmin(admin.ModelAdmin):
         'hash_assinatura',
         'assinado_em',
         'esta_assinado',
-        'esta_ativo'
+        'ativo'
 
     )
 

@@ -89,10 +89,10 @@ class GrupoModelMultipleChoiceField(forms.ModelMultipleChoiceField):
 
 class CriarDocumentoForm(BootstrapFormInputMixin, forms.Form):
     def __init__(self, *args, **kwargs):
-        current_user = kwargs.pop('user')
+        self.current_user = kwargs.pop('user')
         super(CriarDocumentoForm, self).__init__(*args, **kwargs)
-        if current_user:
-            self.fields['grupo'].queryset = get_grupo_assinante_backend().get_grupos_usuario(current_user)
+        if self.current_user:
+            self.fields['grupo'].queryset = get_grupo_assinante_backend().get_grupos_usuario(self.current_user)
 
     # titulo = forms.CharField(max_length=500)]
     grupo = GrupoModelChoiceField(
@@ -120,6 +120,33 @@ class CriarDocumentoForm(BootstrapFormInputMixin, forms.Form):
         max_length=70,
 
     )
+
+
+class CriarDocumentoParaGrupoForm(CriarDocumentoForm):
+    def __init__(self, *args, **kwargs):
+        grupo_escolhido_queryset = kwargs.get('grupo_escolhido_queryset')
+        self.grupo_escolhido = kwargs.get('grupo_escolhido')
+
+        if grupo_escolhido_queryset:
+            kwargs.pop('grupo_escolhido_queryset')
+            kwargs.pop('grupo_escolhido')
+        super(CriarDocumentoParaGrupoForm, self).__init__(*args, **kwargs)
+
+        if self.grupo_escolhido:
+            self.fields['grupo'] = GrupoModelChoiceField(
+                label=get_grupo_assinante_backend().get_group_label(),
+                help_text="Selecione o {}".format(get_grupo_assinante_backend().get_group_label()),
+                queryset=grupo_escolhido_queryset,
+                required=False,
+                empty_label=None,
+                initial=self.grupo_escolhido,
+                widget=forms.Select(attrs={'class': 'form-control', 'readonly': True, 'disabled': 'disabled'})
+            )
+
+    def clean_grupo(self):
+        if self.grupo_escolhido:
+            return self.grupo_escolhido
+        return self.cleaned_data['grupo']
 
 
 class CriarModeloDocumentoForm(BootstrapFormInputMixin, forms.Form):
