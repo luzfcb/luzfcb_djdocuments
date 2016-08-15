@@ -25,6 +25,11 @@ logger = logging.getLogger()
 
 BackendGrupoAssinante = get_grupo_assinante_backend()
 
+__all__ = (
+    'Documento',
+    'Assinatura',
+    'TipoDocumento'
+)
 
 class NaoPodeAssinarException(ValidationError):
     message = 'Usuario nao pode assinar'
@@ -105,6 +110,11 @@ class Assinatura(models.Model):
         )
 
     def pode_remover_assinatura(self, usuario_atual):
+        """
+        Verifica se o usuario_atual pode remover esta assinatura
+        :param usuario_atual:
+        :return: (status:bool, mensagem:str)
+        """
         return BackendGrupoAssinante.pode_remover_assinatura(
             document=self.documento,
             assinatura=self,
@@ -351,6 +361,7 @@ class Documento(models.Model):
             return True
         return False
 
+    @property
     def esta_finalizado(self):
         if not self.esta_assinado and not self.assinatura_hash:
             return False

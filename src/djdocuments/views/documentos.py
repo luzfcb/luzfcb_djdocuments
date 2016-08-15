@@ -111,20 +111,24 @@ class DocumentoEditor(AjaxFormPostMixin,
         return super(DocumentoEditor, self).dispatch(request, *args, **kwargs)
 
     def get_lock_url_to_redirect_if_locked(self):
-        return reverse('documentos:detail', kwargs={'slug': self.object.pk_uuid})
+        return reverse('documentos:validar-detail', kwargs={'slug': self.object.pk_uuid})
 
     def form_valid(self, form):
-        if not self.object.pode_editar(usuario_atual=self.request.user):
-            raise PermissionDenied()
-        return super(DocumentoEditor, self).form_valid(form)
+        status, mensagem = self.object.pode_editar(usuario_atual=self.request.user)
+        if not status:
+            raise PermissionDenied(mensagem)
+        response = super(DocumentoEditor, self).form_valid(form)
+
+        return response
 
         # success_url = None
 
     def get(self, request, *args, **kwargs):
         response = super(DocumentoEditor, self).get(request, *args, **kwargs)
 
-        if not self.object.pode_editar(usuario_atual=self.request.user):
-            raise PermissionDenied()
+        status, mensagem = self.object.pode_editar(usuario_atual=self.request.user)
+        if not status:
+            raise PermissionDenied(mensagem)
         return response
 
     def post(self, request, *args, **kwargs):
@@ -213,8 +217,9 @@ class DocumentoCriarParaGrupo(SingleGroupObjectMixin, DocumentoCriar):
     def get(self, request, *args, **kwargs):
         response = super(DocumentoCriarParaGrupo, self).get(request, *args, **kwargs)
         backend = get_grupo_assinante_backend()
-        if not backend.pode_criar_documento_para_grupo(usuario=self.request.user, grupo=self.group_object):
-            raise PermissionDenied('Voce nao possui permissao para criar um documento para')
+        status, mensagem = backend.pode_criar_documento_para_grupo(usuario=self.request.user, grupo=self.group_object)
+        if not status:
+            raise PermissionDenied(mensagem)
         return response
 
     def get_form_action(self):
@@ -540,8 +545,9 @@ class AssinaturaDeleteView(generic.DeleteView):
 
     def get(self, request, *args, **kwargs):
         response = super(AssinaturaDeleteView, self).get(request, *args, **kwargs)
-        if not self.object.pode_remover_assinatura(self.request.user):
-            raise PermissionDenied
+        status, mensagem = self.object.pode_remover_assinatura(self.request.user)
+        if not status:
+            raise PermissionDenied(mensagem)
         return response
 
     def get_context_data(self, **kwargs):
@@ -552,6 +558,9 @@ class AssinaturaDeleteView(generic.DeleteView):
         return context
 
     def get_success_url(self):
+        status, mensagem = self.object.pode_remover_assinatura(self.request.user)
+        if not status:
+            raise PermissionDenied(mensagem)
         return reverse('documentos:assinaturas', kwargs={'slug': self.object.documento.pk_uuid})
 
 
