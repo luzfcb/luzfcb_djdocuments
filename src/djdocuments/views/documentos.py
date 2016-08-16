@@ -12,7 +12,7 @@ from django.db import transaction
 from django.db.utils import IntegrityError
 from django.http import HttpResponseNotFound
 from django.http.response import JsonResponse, HttpResponseRedirect, HttpResponseForbidden
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.utils import six
 from django.utils.decorators import method_decorator
 from django.views import generic
@@ -37,7 +37,8 @@ from ..forms import (CriarDocumentoForm, CriarModeloDocumentoForm, DocumentoEdit
 from ..models import Assinatura, Documento
 from ..utils.module_loading import get_real_user_model_class
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('djdocuments')
+logger.setLevel(logging.INFO)
 
 USER_MODEL = get_real_user_model_class()
 
@@ -218,8 +219,11 @@ class DocumentoCriarParaGrupo(SingleGroupObjectMixin, DocumentoCriar):
         response = super(DocumentoCriarParaGrupo, self).get(request, *args, **kwargs)
         backend = get_grupo_assinante_backend()
         status, mensagem = backend.pode_criar_documento_para_grupo(usuario=self.request.user, grupo=self.group_object)
+
         if not status:
-            raise PermissionDenied(mensagem)
+            return render(request=request, template_name='luzfcb_djdocuments/erros/erro_403.html',
+                          context={'mensagem': mensagem})
+            # raise PermissionDenied(mensagem)
         return response
 
     def get_form_action(self):
