@@ -5,21 +5,20 @@ import logging
 import uuid
 from collections import Iterable
 
-from django.core import checks
+from django.conf import settings
 from django.contrib.auth.hashers import SHA1PasswordHasher, check_password
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Max, Q
+from django.db.models import Max
 from django.utils import timezone
-from django.utils.functional import cached_property
 from django.utils.encoding import python_2_unicode_compatible
+from django.utils.functional import cached_property
 from simple_history.models import HistoricalRecords
 from simple_history.views import MissingHistoryRecordsField
 
 from djdocuments.utils import identificador
-
 from . import managers
-from .utils import get_grupo_assinante_backend, get_grupo_assinante_model_class, get_grupo_assinante_model_str
+from .utils import get_grupo_assinante_backend, get_grupo_assinante_model_str
 
 logger = logging.getLogger()
 
@@ -73,7 +72,7 @@ class Assinatura(models.Model):
     grupo_assinante_nome = models.CharField(max_length=255, blank=True)
 
     # Usuario Assinante
-    assinado_por = models.ForeignKey(to='auth.User',
+    assinado_por = models.ForeignKey(to=settings.AUTH_USER_MODEL,
                                      related_name="%(app_label)s_%(class)s_assinaturas",
                                      null=True)
 
@@ -87,13 +86,13 @@ class Assinatura(models.Model):
     ativo = models.NullBooleanField(default=True, editable=False)
 
     # auditoria
-    cadastrado_por = models.ForeignKey(to='auth.User',
+    cadastrado_por = models.ForeignKey(to=settings.AUTH_USER_MODEL,
                                        related_name="%(app_label)s_%(class)s_cadastrado_por",
                                        editable=False)
     cadastrado_em = models.DateTimeField(auto_now_add=True, editable=False)
     nome_cadastrado_por = models.CharField(max_length=255, blank=True)
 
-    excluido_por = models.ForeignKey(to='auth.User',
+    excluido_por = models.ForeignKey(to=settings.AUTH_USER_MODEL,
                                      related_name="%(app_label)s_%(class)s_excluido_por",
                                      null=True, blank=True)
     nome_excluido_por = models.CharField(max_length=255, blank=True)
@@ -225,13 +224,13 @@ class Documento(models.Model):
                                        verbose_name='Tipo do Documento')
 
     # auditoria
-    criado_por = models.ForeignKey(to='auth.User',
+    criado_por = models.ForeignKey(to=settings.AUTH_USER_MODEL,
                                    related_name="%(app_label)s_%(class)s_criado_por", null=True,
                                    blank=True, on_delete=models.SET_NULL, editable=False)
     criado_por_nome = models.CharField(max_length=255, blank=True)
     criado_em = models.DateTimeField(auto_now_add=True, editable=False)
 
-    modificado_por = models.ForeignKey(to='auth.User', null=True,
+    modificado_por = models.ForeignKey(to=settings.AUTH_USER_MODEL, null=True,
                                        blank=True, on_delete=models.SET_NULL, editable=False)
     modificado_em = models.DateTimeField(auto_now=True, blank=True, null=True, editable=False)
 
