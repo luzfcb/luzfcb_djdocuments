@@ -6,7 +6,6 @@ from django.utils import six
 from test_plus.test import CBVTestCase, TestCase
 from test_project.test_app.models import Processo
 
-from djdocuments.views.documentos import create_document_from_document_template
 from djdocuments import views
 from djdocuments.models import (
     Assinatura,
@@ -16,9 +15,11 @@ from djdocuments.models import (
     NaoPodeAssinarException,
     TipoDocumento
 )
+from djdocuments.views.documentos import create_document_from_document_template
 
 
 class InjetarDadosIniciaisMixin(object):
+
     @classmethod
     def setUpTestData(cls):
         cls.senha = '123'

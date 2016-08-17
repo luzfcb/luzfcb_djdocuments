@@ -4,17 +4,12 @@ from __future__ import absolute_import, print_function, unicode_literals
 from django.conf.urls import url
 from django.contrib.auth.decorators import login_required
 
-from .settings import DJANGO_DOCUMENTOS_ENABLE_GENERAL_DASHBOARD
 from .views import documentos as documentos_views
 from .views import autocompletes
 
 # from .views import documento_template
 
 urlpatterns = [
-    # url(r'^$',
-    # TemplateView.as_view(template_name="luzfcb_djdocuments/ckeditor_sharedspaces_fakePaperPage.html"),
-    # name='dashboard'
-    # ),
     url(r'^$',
         login_required(documentos_views.DocumentoDashboardView.as_view()),
         name='dashboard'

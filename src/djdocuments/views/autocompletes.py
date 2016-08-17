@@ -8,8 +8,8 @@ from django.views.decorators.cache import never_cache
 
 from .. import models
 from ..templatetags.luzfcb_djdocuments_tags import remover_tags_html
-from ..views.documentos import USER_MODEL
 from ..utils import get_grupo_assinante_backend
+from ..views.documentos import USER_MODEL
 from .mixins import SingleDocumentObjectMixin
 
 
@@ -145,7 +145,7 @@ class UserAutocomplete(autocomplete.Select2QuerySetView):
         # if not self.request.user.is_authenticated():
         #     return USER_MODEL.objects.none()
         backend = get_grupo_assinante_backend()
-        assinado_por = self.forwarded.get('assinado_por', None)
+        # assinado_por = self.forwarded.get('assinado_por', None)
         grupo = self.forwarded.get('grupo', 'teste')
         print("grupo:", grupo)
         if grupo:
@@ -190,6 +190,7 @@ class UserAutocomplete(autocomplete.Select2QuerySetView):
 
 
 class DocumentoCriarAutocomplete(autocomplete.Select2QuerySetView):
+
     @method_decorator(never_cache)
     def dispatch(self, request, *args, **kwargs):
         return super(DocumentoCriarAutocomplete, self).dispatch(request, *args, **kwargs)

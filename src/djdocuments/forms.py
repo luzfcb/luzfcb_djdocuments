@@ -4,14 +4,14 @@ from __future__ import absolute_import, print_function, unicode_literals
 from captcha.fields import CaptchaField
 from dal import autocomplete
 from django import forms
+from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import check_password
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 
-from .models import Assinatura, Documento, TipoDocumento
+from .models import Documento, TipoDocumento
 from .templatetags.luzfcb_djdocuments_tags import remover_tags_html
 from .utils import get_grupo_assinante_backend, get_grupo_assinante_model_class
-from .utils.module_loading import get_real_user_model_class
 from .widgets import CkeditorTextAreadWidget, ModelSelect2ForwardExtras, SplitedHashField3
 
 # TODO: remove this ugly hack
@@ -20,8 +20,11 @@ try:
 except ImportError:
     BIG_SAMPLE_HTML = CABECALHO = RODAPE = TITULO = ' '
 
+USER_MODEL = get_user_model()
+
 
 class BootstrapFormInputMixin(object):
+
     def __init__(self, *args, **kwargs):
         super(BootstrapFormInputMixin, self).__init__(*args, **kwargs)
         for field_name in self.fields:
@@ -66,11 +69,13 @@ class DocumentoEditarForm(forms.ModelForm):
 
 
 class TipoDocumentoTemplateModelChoiceField(forms.ModelChoiceField):
+
     def label_from_instance(self, obj):
         return obj.titulo
 
 
 class ModeloDocumentoTemplateModelChoiceField(forms.ModelChoiceField):
+
     def label_from_instance(self, obj):
         a = remover_tags_html(obj.titulo or 'Descricao modelo: {}'.format(obj.pk))
         print('ModeloDocumentoTemplateModelChoiceField:', a)
@@ -78,16 +83,19 @@ class ModeloDocumentoTemplateModelChoiceField(forms.ModelChoiceField):
 
 
 class GrupoModelChoiceField(forms.ModelChoiceField):
+
     def label_from_instance(self, obj):
         return get_grupo_assinante_backend().get_grupo_name(obj)
 
 
 class GrupoModelMultipleChoiceField(forms.ModelMultipleChoiceField):
+
     def label_from_instance(self, obj):
         return get_grupo_assinante_backend().get_grupo_name(obj)
 
 
 class CriarDocumentoForm(BootstrapFormInputMixin, forms.Form):
+
     def __init__(self, *args, **kwargs):
         self.current_user = kwargs.pop('user')
         super(CriarDocumentoForm, self).__init__(*args, **kwargs)
@@ -123,6 +131,7 @@ class CriarDocumentoForm(BootstrapFormInputMixin, forms.Form):
 
 
 class CriarDocumentoParaGrupoForm(CriarDocumentoForm):
+
     def __init__(self, *args, **kwargs):
         grupo_escolhido_queryset = kwargs.get('grupo_escolhido_queryset')
         self.grupo_escolhido = kwargs.get('grupo_escolhido')
@@ -173,11 +182,13 @@ class CriarModeloDocumentoForm(BootstrapFormInputMixin, forms.Form):
 
 
 class UserModelChoiceField(forms.ModelChoiceField):
+
     def label_from_instance(self, obj):
         return '{} ({})'.format(obj.get_full_name().title(), getattr(obj, obj.USERNAME_FIELD))
 
 
 class UserModelMultipleChoiceField(forms.ModelMultipleChoiceField):
+
     def label_from_instance(self, obj):
         return '{} ({})'.format(obj.get_full_name().title(), getattr(obj, obj.USERNAME_FIELD))
 
@@ -187,6 +198,7 @@ def create_form_class_adicionar_assinantes(document_object):
                                kwargs={'slug': document_object.pk_uuid})
 
     class AdicionarAssinantesForm(BootstrapFormInputMixin, forms.Form):
+
         def __init__(self, *args, **kwargs):
             grupo_para_adicionar_queryset = kwargs.pop('grupo_para_adicionar_queryset')
             super(AdicionarAssinantesForm, self).__init__(*args, **kwargs)
@@ -239,6 +251,7 @@ class DocumetoValidarForm(BootstrapFormInputMixin, forms.Form):
 
 
 class FinalizarDocumentoForm(BootstrapFormInputMixin, forms.Form):
+
     def __init__(self, *args, **kwargs):
         self.current_logged_user = kwargs.pop('current_logged_user')
         super(FinalizarDocumentoForm, self).__init__(*args, **kwargs)
@@ -277,7 +290,7 @@ def create_form_class_assinar(document_object):
             label="Assinante",
             help_text="Selecione o usuário que irá assinar o documento",
             # queryset=get_real_user_model_class().objects.all().order_by('username'),
-            queryset=get_real_user_model_class().objects.all().order_by('username'),
+            queryset=USER_MODEL.objects.all().order_by('username'),
             widget=ModelSelect2ForwardExtras(url='documentos:user-by-group-autocomplete',
                                              forward=('grupo',), clear_on_change=('grupo',)),
 
@@ -305,11 +318,7 @@ def create_form_class_assinar(document_object):
 
             if grupo_escolhido_queryset:
                 self.initial['assinado_por'] = self.current_logged_user
-                backend = get_grupo_assinante_backend()
-                # grupo_escolhido_queryset = get_grupo_assinante_backend().get_grupo(pk=grupo_escolhido_pk,
-                #                                                                    use_filter=True)
-                # grupo_escolhido_queryset = backend.get_grupo(pk=grupo_escolhido_pk,
-                #                                              use_filter=True)
+
                 if not grupo_escolhido_queryset:
                     pass
                     # raise backend.get_grupo_model.

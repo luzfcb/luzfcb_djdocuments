@@ -8,6 +8,7 @@ from django.conf import settings
 from django.utils import six
 from django.utils.http import urlencode, urlunquote
 from django.utils.six.moves.urllib.parse import parse_qsl, urlparse, urlunsplit
+
 from .module_loading import import_member
 
 try:
@@ -57,7 +58,7 @@ def add_querystrings_to_url(url, querystrings_dict):
     parsed_params = {
         key: (lambda x: x, urlunquote)[isinstance(value, six.string_types)](value)
         for key, value in six.iteritems(current_params)
-        }
+    }
 
     from pprint import pprint
     encoded_params = urlencode(parsed_params)

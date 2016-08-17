@@ -30,11 +30,6 @@ def get_real_model_class(klass_or_str):
         raise NonDjangoModelSubclassException(klass_or_str)
 
 
-def get_real_user_model_class():
-    from ..settings import USER_MODEL
-    return get_real_model_class(USER_MODEL)
-
-
 def import_member(import_string):
     """Import one member of Python module by path.
     >>> import os.path

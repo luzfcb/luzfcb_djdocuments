@@ -5,13 +5,14 @@ import logging
 
 from captcha.helpers import captcha_image_url
 from captcha.models import CaptchaStore
+from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ImproperlyConfigured, PermissionDenied
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.db import transaction
 from django.db.utils import IntegrityError
 from django.http import HttpResponseNotFound
-from django.http.response import JsonResponse, HttpResponseRedirect, HttpResponseForbidden
+from django.http.response import HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import six
 from django.utils.decorators import method_decorator
@@ -22,25 +23,34 @@ from luzfcb_dj_simplelock.views import LuzfcbLockMixin
 from wkhtmltopdf.views import PDFRenderMixin
 
 from djdocuments.utils import get_grupo_assinante_backend
+
+from ..forms import (
+    CriarDocumentoForm,
+    CriarDocumentoParaGrupoForm,
+    CriarModeloDocumentoForm,
+    DocumentoEditarForm,
+    DocumetoValidarForm,
+    FinalizarDocumentoForm,
+    create_form_class_adicionar_assinantes,
+    create_form_class_assinar
+)
+from ..models import Assinatura, Documento
 from .mixins import (
     AjaxFormPostMixin,
     AuditavelViewMixin,
     DocumentoAssinadoRedirectMixin,
     NextURLMixin,
     PopupMixin,
+    QRCodeValidacaoMixin,
     SingleDocumentObjectMixin,
-    VinculateMixin,
-    QRCodeValidacaoMixin, SingleGroupObjectMixin)
-from ..forms import (CriarDocumentoForm, CriarModeloDocumentoForm, DocumentoEditarForm,
-                     DocumetoValidarForm, create_form_class_assinar, FinalizarDocumentoForm,
-                     create_form_class_adicionar_assinantes, CriarDocumentoParaGrupoForm)
-from ..models import Assinatura, Documento
-from ..utils.module_loading import get_real_user_model_class
+    SingleGroupObjectMixin,
+    VinculateMixin
+)
 
 logger = logging.getLogger('djdocuments')
 logger.setLevel(logging.INFO)
 
-USER_MODEL = get_real_user_model_class()
+USER_MODEL = get_user_model()
 
 
 class DocumentoDashboardView(generic.TemplateView):
@@ -245,7 +255,6 @@ class DocumentoCriarParaGrupo(SingleGroupObjectMixin, DocumentoCriar):
 
     def form_valid(self, form):
         form = super(DocumentoCriarParaGrupo, self).form_valid(form)
-        a = form
         return form
 
 

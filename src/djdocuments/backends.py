@@ -4,8 +4,6 @@ from __future__ import absolute_import, print_function, unicode_literals
 from collections import Iterable
 
 from django.core.exceptions import ImproperlyConfigured
-from django.db.models import Q
-from django.utils import timezone
 
 from .utils import get_grupo_assinante_model_class
 

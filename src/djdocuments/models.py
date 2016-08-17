@@ -17,6 +17,7 @@ from simple_history.models import HistoricalRecords
 from simple_history.views import MissingHistoryRecordsField
 
 from djdocuments.utils import identificador
+
 from . import managers
 from .utils import get_grupo_assinante_backend, get_grupo_assinante_model_str
 
@@ -29,6 +30,7 @@ __all__ = (
     'Assinatura',
     'TipoDocumento'
 )
+
 
 class NaoPodeAssinarException(ValidationError):
     message = 'Usuario nao pode assinar'
@@ -57,6 +59,7 @@ class TipoDocumento(models.Model):
 
 @python_2_unicode_compatible
 class Assinatura(models.Model):
+
     def __str__(self):
         return 'pk: {}, grupo_assinante: {}'.format(self.pk, self.grupo_assinante.pk)
 
@@ -125,9 +128,9 @@ class Assinatura(models.Model):
         if not check_password(senha, usuario_assinante.password):
             raise ValidationError('Senha inválida para o usuario selecionado')
 
-        assert self.ativo == True, 'O registro nao esta ativo para ser assinado'
+        assert self.ativo is True, 'O registro nao esta ativo para ser assinado'
 
-        assert self.esta_assinado == False, 'O registro ja esta assinado'
+        assert self.esta_assinado is False, 'O registro ja esta assinado'
 
         agora = timezone.now()
 

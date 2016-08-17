@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function, unicode_literals
-import io
+
 import base64
+import io
 
 
 def png_as_base64_str(qr_code, scale=3, module_color=(0, 0, 0, 255),
