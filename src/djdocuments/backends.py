@@ -5,17 +5,17 @@ from collections import Iterable
 
 from django.core.exceptions import ImproperlyConfigured
 
-from .utils import get_grupo_assinante_backend, get_grupo_assinante_model_class
+from .utils import get_djdocuments_backend, get_grupo_assinante_model_class
 
 
 class DjDocumentsBackendMixin(object):
 
     def __init__(self, *args, **kwargs):
         super(DjDocumentsBackendMixin, self).__init__(*args, **kwargs)
-        self.djdocuments_backend = get_grupo_assinante_backend()
+        self.djdocuments_backend = get_djdocuments_backend()
 
 
-class DocumentosBaseBackend(object):
+class DjDocumentsBaseBackend(object):
     group_name_atrib = None
     group_label = None
 
@@ -77,7 +77,7 @@ class DocumentosBaseBackend(object):
         return NotImplemented()
 
 
-class AuthGroupDocumentosBackend(DocumentosBaseBackend):
+class AuthGroupDjDocumentsBackend(DjDocumentsBaseBackend):
     group_name_atrib = 'name'
     group_label = 'Grupo de usuario'
 

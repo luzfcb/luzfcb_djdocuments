@@ -19,11 +19,11 @@ from simple_history.views import MissingHistoryRecordsField
 from djdocuments.utils import identificador
 
 from . import managers
-from .utils import get_grupo_assinante_backend, get_grupo_assinante_model_str
+from .utils import get_djdocuments_backend, get_grupo_assinante_model_str
 
 logger = logging.getLogger()
 
-BackendGrupoAssinante = get_grupo_assinante_backend()
+DjDocumentsBackend = get_djdocuments_backend()
 
 __all__ = (
     'Documento',
@@ -104,7 +104,7 @@ class Assinatura(models.Model):
     objects = managers.AssinaturaManager()
 
     def pode_assinar(self, grupo_assinante, usuario_assinante, agora):
-        return BackendGrupoAssinante.pode_assinar(
+        return DjDocumentsBackend.pode_assinar(
             document=self.documento,
             grupo_assinante=grupo_assinante,
             usuario=usuario_assinante,
@@ -117,7 +117,7 @@ class Assinatura(models.Model):
         :param usuario_atual:
         :return: (status:bool, mensagem:str)
         """
-        return BackendGrupoAssinante.pode_remover_assinatura(
+        return DjDocumentsBackend.pode_remover_assinatura(
             document=self.documento,
             assinatura=self,
             usuario_atual=usuario_atual
@@ -177,7 +177,7 @@ class Assinatura(models.Model):
 
         if self.grupo_assinante and not self.grupo_assinante_nome:
             if not self.pk:
-                backend = get_grupo_assinante_backend()
+                backend = get_djdocuments_backend()
                 self.grupo_assinante_nome = backend.get_grupo_name(self.grupo_assinante)
         if self.cadastrado_por:
             if not self.pk:
@@ -279,14 +279,14 @@ class Documento(models.Model):
 
     def pode_editar(self, usuario_atual):
         # TODO: Verificar ManyToManyField de Defensoria para Documento, com related donos
-        return BackendGrupoAssinante.pode_editar(document=self,
-                                                 usuario=usuario_atual)
+        return DjDocumentsBackend.pode_editar(document=self,
+                                              usuario=usuario_atual)
 
     def pode_visualizar(self, usuario_atual):
         if self.pode_editar(usuario_atual):
             return True
         else:
-            return BackendGrupoAssinante.pode_visualizar(
+            return DjDocumentsBackend.pode_visualizar(
                 document=self,
                 usuario=usuario_atual
             )

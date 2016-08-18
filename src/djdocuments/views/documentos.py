@@ -336,9 +336,9 @@ class AssinaturasPendentesGrupo(DjDocumentsBackendMixin, generic.ListView):
 
         dados_processados = []
         for assinatura in self.object_list:
-            pode_assinar = self.djdocuments_backend.backend.pode_assinar(document=assinatura.documento,
-                                                                         usuario=self.request.user,
-                                                                         grupo_assinante=assinatura.grupo_assinante)
+            pode_assinar = self.djdocuments_backend.pode_assinar(document=assinatura.documento,
+                                                                 usuario=self.request.user,
+                                                                 grupo_assinante=assinatura.grupo_assinante)
             dados = {
                 'identificador_documento': assinatura.documento.identificador_documento,
                 'assunto': assinatura.documento.assunto,
@@ -382,9 +382,9 @@ class DocumentosAssinadosGrupo(DjDocumentsBackendMixin, generic.ListView):
 
         dados_processados = []
         for assinatura in self.object_list:
-            pode_assinar = self.djdocuments_backend.backend.pode_assinar(document=assinatura.documento,
-                                                                         usuario=self.request.user,
-                                                                         grupo_assinante=assinatura.grupo_assinante)
+            pode_assinar = self.djdocuments_backend.pode_assinar(document=assinatura.documento,
+                                                                 usuario=self.request.user,
+                                                                 grupo_assinante=assinatura.grupo_assinante)
             dados = {
                 'identificador_documento': assinatura.documento.identificador_documento,
                 'assunto': assinatura.documento.assunto,
@@ -456,7 +456,7 @@ class AdicionarAssinantes(SingleDocumentObjectMixin, DjDocumentsBackendMixin, ge
     def get_form_kwargs(self):
         kwargs = super(AdicionarAssinantes, self).get_form_kwargs()
         grupos_ja_adicionados = self.document_object.grupos_assinates.all()
-        grupo_para_adicionar_queryset = self.djdocuments_backend.get_grupo_assinante_backend().get_grupos(
+        grupo_para_adicionar_queryset = self.djdocuments_backend.get_grupos(
             excludes=grupos_ja_adicionados)
         kwargs.update({'grupo_para_adicionar_queryset': grupo_para_adicionar_queryset})
         return kwargs

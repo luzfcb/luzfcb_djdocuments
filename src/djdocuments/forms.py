@@ -9,9 +9,10 @@ from django.contrib.auth.hashers import check_password
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 
+from .backends import DjDocumentsBackendMixin
 from .models import Documento, TipoDocumento
 from .templatetags.luzfcb_djdocuments_tags import remover_tags_html
-from .utils import get_grupo_assinante_backend, get_grupo_assinante_model_class
+from .utils import get_djdocuments_backend, get_grupo_assinante_model_class
 from .widgets import CkeditorTextAreadWidget, ModelSelect2ForwardExtras, SplitedHashField3
 
 # TODO: remove this ugly hack
@@ -82,29 +83,29 @@ class ModeloDocumentoTemplateModelChoiceField(forms.ModelChoiceField):
         return a
 
 
-class GrupoModelChoiceField(forms.ModelChoiceField):
+class GrupoModelChoiceField(DjDocumentsBackendMixin, forms.ModelChoiceField):
 
     def label_from_instance(self, obj):
-        return get_grupo_assinante_backend().get_grupo_name(obj)
+        return self.djdocuments_backend.get_grupo_name(obj)
 
 
-class GrupoModelMultipleChoiceField(forms.ModelMultipleChoiceField):
+class GrupoModelMultipleChoiceField(DjDocumentsBackendMixin, forms.ModelMultipleChoiceField):
 
     def label_from_instance(self, obj):
-        return get_grupo_assinante_backend().get_grupo_name(obj)
+        return self.djdocuments_backend.get_grupo_name(obj)
 
 
-class CriarDocumentoForm(BootstrapFormInputMixin, forms.Form):
+class CriarDocumentoForm(BootstrapFormInputMixin, DjDocumentsBackendMixin, forms.Form):
 
     def __init__(self, *args, **kwargs):
         self.current_user = kwargs.pop('user')
         super(CriarDocumentoForm, self).__init__(*args, **kwargs)
         if self.current_user:
-            self.fields['grupo'].queryset = get_grupo_assinante_backend().get_grupos_usuario(self.current_user)
+            self.fields['grupo'].queryset = self.djdocuments_backend.get_grupos_usuario(self.current_user)
 
     # titulo = forms.CharField(max_length=500)]
     grupo = GrupoModelChoiceField(
-        label=get_grupo_assinante_backend().get_group_label(),
+        label=get_djdocuments_backend().get_group_label(),
         queryset=get_grupo_assinante_model_class().objects.none()
     )
 
@@ -143,8 +144,8 @@ class CriarDocumentoParaGrupoForm(CriarDocumentoForm):
 
         if self.grupo_escolhido:
             self.fields['grupo'] = GrupoModelChoiceField(
-                label=get_grupo_assinante_backend().get_group_label(),
-                help_text="Selecione o {}".format(get_grupo_assinante_backend().get_group_label()),
+                label=self.djdocuments_backend.get_group_label(),
+                help_text="Selecione o {}".format(self.djdocuments_backend.get_group_label()),
                 queryset=grupo_escolhido_queryset,
                 required=False,
                 empty_label=None,
@@ -205,8 +206,8 @@ def create_form_class_adicionar_assinantes(document_object):
             self.fields['grupo_para_adicionar'].queryset = grupo_para_adicionar_queryset
 
         grupo_para_adicionar = GrupoModelMultipleChoiceField(
-            label=get_grupo_assinante_backend().get_group_label(),
-            queryset=get_grupo_assinante_backend().get_grupos(),
+            label=get_djdocuments_backend().get_group_label(),
+            queryset=get_djdocuments_backend().get_grupos(),
             widget=autocomplete.ModelSelect2Multiple(url=url_autocomplete)
         )
 
@@ -272,15 +273,16 @@ class FinalizarDocumentoForm(BootstrapFormInputMixin, forms.Form):
 def create_form_class_assinar(document_object):
     url_autocomplete = reverse('documentos:grupos_assinantes_do_documento_autocomplete',
                                kwargs={'slug': document_object.pk_uuid})
+    djdocuments_backend = get_djdocuments_backend()
     grupos_ids = document_object.assinaturas.filter(assinado_por=None).values_list('grupo_assinante_id',
                                                                                    flat=True)
     grupos = document_object.grupos_assinates.filter(id__in=grupos_ids)
 
-    class AssinarDocumentoForm(BootstrapFormInputMixin, forms.Form):
+    class AssinarDocumentoForm(BootstrapFormInputMixin, DjDocumentsBackendMixin, forms.Form):
         # titulo = forms.CharField(max_length=500)]
         grupo = forms.ChoiceField(
-            label=get_grupo_assinante_backend().get_group_label(),
-            help_text="Selecione o {}".format(get_grupo_assinante_backend().get_group_label()),
+            label=djdocuments_backend.get_group_label(),
+            help_text="Selecione o {}".format(djdocuments_backend.get_group_label()),
             # queryset=get_grupo_assinante_model_class().objects.all(),
             choices=grupos,
             widget=autocomplete.ModelSelect2(url=url_autocomplete, forward=('grupo',)),
@@ -323,15 +325,15 @@ def create_form_class_assinar(document_object):
                     pass
                     # raise backend.get_grupo_model.
                 self.fields['grupo'] = GrupoModelChoiceField(
-                    label=get_grupo_assinante_backend().get_group_label(),
-                    help_text="Selecione o {}".format(get_grupo_assinante_backend().get_group_label()),
+                    label=self.djdocuments_backend.get_group_label(),
+                    help_text="Selecione o {}".format(self.djdocuments_backend.get_group_label()),
                     queryset=grupo_escolhido_queryset,
                     required=False,
                     empty_label=None,
                     initial=self.grupo_escolhido,
                     widget=forms.Select(attrs={'class': 'form-control', 'readonly': True, 'disabled': 'disabled'})
                 )
-                self.fields['assinado_por'].queryset = get_grupo_assinante_backend().get_usuarios_grupo(
+                self.fields['assinado_por'].queryset = self.djdocuments_backend.get_usuarios_grupo(
                     self.grupo_escolhido)
 
         def clean_grupo(self):

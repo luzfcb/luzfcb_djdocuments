@@ -7,13 +7,14 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
 
 from .. import models
+from ..backends import DjDocumentsBackendMixin
 from ..templatetags.luzfcb_djdocuments_tags import remover_tags_html
-from ..utils import get_grupo_assinante_backend
 from ..views.documentos import USER_MODEL
 from .mixins import SingleDocumentObjectMixin
 
 
 class GrupoAindaNaoAssinantesDoDocumentoAutoComplete(SingleDocumentObjectMixin,
+                                                     DjDocumentsBackendMixin,
                                                      autocomplete.Select2QuerySetView):
     """
     Autocomplete view to Django User Based
@@ -27,24 +28,24 @@ class GrupoAindaNaoAssinantesDoDocumentoAutoComplete(SingleDocumentObjectMixin,
         # Don't forget to filter out results depending on the visitor !
         # if not self.request.user.is_authenticated():
         #     return USER_MODEL.objects.none()
-        backend = get_grupo_assinante_backend()
 
         grupos_assinantes_ja_incluidos = self.document_object.grupos_assinates.values_list('id',
                                                                                            flat=True)
 
-        qs = backend.get_grupos(excludes=grupos_assinantes_ja_incluidos)
+        qs = self.djdocuments_backend.get_grupos(excludes=grupos_assinantes_ja_incluidos)
 
         if self.q:
-            paran_dict = {'{}__icontains'.format(backend.group_name_atrib): self.q}
+            paran_dict = {'{}__icontains'.format(self.djdocuments_backend.group_name_atrib): self.q}
             qs = qs.filter(Q(**paran_dict))
 
         return qs
 
     def get_result_label(self, result):
-        return get_grupo_assinante_backend().get_grupo_name(result)
+        return self.djdocuments_backend.get_grupo_name(result)
 
 
 class GruposAssinantesDoDocumentoAutoComplete(SingleDocumentObjectMixin,
+                                              DjDocumentsBackendMixin,
                                               autocomplete.Select2QuerySetView):
     """
     Autocomplete view to Django User Based
@@ -58,23 +59,22 @@ class GruposAssinantesDoDocumentoAutoComplete(SingleDocumentObjectMixin,
         # Don't forget to filter out results depending on the visitor !
         # if not self.request.user.is_authenticated():
         #     return USER_MODEL.objects.none()
-        backend = get_grupo_assinante_backend()
 
         assinaturas = self.document_object.assinaturas.filter(assinado_por=None).values_list('grupo_assinante_id',
                                                                                              flat=True)
         qs = self.document_object.grupos_assinates.filter(id__in=assinaturas)
 
         if self.q:
-            paran_dict = {'{}__icontains'.format(backend.group_name_atrib): self.q}
+            paran_dict = {'{}__icontains'.format(self.djdocuments_backend.group_name_atrib): self.q}
             qs = qs.filter(Q(**paran_dict))
 
         return qs
 
     def get_result_label(self, result):
-        return get_grupo_assinante_backend().get_grupo_name(result)
+        return self.djdocuments_backend.get_grupo_name(result)
 
 
-class GruposDoUsuarioAutoComplete(autocomplete.Select2QuerySetView):
+class GruposDoUsuarioAutoComplete(DjDocumentsBackendMixin, autocomplete.Select2QuerySetView):
     """
     Autocomplete view to Django User Based
     """
@@ -87,20 +87,19 @@ class GruposDoUsuarioAutoComplete(autocomplete.Select2QuerySetView):
         # Don't forget to filter out results depending on the visitor !
         # if not self.request.user.is_authenticated():
         #     return USER_MODEL.objects.none()
-        backend = get_grupo_assinante_backend()
-        qs = backend.get_grupos_usuario(self.request.user)
+        qs = self.djdocuments_backend.get_grupos_usuario(self.request.user)
 
         if self.q:
-            paran_dict = {'{}__icontains'.format(backend.group_name_atrib): self.q}
+            paran_dict = {'{}__icontains'.format(self.djdocuments_backend.group_name_atrib): self.q}
             qs = qs.filter(Q(paran_dict))
 
         return qs
 
     def get_result_label(self, result):
-        return get_grupo_assinante_backend().get_grupo_name(result)
+        return self.djdocuments_backend.get_grupo_name(result)
 
 
-class UsersByGroupAutocomplete(autocomplete.Select2QuerySetView):
+class UsersByGroupAutocomplete(DjDocumentsBackendMixin, autocomplete.Select2QuerySetView):
     """
     UsersByGroupAutocomplete view to Django User Based filter by group
     """
@@ -113,11 +112,10 @@ class UsersByGroupAutocomplete(autocomplete.Select2QuerySetView):
         # Don't forget to filter out results depending on the visitor !
         # if not self.request.user.is_authenticated():
         #     return USER_MODEL.objects.none()
-        backend = get_grupo_assinante_backend()
 
         grupo = self.forwarded.get('grupo', None)
         if grupo:
-            qs = backend.get_usuarios_grupo(grupo).order_by('first_name', 'last_name')
+            qs = self.djdocuments_backend.get_usuarios_grupo(grupo).order_by('first_name', 'last_name')
         else:
             qs = USER_MODEL.objects.none()
 
@@ -131,7 +129,7 @@ class UsersByGroupAutocomplete(autocomplete.Select2QuerySetView):
         return '{} ({})'.format(name, user_name)
 
 
-class UserAutocomplete(autocomplete.Select2QuerySetView):
+class UserAutocomplete(DjDocumentsBackendMixin, autocomplete.Select2QuerySetView):
     """
     Autocomplete view to Django User Based
     """
@@ -144,7 +142,6 @@ class UserAutocomplete(autocomplete.Select2QuerySetView):
         # Don't forget to filter out results depending on the visitor !
         # if not self.request.user.is_authenticated():
         #     return USER_MODEL.objects.none()
-        backend = get_grupo_assinante_backend()
         # assinado_por = self.forwarded.get('assinado_por', None)
         grupo = self.forwarded.get('grupo', 'teste')
         print("grupo:", grupo)
@@ -152,7 +149,7 @@ class UserAutocomplete(autocomplete.Select2QuerySetView):
             if grupo == 'null':
                 qs = USER_MODEL.objects.none()
             else:
-                qs = backend.get_usuarios_grupo(grupo).order_by('first_name', 'last_name')
+                qs = self.djdocuments_backend.get_usuarios_grupo(grupo).order_by('first_name', 'last_name')
         else:
             qs = USER_MODEL.objects.all().order_by('first_name', 'last_name')
 

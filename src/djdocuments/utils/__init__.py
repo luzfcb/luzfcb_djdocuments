@@ -23,11 +23,21 @@ __all__ = (
 )
 
 
-def get_grupo_assinante_backend(*args, **kwargs):
+class InvalidDjDocumentsBackendException(Exception):
+    pass
+
+
+def get_djdocuments_backend(*args, **kwargs):
     from ..settings import DJDOCUMENT
     backend_str = DJDOCUMENT['BACKEND']
-    BackendClass = import_member(backend_str)
-    return BackendClass(*args, **kwargs)
+    try:
+        BackendClass = import_member(backend_str)
+    except AttributeError as e:
+        raise InvalidDjDocumentsBackendException(
+            '\nthe selected backend not exist on path: {}\n you current configuration is:\n{}'.format(backend_str,
+                                                                                                      DJDOCUMENT))
+    else:
+        return BackendClass(*args, **kwargs)
 
 
 def get_grupo_assinante_model_str():
@@ -58,7 +68,7 @@ def add_querystrings_to_url(url, querystrings_dict):
     parsed_params = {
         key: (lambda x: x, urlunquote)[isinstance(value, six.string_types)](value)
         for key, value in six.iteritems(current_params)
-    }
+        }
 
     from pprint import pprint
     encoded_params = urlencode(parsed_params)

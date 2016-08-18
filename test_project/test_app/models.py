@@ -11,3 +11,6 @@ class Processo(models.Model):
 
     def __str__(self):
         return "pk:{}".format(self.pk)
+
+    class Meta:
+        app_label = 'test_app'

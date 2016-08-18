@@ -188,7 +188,7 @@ CAPTCHA_WORDS_DICTIONARY = '/usr/share/dict/brazilian'
 # end django-simple-captcha config
 
 DJDOCUMENT = {
-    'BACKEND': 'djdocuments.backends.AuthGroupDocumentosBackend',
+    'BACKEND': 'djdocuments.backends.AuthGroupDjDocumentsBackend',
     'GRUPO_ASSINANTE_MODEL': 'auth.Group',
 }
 
