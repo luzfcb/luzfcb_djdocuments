@@ -14,10 +14,29 @@ from django.utils import six
 from django.utils.translation import ugettext as _
 from urlobject import URLObject
 
-from djdocuments.utils.base64utils import png_as_base64_str
-
 from ..models import Documento
 from ..templatetags.luzfcb_djdocuments_tags import absolute_uri
+from ..utils.base64utils import png_as_base64_str
+
+
+class FormActionViewMixin(object):
+    form_action = None
+
+    def get_form_action(self):
+        if not self.form_action:
+            raise ImproperlyConfigured(
+                "%(cls)s is missing a 'form_action'. Define "
+                "%(cls)s.form_action, or override "
+                "%(cls)s.get_form_action()." % {
+                    'cls': self.__class__.__name__
+                }
+            )
+        return self.form_action
+
+    def get_context_data(self, **kwargs):
+        context = super(FormActionViewMixin, self).get_context_data(**kwargs)
+        context['form_action'] = self.get_form_action()
+        return context
 
 
 class QRCodeValidacaoMixin(object):

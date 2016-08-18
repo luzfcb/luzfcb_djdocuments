@@ -10,6 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ImproperlyConfigured, PermissionDenied
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.db import transaction
+from django.db.models import Q
 from django.db.utils import IntegrityError
 from django.http import HttpResponseNotFound
 from django.http.response import HttpResponseForbidden, HttpResponseRedirect, JsonResponse
@@ -22,8 +23,7 @@ from django.views.generic.detail import SingleObjectMixin
 from luzfcb_dj_simplelock.views import LuzfcbLockMixin
 from wkhtmltopdf.views import PDFRenderMixin
 
-from djdocuments.utils import get_grupo_assinante_backend
-
+from ..backends import DjDocumentsBackendMixin
 from ..forms import (
     CriarDocumentoForm,
     CriarDocumentoParaGrupoForm,
@@ -39,6 +39,7 @@ from .mixins import (
     AjaxFormPostMixin,
     AuditavelViewMixin,
     DocumentoAssinadoRedirectMixin,
+    FormActionViewMixin,
     NextURLMixin,
     PopupMixin,
     QRCodeValidacaoMixin,
@@ -168,27 +169,7 @@ def create_document_from_document_template(current_user, grupo, documento_templa
     return documento_novo
 
 
-class FormActionViewMixin(object):
-    form_action = None
-
-    def get_form_action(self):
-        if not self.form_action:
-            raise ImproperlyConfigured(
-                "%(cls)s is missing a 'form_action'. Define "
-                "%(cls)s.form_action, or override "
-                "%(cls)s.get_form_action()." % {
-                    'cls': self.__class__.__name__
-                }
-            )
-        return self.form_action
-
-    def get_context_data(self, **kwargs):
-        context = super(FormActionViewMixin, self).get_context_data(**kwargs)
-        context['form_action'] = self.get_form_action()
-        return context
-
-
-class DocumentoCriar(VinculateMixin, FormActionViewMixin, generic.FormView):
+class DocumentoCriar(VinculateMixin, FormActionViewMixin, DjDocumentsBackendMixin, generic.FormView):
     template_name = 'luzfcb_djdocuments/documento_create2.html'
     form_class = CriarDocumentoForm
     default_selected_document_template_pk = None
@@ -227,8 +208,8 @@ class DocumentoCriarParaGrupo(SingleGroupObjectMixin, DocumentoCriar):
 
     def get(self, request, *args, **kwargs):
         response = super(DocumentoCriarParaGrupo, self).get(request, *args, **kwargs)
-        backend = get_grupo_assinante_backend()
-        status, mensagem = backend.pode_criar_documento_para_grupo(usuario=self.request.user, grupo=self.group_object)
+        status, mensagem = self.djdocuments_backend.pode_criar_documento_para_grupo(usuario=self.request.user,
+                                                                                    grupo=self.group_object)
 
         if not status:
             return render(request=request, template_name='luzfcb_djdocuments/erros/erro_403.html',
@@ -333,7 +314,7 @@ class FinalizarDocumentoFormView(SingleDocumentObjectMixin, generic.FormView):
         return reverse('documentos:assinaturas', kwargs={'slug': self.document_object.pk_uuid})
 
 
-class AssinaturasPendentesGrupo(generic.ListView):
+class AssinaturasPendentesGrupo(DjDocumentsBackendMixin, generic.ListView):
     model = Assinatura
     template_name = 'luzfcb_djdocuments/assinaturas_pendentes_por_grupo.html'
 
@@ -343,8 +324,8 @@ class AssinaturasPendentesGrupo(generic.ListView):
 
     def get_queryset(self):
         queryset = super(AssinaturasPendentesGrupo, self).get_queryset()
-        backend = get_grupo_assinante_backend()
-        grupos = tuple(backend.get_grupos_usuario(self.request.user).values_list('id', flat=True))
+
+        grupos = tuple(self.djdocuments_backend.get_grupos_usuario(self.request.user).values_list('id', flat=True))
         queryset = queryset.select_related('documento', 'grupo_assinante')
 
         queryset = queryset.filter(grupo_assinante_id__in=grupos, assinado_por=None, ativo=True)
@@ -352,19 +333,19 @@ class AssinaturasPendentesGrupo(generic.ListView):
 
     def get_context_data(self, **kwargs):
         context = super(AssinaturasPendentesGrupo, self).get_context_data(**kwargs)
-        backend = get_grupo_assinante_backend()
+
         dados_processados = []
         for assinatura in self.object_list:
-            pode_assinar = backend.pode_assinar(document=assinatura.documento,
-                                                usuario=self.request.user,
-                                                grupo_assinante=assinatura.grupo_assinante)
+            pode_assinar = self.djdocuments_backend.backend.pode_assinar(document=assinatura.documento,
+                                                                         usuario=self.request.user,
+                                                                         grupo_assinante=assinatura.grupo_assinante)
             dados = {
                 'identificador_documento': assinatura.documento.identificador_documento,
                 'assunto': assinatura.documento.assunto,
                 'assinatura': assinatura,
                 'esta_assinado': assinatura.esta_assinado,
                 'pode_assinar': pode_assinar,
-                'grupo_assinante_nome': backend.get_grupo_name(assinatura.grupo_assinante),
+                'grupo_assinante_nome': self.djdocuments_backend.get_grupo_name(assinatura.grupo_assinante),
                 'url_para_assinar': reverse_lazy('documentos:assinar_por_grupo',
                                                  kwargs={'slug': assinatura.documento.pk_uuid,
                                                          'group_id': assinatura.grupo_assinante.pk}),
@@ -379,7 +360,53 @@ class AssinaturasPendentesGrupo(generic.ListView):
         return context
 
 
-class DocumentoAssinaturasListView(SingleDocumentObjectMixin, generic.ListView):
+class DocumentosAssinadosGrupo(DjDocumentsBackendMixin, generic.ListView):
+    model = Assinatura
+    template_name = 'luzfcb_djdocuments/documentos_assinados_por_grupo.html'
+
+    @method_decorator(never_cache)
+    def dispatch(self, request, *args, **kwargs):
+        return super(DocumentosAssinadosGrupo, self).dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        queryset = super(DocumentosAssinadosGrupo, self).get_queryset()
+
+        grupos = tuple(self.djdocuments_backend.get_grupos_usuario(self.request.user).values_list('id', flat=True))
+        queryset = queryset.select_related('documento', 'grupo_assinante')
+
+        queryset = queryset.filter(Q(grupo_assinante_id__in=grupos), ~Q(assinado_por=None), Q(ativo=True))
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super(DocumentosAssinadosGrupo, self).get_context_data(**kwargs)
+
+        dados_processados = []
+        for assinatura in self.object_list:
+            pode_assinar = self.djdocuments_backend.backend.pode_assinar(document=assinatura.documento,
+                                                                         usuario=self.request.user,
+                                                                         grupo_assinante=assinatura.grupo_assinante)
+            dados = {
+                'identificador_documento': assinatura.documento.identificador_documento,
+                'assunto': assinatura.documento.assunto,
+                'assinatura': assinatura,
+                'esta_assinado': assinatura.esta_assinado,
+                'pode_assinar': pode_assinar,
+                'grupo_assinante_nome': self.djdocuments_backend.get_grupo_name(assinatura.grupo_assinante),
+                'url_para_assinar': reverse_lazy('documentos:assinar_por_grupo',
+                                                 kwargs={'slug': assinatura.documento.pk_uuid,
+                                                         'group_id': assinatura.grupo_assinante.pk}),
+                'url_remover_assinatura': reverse_lazy('documentos:remover_assinatura',
+                                                       kwargs={'document_slug': assinatura.documento.pk_uuid,
+                                                               'pk': assinatura.pk}),
+                'url_para_visualizar': reverse('documentos:validar-detail',
+                                               kwargs={'slug': assinatura.documento.pk_uuid})
+            }
+            dados_processados.append(dados)
+        context['dados_processados'] = dados_processados
+        return context
+
+
+class DocumentoAssinaturasListView(SingleDocumentObjectMixin, DjDocumentsBackendMixin, generic.ListView):
     model = Assinatura
     document_slug_field = 'pk_uuid'
     template_name = 'luzfcb_djdocuments/documento_assinaturas_pendentes.html'
@@ -395,17 +422,16 @@ class DocumentoAssinaturasListView(SingleDocumentObjectMixin, generic.ListView):
 
     def get_context_data(self, **kwargs):
         context = super(DocumentoAssinaturasListView, self).get_context_data(**kwargs)
-        backend = get_grupo_assinante_backend()
         dados_processados = []
         for assinatura in self.object_list:
-            pode_assinar = backend.pode_assinar(document=self.document_object,
-                                                usuario=self.request.user,
-                                                grupo_assinante=assinatura.grupo_assinante)
+            pode_assinar = self.djdocuments_backend.pode_assinar(document=self.document_object,
+                                                                 usuario=self.request.user,
+                                                                 grupo_assinante=assinatura.grupo_assinante)
             dados = {
                 'assinatura': assinatura,
                 'esta_assinado': assinatura.esta_assinado,
                 'pode_assinar': pode_assinar,
-                'grupo_assinante_nome': backend.get_grupo_name(assinatura.grupo_assinante),
+                'grupo_assinante_nome': self.djdocuments_backend.get_grupo_name(assinatura.grupo_assinante),
                 'url_para_assinar': reverse_lazy('documentos:assinar_por_grupo',
                                                  kwargs={'slug': self.document_object.pk_uuid,
                                                          'group_id': assinatura.grupo_assinante.pk}),
@@ -421,7 +447,7 @@ class DocumentoAssinaturasListView(SingleDocumentObjectMixin, generic.ListView):
         return context
 
 
-class AdicionarAssinantes(SingleDocumentObjectMixin, generic.FormView):
+class AdicionarAssinantes(SingleDocumentObjectMixin, DjDocumentsBackendMixin, generic.FormView):
     template_name = 'luzfcb_djdocuments/assinar_adicionar_assinantes.html'
 
     def get_form_class(self):
@@ -430,7 +456,7 @@ class AdicionarAssinantes(SingleDocumentObjectMixin, generic.FormView):
     def get_form_kwargs(self):
         kwargs = super(AdicionarAssinantes, self).get_form_kwargs()
         grupos_ja_adicionados = self.document_object.grupos_assinates.all()
-        grupo_para_adicionar_queryset = get_grupo_assinante_backend().get_grupos(
+        grupo_para_adicionar_queryset = self.djdocuments_backend.get_grupo_assinante_backend().get_grupos(
             excludes=grupos_ja_adicionados)
         kwargs.update({'grupo_para_adicionar_queryset': grupo_para_adicionar_queryset})
         return kwargs
@@ -446,7 +472,9 @@ class AdicionarAssinantes(SingleDocumentObjectMixin, generic.FormView):
         return reverse('documentos:assinaturas', kwargs={'slug': self.document_object.pk_uuid})
 
 
-class AssinarDocumentoView(DocumentoAssinadoRedirectMixin, SingleDocumentObjectMixin,
+class AssinarDocumentoView(DocumentoAssinadoRedirectMixin,
+                           SingleDocumentObjectMixin,
+                           DjDocumentsBackendMixin,
                            generic.FormView):
     template_name = 'luzfcb_djdocuments/documento_assinar.html'
     # form_class = AssinarDocumentoForm
@@ -454,16 +482,14 @@ class AssinarDocumentoView(DocumentoAssinadoRedirectMixin, SingleDocumentObjectM
     slug_field = 'pk_uuid'
     group_pk_url_kwarg = 'group_id'
     group_object = None
-    grupo_assinante_backend = None
 
     def get(self, request, *args, **kwargs):
-        self.grupo_assinante_backend = get_grupo_assinante_backend()
         group_id = self.kwargs.get(self.group_pk_url_kwarg, None)
         if group_id:
-            self.group_object = self.grupo_assinante_backend.get_grupo_model().objects.get(pk=group_id)
+            self.group_object = self.djdocuments_backend.get_grupo_model().objects.get(pk=group_id)
         ret = super(AssinarDocumentoView, self).get(request, *args, **kwargs)
-        if self.group_object and self.grupo_assinante_backend.grupo_ja_assinou(self.document_object, self.request.user,
-                                                                               grupo_assinante=self.group_object):
+        if self.group_object and self.djdocuments_backend.grupo_ja_assinou(self.document_object, self.request.user,
+                                                                           grupo_assinante=self.group_object):
             logger.error(msg='Grupo ja assinou, redirecionando')
             return HttpResponseRedirect(
                 reverse('documentos:assinaturas', kwargs={'slug': self.document_object.pk_uuid}))

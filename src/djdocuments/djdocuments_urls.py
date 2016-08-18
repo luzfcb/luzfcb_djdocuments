@@ -62,6 +62,10 @@ urlpatterns = [
         login_required(documentos_views.AssinaturasPendentesGrupo.as_view()),
         name='pendentes'
         ),
+    url(r'^d/documentos-assinados/$',
+        login_required(documentos_views.DocumentosAssinadosGrupo.as_view()),
+        name='assinados'
+        ),
     url(r'^d/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/assinaturas/$',
         login_required(documentos_views.DocumentoAssinaturasListView.as_view()),
         name='assinaturas'
