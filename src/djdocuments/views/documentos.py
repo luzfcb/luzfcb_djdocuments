@@ -10,7 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ImproperlyConfigured, PermissionDenied
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Case, IntegerField, Q, Sum, Value, When
 from django.db.utils import IntegrityError
 from django.http import HttpResponseNotFound
 from django.http.response import HttpResponseForbidden, HttpResponseRedirect, JsonResponse
@@ -339,23 +339,79 @@ class AssinaturasPendentesGrupo(DjDocumentsBackendMixin, generic.ListView):
             pode_assinar = self.djdocuments_backend.pode_assinar(document=assinatura.documento,
                                                                  usuario=self.request.user,
                                                                  grupo_assinante=assinatura.grupo_assinante)
+
+            url_para_assinar = reverse_lazy('documentos:assinar_por_grupo',
+                                            kwargs={'slug': assinatura.documento.pk_uuid,
+                                                    'group_id': assinatura.grupo_assinante.pk})
+
             dados = {
                 'identificador_documento': assinatura.documento.identificador_documento,
                 'assunto': assinatura.documento.assunto,
                 'assinatura': assinatura,
                 'esta_assinado': assinatura.esta_assinado,
                 'pode_assinar': pode_assinar,
+                'pode_assinar_msg': 'Você não possui permissão para assinar este documento',
                 'grupo_assinante_nome': self.djdocuments_backend.get_grupo_name(assinatura.grupo_assinante),
-                'url_para_assinar': reverse_lazy('documentos:assinar_por_grupo',
-                                                 kwargs={'slug': assinatura.documento.pk_uuid,
-                                                         'group_id': assinatura.grupo_assinante.pk}),
-                'url_remover_assinatura': reverse_lazy('documentos:remover_assinatura',
-                                                       kwargs={'document_slug': assinatura.documento.pk_uuid,
-                                                               'pk': assinatura.pk}),
+                'url_para_assinar': url_para_assinar,
+                'url_lista_assinaturas': reverse_lazy('documentos:assinaturas',
+                                                      kwargs={'slug': assinatura.documento.pk_uuid,
+                                                              }),
                 'url_para_visualizar': reverse('documentos:validar-detail',
                                                kwargs={'slug': assinatura.documento.pk_uuid})
             }
             dados_processados.append(dados)
+        context['dados_processados'] = dados_processados
+        return context
+
+
+class DocumentosProntosParaFinalizarGrupo(DjDocumentsBackendMixin, generic.ListView):
+    model = Documento
+    template_name = 'luzfcb_djdocuments/assinaturas_pendentes_por_grupo.html'
+
+    @method_decorator(never_cache)
+    def dispatch(self, request, *args, **kwargs):
+        return super(DocumentosProntosParaFinalizarGrupo, self).dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        queryset = super(DocumentosProntosParaFinalizarGrupo, self).get_queryset()
+
+        grupos_id_list = tuple(
+            self.djdocuments_backend.get_grupos_usuario(self.request.user).values_list('pk', flat=True))
+
+        queryset = queryset.filter(grupo_dono__in=grupos_id_list, esta_ativo=True, esta_assinado=False).annotate(
+            assinaturas_pendentes=Sum(Case(When(assinaturas__esta_assinado=False, then=Value(1)), default=0,
+                                           output_field=IntegerField()))).filter(assinaturas_pendentes=0)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super(DocumentosProntosParaFinalizarGrupo, self).get_context_data(**kwargs)
+
+        dados_processados = []
+        # for documento in self.object_list:
+        #     pode_assinar = self.djdocuments_backend.pode_assinar(document=documento,
+        #                                                          usuario=self.request.user,
+        #                                                          grupo_assinante=documento.grupo_assinante)
+        #
+        #     url_para_assinar = reverse_lazy('documentos:assinar_por_grupo',
+        #                                     kwargs={'slug': documento.documento.pk_uuid,
+        #                                             'group_id': documento.grupo_assinante.pk})
+        #
+        #     dados = {
+        #         # 'identificador_documento': documento.documento.identificador_documento,
+        #         # 'assunto': documento.assunto,
+        #         # 'assinatura': documento,
+        #         # 'esta_assinado': documento.esta_assinado,
+        #         # 'pode_assinar': pode_assinar,
+        #         # 'pode_assinar_msg': 'Você não possui permissão para assinar este documento',
+        #         # 'grupo_assinante_nome': self.djdocuments_backend.get_grupo_name(documento.grupo_assinante),
+        #         # 'url_para_assinar': url_para_assinar,
+        #         # 'url_lista_assinaturas': reverse_lazy('documentos:assinaturas',
+        #         #                                       kwargs={'slug': documento.documento.pk_uuid,
+        #         #                                               }),
+        #         # 'url_para_visualizar': reverse('documentos:validar-detail',
+        #         #                                kwargs={'slug': documento.documento.pk_uuid})
+        #     }
+        #     dados_processados.append(dados)
         context['dados_processados'] = dados_processados
         return context
 
@@ -545,6 +601,9 @@ class AssinarDocumentoView(DocumentoAssinadoRedirectMixin,
         return ret
 
     def get_success_url(self):
+        next_url = self.request.GET.get('next')
+        if next_url:
+            return reverse('documentos:pendentes')
         return reverse('documentos:assinaturas', kwargs={'slug': self.document_object.pk_uuid})
 
 
@@ -586,7 +645,8 @@ class AssinaturaDeleteView(generic.DeleteView):
         response = super(AssinaturaDeleteView, self).get(request, *args, **kwargs)
         status, mensagem = self.object.pode_remover_assinatura(self.request.user)
         if not status:
-            raise PermissionDenied(mensagem)
+            return render(request=request, template_name='luzfcb_djdocuments/erros/erro_403.html',
+                          context={'mensagem': mensagem})
         return response
 
     def get_context_data(self, **kwargs):

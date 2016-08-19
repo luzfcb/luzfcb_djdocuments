@@ -1,34 +1,23 @@
 {% extends "luzfcb_djdocuments/bootstrap3/base.html" %}
-
 {% block title %}SOLAR - Defensoria Pública do Estado do Tocantins{% endblock title %}
 
 {% block project_name %}SOLAR{% endblock project_name %}
 
 {% block conteudo_app %}
-    <script>
-        function voltar() {
-            if (window.opener && window.opener !== window) {
-                console.log('faz');
-                console.log(window.opener);
-            }
-
-            {#        window.history.back();#}
-        }
-    </script>
 
     <div class="row">
         <div class="col-md-10 col-md-offset-1">
 
             <div class="centering text-center error-container">
                 <div class="text-center">
-                    <h2 class="without-margin">Não se preocupe. É apenas um erro <span class="text-warning">403</span>.
-                    </h2>
-                    <h4 class="text-warning">{{ mensagem }}</h4>
+{#                    <h3 class="without-margin">Não se preocupe. É apenas um erro <span class="text-warning">403</span>.#}
+{#                    </h3>#}
+                    <h2 class="text-warning">{{ mensagem }}</h2>
                     <p class="">Se o problema persistir entre em contato com o suporte técnico em:</p>
 
                     <h5><a href="http://helpdesk.defensoria.to.gov.br">http://helpdesk.defensoria.to.gov.br</a></h5>
                     <div class="btn-group-lg">
-                        <a href="#" onclick="javascript:voltar();" class="btn btn-small btn-primary"><i
+                        <a href="#" onclick="javascript:window.history.back();" class="btn btn-small btn-primary"><i
                                 class="icofont-arrow-left"></i> Voltar à página anterior</a>
                         <a href="{% url "index" %}" class="btn btn-small btn-success">Página Principal <i
                                 class="icofont-arrow-right"></i></a>

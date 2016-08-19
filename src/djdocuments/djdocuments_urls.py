@@ -62,6 +62,10 @@ urlpatterns = [
         login_required(documentos_views.AssinaturasPendentesGrupo.as_view()),
         name='pendentes'
         ),
+    url(r'^d/documentos-prontos-para-finalizar/$',
+        login_required(documentos_views.DocumentosProntosParaFinalizarGrupo.as_view()),
+        name='documentos_prontos_para_finalizar'
+        ),
     url(r'^d/documentos-assinados/$',
         login_required(documentos_views.DocumentosAssinadosGrupo.as_view()),
         name='assinados'

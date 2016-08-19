@@ -68,7 +68,7 @@ def add_querystrings_to_url(url, querystrings_dict):
     parsed_params = {
         key: (lambda x: x, urlunquote)[isinstance(value, six.string_types)](value)
         for key, value in six.iteritems(current_params)
-        }
+    }
 
     from pprint import pprint
     encoded_params = urlencode(parsed_params)
