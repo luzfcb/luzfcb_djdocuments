@@ -74,6 +74,10 @@ class DocumentoListView(generic.ListView):
     model = Documento
     paginate_by = 5
 
+    @method_decorator(never_cache)
+    def dispatch(self, request, *args, **kwargs):
+        return super(DocumentoListView, self).dispatch(request, *args, **kwargs)
+
     def render_to_response(self, context, **response_kwargs):
         rend = super(DocumentoListView, self).render_to_response(context, **response_kwargs)
         return rend
@@ -176,6 +180,10 @@ class DocumentoCriar(VinculateMixin, FormActionViewMixin, DjDocumentsBackendMixi
     document_slug_url_kwarg = 'document_pk'
     form_action = reverse_lazy('documentos:create')
 
+    @method_decorator(never_cache)
+    def dispatch(self, request, *args, **kwargs):
+        return super(DocumentoCriar, self).dispatch(request, *args, **kwargs)
+
     def get_form_kwargs(self):
         kwargs = super(DocumentoCriar, self).get_form_kwargs()
         kwargs.update({'user': self.request.user})
@@ -186,7 +194,7 @@ class DocumentoCriar(VinculateMixin, FormActionViewMixin, DjDocumentsBackendMixi
         modelo_documento = form.cleaned_data['modelo_documento']
         grupo = form.cleaned_data['grupo']
         assunto = form.cleaned_data['assunto']
-        print('{} - grupo: {}'.format(self.__class__.__name__, grupo))
+
         documento_novo = create_document_from_document_template(current_user=self.request.user,
                                                                 grupo=grupo,
                                                                 documento_template=modelo_documento,
@@ -294,6 +302,10 @@ class VincularDocumentoBaseView(SingleDocumentObjectMixin, SingleObjectMixin, ge
 class FinalizarDocumentoFormView(SingleDocumentObjectMixin, generic.FormView):
     form_class = FinalizarDocumentoForm
     http_method_names = ['post']
+
+    @method_decorator(never_cache)
+    def dispatch(self, request, *args, **kwargs):
+        return super(FinalizarDocumentoFormView, self).dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
         kwargs = super(FinalizarDocumentoFormView, self).get_form_kwargs()
@@ -467,6 +479,10 @@ class DocumentoAssinaturasListView(SingleDocumentObjectMixin, DjDocumentsBackend
     document_slug_field = 'pk_uuid'
     template_name = 'luzfcb_djdocuments/documento_assinaturas_pendentes.html'
 
+    @method_decorator(never_cache)
+    def dispatch(self, request, *args, **kwargs):
+        return super(DocumentoAssinaturasListView, self).dispatch(request, *args, **kwargs)
+
     def get_queryset(self):
         queryset = self.document_object.assinaturas.select_related('grupo_assinante').all()
         ordering = self.get_ordering()
@@ -505,6 +521,10 @@ class DocumentoAssinaturasListView(SingleDocumentObjectMixin, DjDocumentsBackend
 
 class AdicionarAssinantes(SingleDocumentObjectMixin, DjDocumentsBackendMixin, generic.FormView):
     template_name = 'luzfcb_djdocuments/assinar_adicionar_assinantes.html'
+
+    @method_decorator(never_cache)
+    def dispatch(self, request, *args, **kwargs):
+        return super(AdicionarAssinantes, self).dispatch(request, *args, **kwargs)
 
     def get_form_class(self):
         return create_form_class_adicionar_assinantes(self.document_object)
@@ -613,6 +633,10 @@ class DocumentoDetailView(NextURLMixin, PopupMixin, generic.DetailView):
     model = Documento
     slug_field = 'pk_uuid'
 
+    @method_decorator(never_cache)
+    def dispatch(self, request, *args, **kwargs):
+        return super(DocumentoDetailView, self).dispatch(request, *args, **kwargs)
+
     def get_queryset(self):
         qs = super(DocumentoDetailView, self).get_queryset()
 
@@ -640,6 +664,10 @@ class AssinaturaDeleteView(generic.DeleteView):
     template_name = 'luzfcb_djdocuments/assinatura_confirm_delete.html'
     model = Assinatura
     document_slug_url_kwarg = 'document_slug'
+
+    @method_decorator(never_cache)
+    def dispatch(self, request, *args, **kwargs):
+        return super(AssinaturaDeleteView, self).dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
         response = super(AssinaturaDeleteView, self).get(request, *args, **kwargs)
