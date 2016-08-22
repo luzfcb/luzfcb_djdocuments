@@ -144,7 +144,6 @@ class UserAutocomplete(DjDocumentsBackendMixin, autocomplete.Select2QuerySetView
         #     return USER_MODEL.objects.none()
         # assinado_por = self.forwarded.get('assinado_por', None)
         grupo = self.forwarded.get('grupo', 'teste')
-        print("grupo:", grupo)
         if grupo:
             if grupo == 'null':
                 qs = USER_MODEL.objects.none()

@@ -152,7 +152,6 @@ class Assinatura(models.Model):
         self.save()
 
     def gerar_hash(self, ):
-        print("Assinatura: {} - self.documento.versao_numero: {}".format(self.pk, self.documento.versao_numero))
 
         para_hash = '{username}-{conteudo}-{versao}-{assinado_em}'.format(  # username=self.assinado_por.username,
             username=self.assinado_por.username,

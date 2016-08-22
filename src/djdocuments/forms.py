@@ -79,7 +79,6 @@ class ModeloDocumentoTemplateModelChoiceField(forms.ModelChoiceField):
 
     def label_from_instance(self, obj):
         a = remover_tags_html(obj.titulo or 'Descricao modelo: {}'.format(obj.pk))
-        print('ModeloDocumentoTemplateModelChoiceField:', a)
         return a
 
 
@@ -343,7 +342,6 @@ def create_form_class_assinar(document_object):
 
         def clean_assinado_por(self):
             assinado_por = self.cleaned_data.get('assinado_por')
-            print('AssinarDocumentoForm: pk', assinado_por.pk, 'username', assinado_por.get_full_name())
             return assinado_por
 
         def clean_password(self):
