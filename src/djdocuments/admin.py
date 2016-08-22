@@ -71,7 +71,10 @@ class DocumentoAdmin(SimpleHistoryAdmin):
     visualizar_versao.short_description = "Visualizar Versões"
 
     def editar_documento(self, obj):
-        url_edicao = reverse('documentos:editar', kwargs={'slug': obj.pk_uuid})
+        if obj.eh_template:
+            url_edicao = reverse('documentos:editar-modelo', kwargs={'slug': obj.pk_uuid})
+        else:
+            url_edicao = reverse('documentos:editar', kwargs={'slug': obj.pk_uuid})
         return format_html('<a href="{}" target="_blank">{}</a>'.format(url_edicao, 'Editar'))
 
     editar_documento.short_description = 'Editar no Editor'

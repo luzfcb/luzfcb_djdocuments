@@ -151,6 +151,14 @@ class DocumentoEditor(AjaxFormPostMixin,
         return super(DocumentoEditor, self).post(request, *args, **kwargs)
 
 
+class DocumentoEditorModelo(DocumentoEditor):
+
+    def get_queryset(self):
+        if self.model:
+            return self.model.admin_objects.filter(eh_template=True)
+        return super(DocumentoEditorModelo, self).get_queryset()
+
+
 def create_document_from_document_template(current_user, grupo, documento_template, assunto):
     # template_documento = Documento.objects.get(pk=documento_template.pk)
 

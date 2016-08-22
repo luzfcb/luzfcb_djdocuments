@@ -42,6 +42,10 @@ urlpatterns = [
         login_required(documentos_views.DocumentoEditor.as_view()),
         name='editar'
         ),
+    url(r'^d/m/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/editar/$',
+        login_required(documentos_views.DocumentoEditorModelo.as_view()),
+        name='editar-modelo'
+        ),
     url(r'^d/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/assinaturas/assinar/$',
         login_required(documentos_views.AssinarDocumentoView.as_view()),
         name='assinar'
