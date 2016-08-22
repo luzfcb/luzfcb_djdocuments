@@ -378,7 +378,7 @@ class DocumentosProntosParaFinalizarGrupo(DjDocumentsBackendMixin, generic.ListV
         grupos_id_list = tuple(
             self.djdocuments_backend.get_grupos_usuario(self.request.user).values_list('pk', flat=True))
 
-        queryset = queryset.filter(grupo_dono__in=grupos_id_list, esta_ativo=True, esta_assinado=False).annotate(
+        queryset = queryset.filter(grupo_dono__in=grupos_id_list, esta_assinado=False).annotate(
             assinaturas_pendentes=Sum(Case(When(assinaturas__esta_assinado=False, then=Value(1)), default=0,
                                            output_field=IntegerField()))).filter(assinaturas_pendentes=0)
         return queryset
