@@ -31,7 +31,7 @@ class DocumentoAdmin(SimpleHistoryAdmin):
         # 'criado_em', 'criado_por', 'versao_numero', 'visualizar_versao'
 
         'identificador_documento', 'pk', 'pk_uuid', 'assunto', 'versao_numero', 'identificador_versao',
-        'visualizar_versao', 'eh_template', 'template_descricao',
+        'visualizar_versao', 'eh_template', 'template_descricao', 'editar_documento',
         # 'esta_assinado', 'assinatura_hash', 'criado_por', 'criado_em', 'visualizar_titulo',
         # 'modificado_em',
         # 'tipo_documento',
@@ -69,6 +69,12 @@ class DocumentoAdmin(SimpleHistoryAdmin):
 
     visualizar_versao.allow_tags = True
     visualizar_versao.short_description = "Visualizar Versões"
+
+    def editar_documento(self, obj):
+        url_edicao = reverse('documentos:editar', kwargs={'slug': obj.pk_uuid})
+        return format_html('<a href="{}" target="_blank">{}</a>'.format(url_edicao, 'Editar'))
+
+    editar_documento.short_description = 'Editar no Editor'
 
     def visualizar_titulo(self, obj):
         return remover_tags_html(obj.titulo)
