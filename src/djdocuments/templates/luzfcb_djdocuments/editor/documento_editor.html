@@ -88,7 +88,7 @@
                                 <a href="{{ documento_assinar_url_com_parametros }}"
                                    class="btn btn-default" {% if object.esta_assinado %}disabled="disabled" {% endif %}><em
                                         class="glyphicon glyphicon-pencil"></em>Assinar</a>
-                               <a href="{{ documento_assinaturas }}"
+                                <a href="{{ documento_assinaturas }}"
                                    class="btn btn-default" {% if object.esta_assinado %}disabled="disabled" {% endif %}><em
                                         class="glyphicon glyphicon-pencil"></em>Assinantes</a>
 
@@ -104,8 +104,7 @@
                     <div class="center-block a4-pagina">
                         <table>
                             <div class="col-md-12">
-                                {% url 'documentos:editar' slug=object.pk_uuid as base_documento_update_url %}
-                                {% spurl base=base_documento_update_url add_query="{{ next_page_paran }}" add_query="{{ popup_paran }}" as documento_update_url %}
+                                {% spurl base=form_action add_query="{{ next_page_paran }}" add_query="{{ popup_paran }}" as documento_update_url %}
                                 <form role="form" method="post" id="formulario"
                                       action="{{ documento_update_url }}">
                                     <div class="form-group ">

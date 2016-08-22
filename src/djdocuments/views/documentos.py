@@ -101,6 +101,7 @@ class DocumentoEditor(AjaxFormPostMixin,
                       NextURLMixin,
                       PopupMixin,
                       LuzfcbLockMixin,
+                      FormActionViewMixin,
                       generic.UpdateView):
     detail_view_named_url = 'documentos:detail'
     document_json_fields = ('titulo', 'document_number', 'document_version_number', 'identificador_versao')
@@ -113,6 +114,9 @@ class DocumentoEditor(AjaxFormPostMixin,
     # form_class = DocumentoFormCreate
     form_class = DocumentoEditarForm
     success_url = reverse_lazy('documentos:list')
+
+    def get_form_action(self):
+        return reverse('documentos:editar', kwargs={'slug': self.object.pk_uuid})
 
     def get_context_data(self, **kwargs):
         context = super(DocumentoEditor, self).get_context_data(**kwargs)
@@ -152,11 +156,11 @@ class DocumentoEditor(AjaxFormPostMixin,
 
 
 class DocumentoEditorModelo(DocumentoEditor):
-
     def get_queryset(self):
-        if self.model:
-            return self.model.admin_objects.filter(eh_template=True)
-        return super(DocumentoEditorModelo, self).get_queryset()
+        return self.model.admin_objects.filter(eh_template=True)
+
+    def get_form_action(self):
+        return reverse('documentos:editar-modelo', kwargs={'slug': self.object.pk_uuid})
 
 
 def create_document_from_document_template(current_user, grupo, documento_template, assunto):
