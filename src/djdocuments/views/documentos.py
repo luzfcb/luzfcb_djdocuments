@@ -134,8 +134,8 @@ class DocumentoEditor(AjaxFormPostMixin,
 
     def form_valid(self, form):
         status, mensagem = self.object.pode_editar(usuario_atual=self.request.user)
+        logger.info('{klass}:{mensagem}'.format(klass=self.__class__.__name__, mensagem=mensagem))
         if not status:
-            logger.info('{klass}:{mensagem}'.format(klass=self.__class__.__name__, mensagem=mensagem))
             return render(request=self.request, template_name='luzfcb_djdocuments/erros/erro_403.html',
                           context={'mensagem': mensagem})
         response = super(DocumentoEditor, self).form_valid(form)
@@ -148,8 +148,8 @@ class DocumentoEditor(AjaxFormPostMixin,
         response = super(DocumentoEditor, self).get(request, *args, **kwargs)
 
         status, mensagem = self.object.pode_editar(usuario_atual=self.request.user)
+        logger.info('{klass}:{mensagem}'.format(klass=self.__class__.__name__, mensagem=mensagem))
         if not status:
-            logger.info('{klass}:{mensagem}'.format(klass=self.__class__.__name__, mensagem=mensagem))
             return render(request=request, template_name='luzfcb_djdocuments/erros/erro_403.html',
                           context={'mensagem': mensagem})
         return response
@@ -159,7 +159,6 @@ class DocumentoEditor(AjaxFormPostMixin,
 
 
 class DocumentoEditorModelo(DocumentoEditor):
-
     def get_queryset(self):
         return self.model.admin_objects.filter(eh_template=True)
 
@@ -234,9 +233,8 @@ class DocumentoCriarParaGrupo(SingleGroupObjectMixin, DocumentoCriar):
         response = super(DocumentoCriarParaGrupo, self).get(request, *args, **kwargs)
         status, mensagem = self.djdocuments_backend.pode_criar_documento_para_grupo(usuario=self.request.user,
                                                                                     grupo=self.group_object)
-
+        logger.info('{klass}:{mensagem}'.format(klass=self.__class__.__name__, mensagem=mensagem))
         if not status:
-            logger.info('{klass}:{mensagem}'.format(klass=self.__class__.__name__, mensagem=mensagem))
             return render(request=request, template_name='luzfcb_djdocuments/erros/erro_403.html',
                           context={'mensagem': mensagem})
             # raise PermissionDenied(mensagem)
@@ -689,8 +687,8 @@ class AssinaturaDeleteView(generic.DeleteView):
     def get(self, request, *args, **kwargs):
         response = super(AssinaturaDeleteView, self).get(request, *args, **kwargs)
         status, mensagem = self.object.pode_remover_assinatura(self.request.user)
+        logger.info('{klass}:{mensagem}'.format(klass=self.__class__.__name__, mensagem=mensagem))
         if not status:
-            logger.info('{klass}:{mensagem}'.format(klass=self.__class__.__name__, mensagem=mensagem))
             return render(request=request, template_name='luzfcb_djdocuments/erros/erro_403.html',
                           context={'mensagem': mensagem})
         return response
@@ -704,8 +702,8 @@ class AssinaturaDeleteView(generic.DeleteView):
 
     def get_success_url(self):
         status, mensagem = self.object.pode_remover_assinatura(self.request.user)
+        logger.info('{klass}:{mensagem}'.format(klass=self.__class__.__name__, mensagem=mensagem))
         if not status:
-            logger.info('{klass}:{mensagem}'.format(klass=self.__class__.__name__, mensagem=mensagem))
             return render(request=self.request, template_name='luzfcb_djdocuments/erros/erro_403.html',
                           context={'mensagem': mensagem})
         return reverse('documentos:assinaturas', kwargs={'slug': self.object.documento.pk_uuid})
