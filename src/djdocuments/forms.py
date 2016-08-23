@@ -10,6 +10,7 @@ from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 
 from .backends import DjDocumentsBackendMixin
+from .form_mixins import BootstrapFormInputMixin, ReadOnlyFieldsMixin
 from .models import Documento, TipoDocumento
 from .templatetags.luzfcb_djdocuments_tags import remover_tags_html
 from .utils import get_djdocuments_backend, get_grupo_assinante_model_class
@@ -22,24 +23,6 @@ except ImportError:
     BIG_SAMPLE_HTML = CABECALHO = RODAPE = TITULO = ' '
 
 USER_MODEL = get_user_model()
-
-
-class BootstrapFormInputMixin(object):
-
-    def __init__(self, *args, **kwargs):
-        super(BootstrapFormInputMixin, self).__init__(*args, **kwargs)
-        for field_name in self.fields:
-            field = self.fields.get(field_name)
-            current_class_attr = field.widget.attrs.get('class', None)
-            new_class_to_append = 'form-control'
-            if current_class_attr:
-                field.widget.attrs.update({
-                    'class': '{} {}'.format(current_class_attr, new_class_to_append)
-                })
-            else:
-                field.widget.attrs.update({
-                    'class': '{}'.format(new_class_to_append)
-                })
 
 
 class DocumentoEditarForm(forms.ModelForm):
@@ -67,6 +50,10 @@ class DocumentoEditarForm(forms.ModelForm):
     class Meta:
         model = Documento
         fields = ('cabecalho', 'titulo', 'conteudo', 'rodape')
+
+
+class DocumentoEditarWithReadOnlyFieldsForm(ReadOnlyFieldsMixin, DocumentoEditarForm):
+    readonly_fields = ('cabecalho', 'rodape')
 
 
 class TipoDocumentoTemplateModelChoiceField(forms.ModelChoiceField):

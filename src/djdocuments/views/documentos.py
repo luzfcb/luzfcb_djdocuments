@@ -7,7 +7,7 @@ from captcha.helpers import captcha_image_url
 from captcha.models import CaptchaStore
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import ImproperlyConfigured, PermissionDenied
+from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.db import transaction
 from django.db.models import Case, IntegerField, Q, Sum, Value, When
@@ -29,6 +29,7 @@ from ..forms import (
     CriarDocumentoParaGrupoForm,
     CriarModeloDocumentoForm,
     DocumentoEditarForm,
+    DocumentoEditarWithReadOnlyFieldsForm,
     DocumetoValidarForm,
     FinalizarDocumentoForm,
     create_form_class_adicionar_assinantes,
@@ -111,7 +112,7 @@ class DocumentoEditor(AjaxFormPostMixin,
     slug_field = 'pk_uuid'
     prefix = 'document'
     # form_class = DocumentoFormCreate
-    form_class = DocumentoEditarForm
+    form_class = DocumentoEditarWithReadOnlyFieldsForm
     success_url = reverse_lazy('documentos:list')
 
     def get_form_action(self):
@@ -159,6 +160,8 @@ class DocumentoEditor(AjaxFormPostMixin,
 
 
 class DocumentoEditorModelo(DocumentoEditor):
+    form_class = DocumentoEditarForm
+
     def get_queryset(self):
         return self.model.admin_objects.filter(eh_template=True)
 
@@ -167,8 +170,6 @@ class DocumentoEditorModelo(DocumentoEditor):
 
 
 def create_document_from_document_template(current_user, grupo, documento_template, assunto):
-    # template_documento = Documento.objects.get(pk=documento_template.pk)
-
     document_kwargs = {
         'cabecalho': documento_template.cabecalho,
         'titulo': documento_template.titulo,
@@ -237,7 +238,6 @@ class DocumentoCriarParaGrupo(SingleGroupObjectMixin, DocumentoCriar):
         if not status:
             return render(request=request, template_name='luzfcb_djdocuments/erros/erro_403.html',
                           context={'mensagem': mensagem})
-            # raise PermissionDenied(mensagem)
         return response
 
     def get_form_action(self):
