@@ -30,7 +30,8 @@
             {% for dados in dados_processados %}
                 <tr>
                     <td>
-                        <a href="{{ dados.url_para_visualizar }}" class="btn-link" >{{ dados.assinatura.documento.identificador_versao }}</a>
+                        <a href="{{ dados.url_para_visualizar }}"
+                           class="btn-link">{{ dados.assinatura.documento.identificador_versao }}</a>
                     </td>
                     <td><a href="{{ dados.url_para_visualizar }}" class="btn-link">{{ dados.assunto }}</a></td>
                     <td>{{ dados.grupo_assinante_nome }}</td>
@@ -64,70 +65,6 @@
         </tr>
         </tfoot>
     </table>
-    {% if document_object.pronto_para_finalizar and form %}
-        <div class="panel panel-info">
-            <div class="panel-heading">Finalizar Documento</div>
-            <div class="panel-body">
-                <form class="form-horizontal" method="post"
-                      action="{% url 'documentos:finalizar_assinatura' slug=document_object.pk_uuid %}">
-                    <fieldset>
-                        <legend>Tem certeza que deseja finalizar o documento
-                            "{{ document_object.titulo|remover_tags_html }}"
-                            número: {{ document_object.identificador_versao }}?
-                        </legend>
-                        {% csrf_token %}
-                        {% if form.non_field_errors %}
-                            <div class="form-group">
-                                <div class="col-sm-12">
-                                    <div class="alert alert-danger alert-dismissible" role="alert">
-                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                            <span aria-hidden="true">&times;</span>
-                                        </button>
-                                        {% for error in form.non_field_errors %}
-                                            {{ error }}{% if not forloop.last %}<br>{% endif %}
-                                        {% endfor %}
-                                    </div>
-                                </div>
-                            </div>
-                        {% endif %}
-                        {% for form_field in form %}
-                            <div class="form-group {% if form_field.errors %}has-error{% endif %}">
-                                <label for="{{ form_field.id_for_label }}"
-                                       class="col-sm-2 control-label">{{ form_field.label }}:</label>
-                                <div class="col-sm-10">
-                                    {{ form_field }}
-
-                                    <span id="helpBlock2">
-
-
-                                    {% if form_field.errors %}
-                                        {% for error in form_field.errors %}
-                                            <p id="error_{{ forloop.counter }}_{{ form_field.auto_id }}"
-                                               class="help-block">
-                                                <strong>{{ error }}</strong></p>
-                                        {% endfor %}
-                                    {% endif %}
-                                        {% if form_field.help_text %}
-                                            <p id="hint_{{ form_field.auto_id }}"
-                                               class="help-block">{{ form_field.help_text|safe }}</p>
-                                        {% endif %}
-                                </span>
-                                </div>
-                            </div>
-                        {% endfor %}
-                        <div class="form-group">
-                            <div class="col-sm-offset-2 col-sm-10">
-                                <button type="submit" class="btn btn-success">Finalizar Documento</button>
-                            </div>
-                        </div>
-                    </fieldset>
-                </form>
-
-            </div>
-        </div>
-
-    {% endif %}
-
 
 {% endblock conteudo_app %}
 

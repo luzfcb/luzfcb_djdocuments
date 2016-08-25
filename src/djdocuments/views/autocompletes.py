@@ -198,12 +198,12 @@ class DocumentoCriarAutocomplete(autocomplete.Select2QuerySetView):
 
         tipo_documento = self.forwarded.get('tipo_documento', None)
 
-        qs = models.Documento.admin_objects.filter(eh_template=True)
+        qs = models.Documento.admin_objects.filter(eh_modelo=True)
 
         if tipo_documento:
             qs = qs.filter(tipo_documento_id=tipo_documento)
             if self.q:
-                qs = qs.filter(template_descricao__icontains=self.q)
+                qs = qs.filter(modelo_descricao__icontains=self.q)
 
         else:
             qs = models.Documento.admin_objects.none()
@@ -216,5 +216,5 @@ class DocumentoCriarAutocomplete(autocomplete.Select2QuerySetView):
         return qs
 
     def get_result_label(self, result):
-        a = remover_tags_html(result.template_descricao)
+        a = remover_tags_html(result.modelo_descricao)
         return a

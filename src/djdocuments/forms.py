@@ -162,7 +162,7 @@ class CriarModeloDocumentoForm(BootstrapFormInputMixin, forms.Form):
 
     )
 
-    template_descricao = forms.CharField(
+    modelo_descricao = forms.CharField(
         label='Descrição do Modelo',
         widget=forms.Textarea
     )

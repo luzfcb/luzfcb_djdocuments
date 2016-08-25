@@ -11,8 +11,12 @@ from .views import autocompletes
 
 urlpatterns = [
     url(r'^$',
-        login_required(documentos_views.DocumentoDashboardView.as_view()),
+        login_required(documentos_views.DocumentoPainelGeralView.as_view()),
         name='dashboard'
+        ),
+    url(r'^g/$',
+        login_required(documentos_views.DocumentoPainelGeralPorGrupoView.as_view()),
+        name='dashboard-por-grupo'
         ),
     url(r'^list/$',
         login_required(documentos_views.DocumentoListView.as_view()),

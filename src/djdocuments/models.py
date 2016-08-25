@@ -201,8 +201,8 @@ class Documento(models.Model):
     rodape = models.TextField(blank=True)
 
     # template
-    eh_template = models.BooleanField(default=False, editable=True)
-    template_descricao = models.TextField(blank=True)
+    eh_modelo = models.BooleanField(default=False, editable=True)
+    modelo_descricao = models.TextField(blank=True)
     # end template
 
     assinatura_hash = models.TextField(blank=True, editable=False, unique=True, null=True)

@@ -10,13 +10,13 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.db import transaction
-from django.db.models import Case, IntegerField, Q, Sum, Value, When
 from django.db.utils import IntegrityError
 from django.http import HttpResponseNotFound
 from django.http.response import HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import six
 from django.utils.decorators import method_decorator
+from django.utils.functional import cached_property
 from django.views import generic
 from django.views.decorators.cache import never_cache
 from django.views.generic.detail import SingleObjectMixin
@@ -54,19 +54,104 @@ logger = logging.getLogger('djdocuments')
 USER_MODEL = get_user_model()
 
 
-class DocumentoDashboardView(generic.TemplateView):
-    template_name = 'luzfcb_djdocuments/dashboard.html'
+class DocumentoPainelGeralView(DjDocumentsBackendMixin, generic.TemplateView):
+    template_name = 'luzfcb_djdocuments/painel_geral.html'
+
+    @method_decorator(never_cache)
+    def dispatch(self, request, *args, **kwargs):
+        return super(DocumentoPainelGeralView, self).dispatch(request, *args, **kwargs)
+
+    def get_ultimas_assinaturas_pendentes_queryset(self):
+        return Assinatura.objects.ultimas_assinaturas_pendentes()[:10]
+
+    def get_ultimas_assinaturas_realizadas_queryset(self):
+        return Assinatura.objects.ultimas_assinaturas_realizadas()[:10]
+
+    def get_ultimos_documentos_nao_finalizados_queryset(self):
+        return Documento.objects.prontos_para_finalizar()[:10]
+
+    def get_ultimas_assinaturas_pendentes_dados(self):
+        object_list = self.get_ultimas_assinaturas_pendentes_queryset()
+
+        dados_processados = []
+        for assinatura in object_list:
+            pode_assinar = self.djdocuments_backend.pode_assinar(document=assinatura.documento,
+                                                                 usuario=self.request.user,
+                                                                 grupo_assinante=assinatura.grupo_assinante)
+
+            url_para_assinar = reverse_lazy('documentos:assinar_por_grupo',
+                                            kwargs={'slug': assinatura.documento.pk_uuid,
+                                                    'group_id': assinatura.grupo_assinante.pk})
+
+            dados = {
+                'identificador_documento': assinatura.documento.identificador_documento,
+                'assunto': assinatura.documento.assunto,
+                'assinatura': assinatura,
+                'esta_assinado': assinatura.esta_assinado,
+                'pode_assinar': pode_assinar,
+                'pode_assinar_msg': 'Você não possui permissão para assinar este documento',
+                'grupo_assinante_nome': self.djdocuments_backend.get_grupo_name(assinatura.grupo_assinante),
+                'url_para_assinar': url_para_assinar,
+                'url_lista_assinaturas': reverse_lazy('documentos:assinaturas',
+                                                      kwargs={'slug': assinatura.documento.pk_uuid,
+                                                              }),
+                'url_para_visualizar': reverse('documentos:validar-detail',
+                                               kwargs={'slug': assinatura.documento.pk_uuid})
+            }
+            dados_processados.append(dados)
+        return dados_processados
+
+    def get_ultimas_assinaturas_realizadas_dados(self):
+        object_list = self.get_ultimas_assinaturas_realizadas_queryset()
+
+        dados_processados = []
+        for assinatura in object_list:
+            pode_assinar = self.djdocuments_backend.pode_assinar(document=assinatura.documento,
+                                                                 usuario=self.request.user,
+                                                                 grupo_assinante=assinatura.grupo_assinante)
+            dados = {
+                'identificador_documento': assinatura.documento.identificador_documento,
+                'assunto': assinatura.documento.assunto,
+                'assinatura': assinatura,
+                'esta_assinado': assinatura.esta_assinado,
+                'pode_assinar': pode_assinar,
+                'grupo_assinante_nome': self.djdocuments_backend.get_grupo_name(assinatura.grupo_assinante),
+                'url_para_assinar': reverse_lazy('documentos:assinar_por_grupo',
+                                                 kwargs={'slug': assinatura.documento.pk_uuid,
+                                                         'group_id': assinatura.grupo_assinante.pk}),
+                'url_remover_assinatura': reverse_lazy('documentos:remover_assinatura',
+                                                       kwargs={'document_slug': assinatura.documento.pk_uuid,
+                                                               'pk': assinatura.pk}),
+                'url_para_visualizar': reverse('documentos:validar-detail',
+                                               kwargs={'slug': assinatura.documento.pk_uuid})
+            }
+            dados_processados.append(dados)
+        return dados_processados
 
     def get_context_data(self, **kwargs):
-        context = super(DocumentoDashboardView, self).get_context_data(**kwargs)
-        quantidade_documentos_cadastrados = None
-        quantidade_meus_documentos = None
-        if self.request.user.is_authenticated():
-            quantidade_meus_documentos = Documento.objects.all().filter(criado_por=self.request.user).count()
-            quantidade_documentos_cadastrados = Documento.objects.all().count()
-        context['quantidade_documentos_cadastrados'] = quantidade_documentos_cadastrados
-        context['quantidade_meus_documentos'] = quantidade_meus_documentos
+        context = super(DocumentoPainelGeralView, self).get_context_data(**kwargs)
+
+        context['ultimas_assinaturas_pendentes'] = self.get_ultimas_assinaturas_pendentes_dados()
+
+        context['ultimas_assinaturas_realizadas'] = self.get_ultimas_assinaturas_realizadas_dados()
+        context['ultimos_documentos_nao_finalizados'] = self.get_ultimos_documentos_nao_finalizados_queryset()
         return context
+
+
+class DocumentoPainelGeralPorGrupoView(DocumentoPainelGeralView):
+
+    @cached_property
+    def get_ids_grupos_do_usuario(self):
+        return tuple(self.djdocuments_backend.get_grupos_usuario(self.request.user).values_list('id', flat=True))
+
+    def get_ultimos_documentos_nao_finalizados_queryset(self):
+        return Documento.objects.prontos_para_finalizar(grupos_ids=self.get_ids_grupos_do_usuario)[:10]
+
+    def get_ultimas_assinaturas_pendentes_queryset(self):
+        return Assinatura.objects.ultimas_assinaturas_pendentes(grupos_ids=self.get_ids_grupos_do_usuario)[:10]
+
+    def get_ultimas_assinaturas_realizadas_queryset(self):
+        return Assinatura.objects.ultimas_assinaturas_realizadas(grupos_ids=self.get_ids_grupos_do_usuario)[:10]
 
 
 class DocumentoListView(generic.ListView):
@@ -84,14 +169,6 @@ class DocumentoListView(generic.ListView):
 
     def get_queryset(self):
         qs = super(DocumentoListView, self).get_queryset()
-        # if self.request.user.is_authenticated():
-
-        # qs = qs.filter(
-        #     (
-        #         Q(criado_por_id=self.request.user.pk) | Q(assinado_por_id=self.request.user.pk)
-        #     )
-        # ).order_by('assinado_por')
-
         return qs
 
 
@@ -163,19 +240,19 @@ class DocumentoEditorModelo(DocumentoEditor):
     form_class = DocumentoEditarForm
 
     def get_queryset(self):
-        return self.model.admin_objects.filter(eh_template=True)
+        return self.model.admin_objects.filter(eh_modelo=True)
 
     def get_form_action(self):
         return reverse('documentos:editar-modelo', kwargs={'slug': self.object.pk_uuid})
 
 
-def create_document_from_document_template(current_user, grupo, documento_template, assunto):
+def create_document_from_document_template(current_user, grupo, documento_modelo, assunto):
     document_kwargs = {
-        'cabecalho': documento_template.cabecalho,
-        'titulo': documento_template.titulo,
-        'conteudo': documento_template.conteudo,
-        'rodape': documento_template.rodape,
-        'tipo_documento': documento_template.tipo_documento,
+        'cabecalho': documento_modelo.cabecalho,
+        'titulo': documento_modelo.titulo,
+        'conteudo': documento_modelo.conteudo,
+        'rodape': documento_modelo.rodape,
+        'tipo_documento': documento_modelo.tipo_documento,
         'criado_por': current_user,
         'modificado_por': current_user,
         'grupo_dono': grupo,
@@ -213,7 +290,7 @@ class DocumentoCriar(VinculateMixin, FormActionViewMixin, DjDocumentsBackendMixi
 
         documento_novo = create_document_from_document_template(current_user=self.request.user,
                                                                 grupo=grupo,
-                                                                documento_template=modelo_documento,
+                                                                documento_modelo=modelo_documento,
                                                                 assunto=assunto)
         # vinculate_view_name = self.request.GET.get(self.vinculate_view_field, None)
         # vinculate_value = self.request.GET.get(self.vinculate_value_field, None)
@@ -405,9 +482,10 @@ class DocumentosProntosParaFinalizarGrupo(DjDocumentsBackendMixin, generic.ListV
         grupos_id_list = tuple(
             self.djdocuments_backend.get_grupos_usuario(self.request.user).values_list('pk', flat=True))
 
-        queryset = queryset.filter(grupo_dono__in=grupos_id_list, esta_assinado=False).annotate(
-            assinaturas_pendentes=Sum(Case(When(assinaturas__esta_assinado=False, then=Value(1)), default=0,
-                                           output_field=IntegerField()))).filter(assinaturas_pendentes=0)
+        queryset = queryset.prontos_para_finalizar(grupos_ids=grupos_id_list)
+        # queryset = queryset.filter(grupo_dono__in=grupos_id_list, esta_assinado=False).annotate(
+        #     assinaturas_pendentes=Sum(Case(When(assinaturas__esta_assinado=False, then=Value(1)), default=0,
+        #                                    output_field=IntegerField()))).filter(assinaturas_pendentes=0)
         return queryset
 
     def get_context_data(self, **kwargs):

@@ -25,13 +25,13 @@ class DocumentoAdmin(SimpleHistoryAdmin):
             qs = qs.order_by(*ordering)
         return qs
 
-    list_filter = ['eh_template', 'esta_assinado']
+    list_filter = ['eh_modelo', 'esta_assinado']
     # form = DocumentoEditarForm
     list_display = (
         # 'criado_em', 'criado_por', 'versao_numero', 'visualizar_versao'
 
         'identificador_documento', 'pk', 'pk_uuid', 'assunto', 'versao_numero', 'identificador_versao',
-        'visualizar_versao', 'eh_template', 'template_descricao', 'editar_documento',
+        'visualizar_versao', 'eh_modelo', 'modelo_descricao', 'editar_documento',
         # 'esta_assinado', 'assinatura_hash', 'criado_por', 'criado_em', 'visualizar_titulo',
         # 'modificado_em',
         # 'tipo_documento',
@@ -39,7 +39,7 @@ class DocumentoAdmin(SimpleHistoryAdmin):
         # 'tipo_documento__titulo',
         # 'tipo_documento__descricao',
 
-        # 'template_descricao',
+        # 'modelo_descricao',
         # 'modificado_por', 'revertido_em', 'revertido_por',
         # 'revertido_da_versao', 'esta_ativo',
         # 'assinado_em', 'assinado_por', 'assinatura_removida_em', 'assinatura_removida_por',
@@ -71,7 +71,7 @@ class DocumentoAdmin(SimpleHistoryAdmin):
     visualizar_versao.short_description = "Visualizar Versões"
 
     def editar_documento(self, obj):
-        if obj.eh_template:
+        if obj.eh_modelo:
             url_edicao = reverse('documentos:editar-modelo', kwargs={'slug': obj.pk_uuid})
         else:
             url_edicao = reverse('documentos:editar', kwargs={'slug': obj.pk_uuid})
@@ -100,19 +100,19 @@ class DocumentoAdmin(SimpleHistoryAdmin):
 
 # @admin.register(models.DocumentoTemplate)
 # class DocumentoTemplateAdmin(DocumentoAdmin):
-#     readonly_fields = DocumentoAdmin.readonly_fields + ('eh_template',)
+#     readonly_fields = DocumentoAdmin.readonly_fields + ('eh_modelo',)
 #
 #     # def get_form(self, request, obj=None, *args, **kwargs):
 #     #     form = super(DocumentoTemplateAdmin, self).get_form(request, *args, **kwargs)
 #     #     # Initial values
-#     #     form.base_fields['eh_template'].initial = True
-#     #     if obj and obj.eh_template:
-#     #         form.base_fields['eh_template'].initial = obj.eh_template
+#     #     form.base_fields['eh_modelo'].initial = True
+#     #     if obj and obj.eh_modelo:
+#     #         form.base_fields['eh_modelo'].initial = obj.eh_modelo
 #     #     return form
 #
 #     def save_model(self, request, obj, form, change):
-#         if not obj.eh_template:
-#             obj.eh_template = True
+#         if not obj.eh_modelo:
+#             obj.eh_modelo = True
 #         super(DocumentoTemplateAdmin, self).save_model(request, obj, form, change)
 
 
