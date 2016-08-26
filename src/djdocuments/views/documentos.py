@@ -10,6 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.db import transaction
+from django.db.models import Q
 from django.db.utils import IntegrityError
 from django.http import HttpResponseNotFound
 from django.http.response import HttpResponseForbidden, HttpResponseRedirect, JsonResponse
@@ -128,13 +129,27 @@ class DocumentoPainelGeralView(DjDocumentsBackendMixin, generic.TemplateView):
             dados_processados.append(dados)
         return dados_processados
 
+    def get_ultimos_documentos_nao_finalizados_dados(self):
+        object_list = self.get_ultimos_documentos_nao_finalizados_queryset()
+
+        dados_processados = []
+        for docu in object_list:
+            # pode_assinar = self.djdocuments_backend.pode_assinar(document=docu,
+            #                                                      usuario=self.request.user,
+            #                                                      grupo_assinante=docu.grupo_assinante)
+            dados = {
+                'documento': docu
+            }
+            dados_processados.append(dados)
+        return dados_processados
+
     def get_context_data(self, **kwargs):
         context = super(DocumentoPainelGeralView, self).get_context_data(**kwargs)
 
         context['ultimas_assinaturas_pendentes'] = self.get_ultimas_assinaturas_pendentes_dados()
 
         context['ultimas_assinaturas_realizadas'] = self.get_ultimas_assinaturas_realizadas_dados()
-        context['ultimos_documentos_nao_finalizados'] = self.get_ultimos_documentos_nao_finalizados_queryset()
+        context['ultimos_documentos_nao_finalizados'] = self.get_ultimos_documentos_nao_finalizados_dados()
         return context
 
 
@@ -391,9 +406,15 @@ class VincularDocumentoBaseView(SingleDocumentObjectMixin, SingleObjectMixin, ge
         return False
 
 
-class FinalizarDocumentoFormView(SingleDocumentObjectMixin, generic.FormView):
+class FinalizarDocumentoFormView(FormActionViewMixin, SingleDocumentObjectMixin, generic.FormView):
     form_class = FinalizarDocumentoForm
-    http_method_names = ['post']
+    template_name = 'luzfcb_djdocuments/documento_finalizar.html'
+
+    def get_form_action(self):
+        return reverse('documentos:finalizar_assinatura', kwargs={'slug': self.document_object.pk_uuid,
+                                                                  })
+
+    # http_method_names = ['post']
 
     @method_decorator(never_cache)
     def dispatch(self, request, *args, **kwargs):
@@ -405,6 +426,7 @@ class FinalizarDocumentoFormView(SingleDocumentObjectMixin, generic.FormView):
         return kwargs
 
     def form_valid(self, form):
+
         # form.cleaned_data[]
         if self.document_object.pronto_para_finalizar:
             self.document_object.finalizar_documento(self.request.user)
@@ -415,6 +437,9 @@ class FinalizarDocumentoFormView(SingleDocumentObjectMixin, generic.FormView):
         return super(FinalizarDocumentoFormView, self).form_valid(form)
 
     def get_success_url(self):
+        next_url = self.request.GET.get('next')
+        if next_url:
+            return reverse('documentos:pendentes')
         return reverse('documentos:assinaturas', kwargs={'slug': self.document_object.pk_uuid})
 
 
@@ -470,7 +495,7 @@ class AssinaturasPendentesGrupo(DjDocumentsBackendMixin, generic.ListView):
 
 class DocumentosProntosParaFinalizarGrupo(DjDocumentsBackendMixin, generic.ListView):
     model = Documento
-    template_name = 'luzfcb_djdocuments/assinaturas_pendentes_por_grupo.html'
+    template_name = 'luzfcb_djdocuments/documentos_prontos_para_finalizar.html'
 
     @method_decorator(never_cache)
     def dispatch(self, request, *args, **kwargs):
@@ -492,31 +517,19 @@ class DocumentosProntosParaFinalizarGrupo(DjDocumentsBackendMixin, generic.ListV
         context = super(DocumentosProntosParaFinalizarGrupo, self).get_context_data(**kwargs)
 
         dados_processados = []
-        # for documento in self.object_list:
-        #     pode_assinar = self.djdocuments_backend.pode_assinar(document=documento,
-        #                                                          usuario=self.request.user,
-        #                                                          grupo_assinante=documento.grupo_assinante)
-        #
-        #     url_para_assinar = reverse_lazy('documentos:assinar_por_grupo',
-        #                                     kwargs={'slug': documento.documento.pk_uuid,
-        #                                             'group_id': documento.grupo_assinante.pk})
-        #
-        #     dados = {
-        #         # 'identificador_documento': documento.documento.identificador_documento,
-        #         # 'assunto': documento.assunto,
-        #         # 'assinatura': documento,
-        #         # 'esta_assinado': documento.esta_assinado,
-        #         # 'pode_assinar': pode_assinar,
-        #         # 'pode_assinar_msg': 'Você não possui permissão para assinar este documento',
-        #         # 'grupo_assinante_nome': self.djdocuments_backend.get_grupo_name(documento.grupo_assinante),
-        #         # 'url_para_assinar': url_para_assinar,
-        #         # 'url_lista_assinaturas': reverse_lazy('documentos:assinaturas',
-        #         #                                       kwargs={'slug': documento.documento.pk_uuid,
-        #         #                                               }),
-        #         # 'url_para_visualizar': reverse('documentos:validar-detail',
-        #         #                                kwargs={'slug': documento.documento.pk_uuid})
-        #     }
-        #     dados_processados.append(dados)
+        for documento in self.object_list:
+            dados = {
+                'documento': documento,
+                'url_para_finalizar': reverse_lazy('documentos:finalizar_assinatura',
+                                                   kwargs={'slug': documento.pk_uuid,
+                                                           }),
+                'url_lista_assinaturas': reverse_lazy('documentos:assinaturas',
+                                                      kwargs={'slug': documento.pk_uuid,
+                                                              }),
+                'url_para_visualizar': reverse('documentos:validar-detail',
+                                               kwargs={'slug': documento.pk_uuid})
+            }
+            dados_processados.append(dados)
         context['dados_processados'] = dados_processados
         return context
 
@@ -712,12 +725,6 @@ class AssinarDocumentoView(DocumentoAssinadoRedirectMixin,
         senha = form.cleaned_data['password']
         self.document_object.assinar(grupo_assinante=grupo_selecionado, usuario_assinante=assinado_por, senha=senha)
         return ret
-
-    def get_success_url(self):
-        next_url = self.request.GET.get('next')
-        if next_url:
-            return reverse('documentos:pendentes')
-        return reverse('documentos:assinaturas', kwargs={'slug': self.document_object.pk_uuid})
 
 
 class DocumentoDetailView(NextURLMixin, PopupMixin, generic.DetailView):

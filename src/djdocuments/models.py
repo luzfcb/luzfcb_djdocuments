@@ -245,6 +245,15 @@ class Documento(models.Model):
     admin_objects = managers.DocumentoAdminManager()
 
     @property
+    def assinates_nomes(self):
+        z = self.assinaturas.filter(~models.Q(assinado_por=None)).order_by('grupo_assinante_nome').values_list(
+            'assinado_nome', 'grupo_assinante_nome',
+        )
+
+        print(z)
+        return z
+
+    @property
     def _history_user(self):
         return self.modificado_por
 

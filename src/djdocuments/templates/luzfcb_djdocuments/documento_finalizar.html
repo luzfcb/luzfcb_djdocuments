@@ -1,0 +1,90 @@
+
+{% extends "luzfcb_djdocuments/documento_assinar_base.html" %}
+{% load luzfcb_djdocuments_tags %}
+
+
+
+{% block form_section %}
+    {#    {% if form %}#}
+
+    <div class="panel panel-info">
+        <div class="panel-heading">Finalizar Documento</div>
+        <div class="panel-body">
+            <form class="form-horizontal" method="post" action="{{ form_action }}">
+                <fieldset>
+                    <legend>
+                        {{ user.get_full_name }}, Tem certeza que deseja assinar o documento "{{ document_object.titulo|remover_tags_html }}"
+                        número: {{ document_object.identificador_versao }} ?
+                    </legend>
+                    {% csrf_token %}
+                    {% if form.non_field_errors %}
+                        <div class="form-group">
+                            <div class="col-sm-12">
+                                <div class="alert alert-danger alert-dismissible" role="alert">
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                    {% for error in form.non_field_errors %}
+                                        {{ error }}{% if not forloop.last %}<br>{% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                    {% for form_field in form %}
+                        <div class="form-group {% if form_field.errors %}has-error{% endif %}">
+                            <label for="{{ form_field.id_for_label }}"
+                                   class="col-sm-2 control-label">{{ form_field.label }}:</label>
+                            <div class="col-sm-10">
+                                {{ form_field }}
+
+                                <span id="helpBlock2">
+
+
+                                    {% if form_field.errors %}
+                                        {% for error in form_field.errors %}
+                                            <p id="error_{{ forloop.counter }}_{{ form_field.auto_id }}" class="help-block">
+                                                <strong>{{ error }}</strong></p>
+                                        {% endfor %}
+                                    {% endif %}
+                                    {% if form_field.help_text %}
+                                        <p id="hint_{{ form_field.auto_id }}"
+                                           class="help-block">{{ form_field.help_text|safe }}</p>
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    <div class="form-group">
+                        <div class="col-sm-offset-2 col-sm-10">
+                            <button type="submit" class="btn btn-success">Finalizar Documento</button>
+                        </div>
+                    </div>
+                </fieldset>
+            </form>
+
+        </div>
+    </div>
+
+    {#    {% else %}#}
+    {#        sem formaluario#}
+    {#    {% endif %}#}
+
+
+
+
+{% endblock form_section %}
+{% block js_app %}
+
+
+    {% if form %}
+        {{ form.media }}
+    {% endif %}
+
+{% endblock js_app %}
+
+
+
+
+
+

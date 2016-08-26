@@ -1,0 +1,87 @@
+{% extends "luzfcb_djdocuments/documentos_prontos_para_finalizar_base.html" %}
+{% load luzfcb_djdocuments_tags %}
+{% load spurl %}
+{% load humanize %}
+{% load staticfiles %}
+{% block titulo %}
+    Documentos não finalizados
+{% endblock titulo %}
+
+
+
+{% block conteudo_app %}
+    {{ block.super }}
+
+    <table class="table table-bordered table-striped table-hover table-condensed">
+        <thead>
+        <tr>
+            <th>Documento</th>
+            <th>Assunto</th>
+            <th>Assinantes</th>
+            <th>Ações</th>
+        </tr>
+        </thead>
+
+
+        <tbody>
+        {% if object_list %}
+            {% for dado in dados_processados %}
+                <tr>
+                    <td>
+                        <a href="{{ dado.url_para_visualizar }}"
+                           class="btn-link">{{ dado.documento.identificador_versao }}</a>
+                    </td>
+                    <td><a href="{{ dado.url_para_visualizar }}" class="btn-link">{{ dado.assunto }}</a></td>
+                    <td>
+                        {% for assinado_nome, grupo_assinante_nome in dado.documento.assinates_nomes %}
+                            <ul>
+                                <li>{{ assinado_nome }} - {{ grupo_assinante_nome }}</li>
+                            </ul>
+
+                        {% endfor %}
+
+                    </td>
+                    <td class="text-center">
+                        <div class="btn-group">
+                            <a href="{{ dado.url_para_finalizar }}"
+                               class="btn btn-sm btn-primary">Finalizar</a>
+                        </div>
+                    </td>
+
+
+                </tr>
+            {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="9" class="center-block">
+                    <h4>Não há documentos assinados</h4>
+                </td>
+            </tr>
+
+        {% endif %}
+        </tbody>
+
+
+        <tfoot>
+        <tr>
+            <th>Documento</th>
+            <th>Assunto</th>
+            <th>Assinantes</th>
+            <th>Ações</th>
+        </tr>
+        </tfoot>
+    </table>
+
+{% endblock conteudo_app %}
+
+
+
+
+{% block js_app %}
+    {{ block.super }}
+
+    {% if form %}
+        {{ form.media }}
+    {% endif %}
+
+{% endblock js_app %}

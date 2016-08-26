@@ -8,163 +8,234 @@
 {% block conteudo_app %}
     {{ block.super }}
 
-    <div id="ultimas_assinaturas_pendentes" class="panel panel-default">
-        <div class="panel-heading">Ultimas assinaturas pendentes:</div>
-        <div class="panel-body">
-            <table class="table table-bordered table-striped table-hover table-condensed">
-                <thead>
+    <div class="box-tab corner-all">
+        <div class="box-header corner-top">
+            <ul class="nav nav-pills">
+                <!--tab menus-->
+                <li class="active"><a data-toggle="tab" href="#ultimas_assinaturas_pendentes">Ultimas assinaturas
+                    pendentes</a></li>
+                <li class=""><a data-toggle="tab" href="#ultimas_assinaturas_realizadas">Ultimas assinaturas
+                    realizadas</a></li>
+                <li class=""><a data-toggle="tab" href="#ultimos_documentos_nao_finalizados">Ultimos documentos não
+                    finalizados</a></li>
+            </ul>
+        </div>
+        <div class="box-body">
+            <!-- widgets-tab-body -->
+            <div class="tab-content">
+                <div class="tab-pane fade active in" id="ultimas_assinaturas_pendentes">
 
-                <tr>
-                    <th>Documento</th>
-                    <th>Assunto</th>
-                    <th>Defensoria assinantes</th>
-                    <th>Solicitante</th>
-                    <th>Pendende desde</th>
-                    <th>Ações</th>
-                </tr>
-                </thead>
+                    <table class="table table-bordered table-striped table-hover table-condensed">
+                        <thead>
 
-
-                <tbody>
-                {% if ultimas_assinaturas_pendentes %}
-                    {% for dados in ultimas_assinaturas_pendentes %}
                         <tr>
-                            <td>
-                                <a href="{{ dados.url_para_visualizar }}"
-                                   class="btn-link">{{ dados.assinatura.documento.identificador_versao }}</a>
-                            </td>
-                            <td><a href="{{ dados.url_para_visualizar }}" class="btn-link">{{ dados.assunto }}</a></td>
-                            <td>{{ dados.grupo_assinante_nome }}</td>
-                            <td>{{ dados.assinatura.nome_cadastrado_por }}</td>
-                            <td>{% if dados.esta_assinado %}-{% else %}
-                                {{ dados.assinatura.cadastrado_em|naturaltime }}{% endif %}</td>
-                            {#                    <td>{% pode_assinar document_object user assinatura.grupo_assinante %}</td>#}
-
-                            <td class="text-center">
-                                <div class="btn-group">
-                                    {% if not dados.esta_assinado %}
-                                        {% spurl base=dados.url_para_assinar query='next=1' as url_para_assinar_com_next %}
-                                        {% if dados.pode_assinar %}<a href="{{ url_para_assinar_com_next }}"
-                                                                      class="btn btn-sm btn-primary">Assinar</a>
-                                        {% else %}
-
-                                            <button class="btn btn-sm btn-primary" disabled="disabled" readonly="true">
-                                                Assinar
-                                            </button>
-                                        {% endif %}
-                                    {% else %}
-                                        <span class="label label-success">Assinado</span>
-                                    {% endif %}
-                                    <a href="{{ dados.url_para_visualizar }}"
-                                       class="btn btn-sm">Visualizar</a>
-                                    <a href="{{ dados.url_lista_assinaturas }}"
-                                       class="btn btn-sm">Detalhes</a>
-                                </div>
-                            </td>
+                            <th>Documento</th>
+                            <th>Assunto</th>
+                            <th>Defensoria assinantes</th>
+                            <th>Solicitante</th>
+                            <th>Pendende desde</th>
+                            <th>Ações</th>
                         </tr>
-                    {% endfor %}
-                {% else %}
-                    <tr>
-                        <td colspan="9" class="center-block">
-                            <h4>Não há documentos pendentes de assinatura</h4>
-                        </td>
-                    </tr>
-
-                {% endif %}
-                </tbody>
+                        </thead>
 
 
-                <tfoot>
-                <tr>
-                    <th>Documento</th>
-                    <th>Assunto</th>
-                    <th>Defensoria assinantes</th>
-                    <th>Solicitante</th>
-                    <th>Pendende desde</th>
-                    <th>Ações</th>
-                </tr>
-                </tfoot>
-            </table>
+                        <tbody>
+                        {% if ultimas_assinaturas_pendentes %}
+                            {% for dados in ultimas_assinaturas_pendentes %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ dados.url_para_visualizar }}"
+                                           class="btn-link">{{ dados.assinatura.documento.identificador_versao }}</a>
+                                    </td>
+                                    <td><a href="{{ dados.url_para_visualizar }}"
+                                           class="btn-link">{{ dados.assunto }}</a></td>
+                                    <td>{{ dados.grupo_assinante_nome }}</td>
+                                    <td>{{ dados.assinatura.nome_cadastrado_por }}</td>
+                                    <td>{% if dados.esta_assinado %}-{% else %}
+                                        {{ dados.assinatura.cadastrado_em|naturaltime }}{% endif %}</td>
+                                    {#                    <td>{% pode_assinar document_object user assinatura.grupo_assinante %}</td>#}
+
+                                    <td class="text-center">
+                                        <div class="btn-group">
+                                            {% if not dados.esta_assinado %}
+                                                {% spurl base=dados.url_para_assinar query='next=1' as url_para_assinar_com_next %}
+                                                {% if dados.pode_assinar %}<a href="{{ url_para_assinar_com_next }}"
+                                                                              class="btn btn-sm btn-primary">Assinar</a>
+                                                {% else %}
+
+                                                    <button class="btn btn-sm btn-primary" disabled="disabled"
+                                                            readonly="true">
+                                                        Assinar
+                                                    </button>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="label label-success">Assinado</span>
+                                            {% endif %}
+                                            <a href="{{ dados.url_para_visualizar }}"
+                                               class="btn btn-sm">Visualizar</a>
+                                            <a href="{{ dados.url_lista_assinaturas }}"
+                                               class="btn btn-sm">Detalhes</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="9" class="center-block">
+                                    <h4>Não há documentos pendentes de assinatura</h4>
+                                </td>
+                            </tr>
+
+                        {% endif %}
+                        </tbody>
+
+
+                        <tfoot>
+                        <tr>
+                            <th>Documento</th>
+                            <th>Assunto</th>
+                            <th>Defensoria assinantes</th>
+                            <th>Solicitante</th>
+                            <th>Pendende desde</th>
+                            <th>Ações</th>
+                        </tr>
+                        </tfoot>
+                    </table>
+
+
+                </div>
+                <div class="tab-pane fade" id="ultimas_assinaturas_realizadas">
+
+                    <table class="table table-bordered table-striped table-hover table-condensed">
+                        <thead>
+                        <tr>
+                            <th>Documento</th>
+                            <th>Assunto</th>
+                            <th>Defensoria assinantes</th>
+                            <th>Solicitante</th>
+                            <th>Assinante</th>
+                            <th>Data/Hora assinatura</th>
+                        </tr>
+                        </thead>
+
+
+                        <tbody>
+                        {% if object_list %}
+                            {% for dados in ultimas_assinaturas_realizadas %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ dados.url_para_visualizar }}"
+                                           class="btn-link">{{ dados.assinatura.documento.identificador_versao }}</a>
+                                    </td>
+                                    <td><a href="{{ dados.url_para_visualizar }}"
+                                           class="btn-link">{{ dados.assunto }}</a></td>
+                                    <td>{{ dados.grupo_assinante_nome }}</td>
+                                    <td>{{ dados.assinatura.nome_cadastrado_por }}</td>
+                                    <td>{% if dados.esta_assinado %}{{ dados.assinatura.assinado_nome }}{% else %}
+                                        -{% endif %}</td>
+                                    <td>{% if dados.esta_assinado %}{{ dados.assinatura.assinado_em }}{% else %}
+                                        -{% endif %}</td>
+
+                                    {#                    <td>{% if assinatura.esta_assinado %}-{% else %}<a href="{% url 'documentos:assinar_por_grupo' slug=assinatura.documento.pk_uuid group_id=assinatura.grupo_assinante.pk %}"#}
+                                    {#                           class="btn btn-sm btn-primary">Assinar</a>{% endif %}</td>#}
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="9" class="center-block">
+                                    <h4>Não há documentos assinados</h4>
+                                </td>
+                            </tr>
+
+                        {% endif %}
+                        </tbody>
+
+
+                        <tfoot>
+                        <tr>
+                            <th>Documento</th>
+                            <th>Assunto</th>
+                            <th>Defensoria assinantes</th>
+                            <th>Solicitante</th>
+                            <th>Assinante</th>
+                            <th>Data/Hora assinatura</th>
+                        </tr>
+                        </tfoot>
+                    </table>
+
+
+                </div>
+                <div class="tab-pane fade" id="ultimos_documentos_nao_finalizados">
+                    {#                    {% if ultimos_documentos_nao_finalizados %}#}
+
+                    <table class="table table-bordered table-striped table-hover table-condensed">
+                        <thead>
+                        <tr>
+                            <th>Documento</th>
+                            <th>Assunto</th>
+                            <th>Assinantes</th>
+                            <th>Ações</th>
+                        </tr>
+                        </thead>
+
+
+                        <tbody>
+                        {% if object_list %}
+                            {% for dado in ultimos_documentos_nao_finalizados %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ dado.url_para_visualizar }}"
+                                           class="btn-link">{{ dado.documento.identificador_versao }}</a>
+                                    </td>
+                                    <td><a href="{{ dado.url_para_visualizar }}" class="btn-link">{{ dado.assunto }}</a>
+                                    </td>
+                                    <td>
+                                        {% for assinado_nome, grupo_assinante_nome in dado.documento.assinates_nomes %}
+                                            <ul>
+                                                <li>{{ assinado_nome }} - {{ grupo_assinante_nome }}</li>
+                                            </ul>
+
+                                        {% endfor %}
+
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group">
+                                            <a href="{{ dado.url_para_finalizar }}"
+                                               class="btn btn-sm btn-primary">Finalizar</a>
+                                        </div>
+                                    </td>
+
+
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="9" class="center-block">
+                                    <h4>Não há documentos assinados</h4>
+                                </td>
+                            </tr>
+
+                        {% endif %}
+                        </tbody>
+
+
+                        <tfoot>
+                        <tr>
+                            <th>Documento</th>
+                            <th>Assunto</th>
+                            <th>Assinantes</th>
+                            <th>Ações</th>
+                        </tr>
+                        </tfoot>
+                    </table>
+
+                </div>
+
+
+            </div><!--/widgets-tab-body-->
         </div>
     </div>
 
-
-    <div id="ultimas_assinaturas_realizadas">
-        <table class="table table-bordered table-striped table-hover table-condensed">
-            <thead>
-            <tr>
-                <th>Documento</th>
-                <th>Assunto</th>
-                <th>Defensoria assinantes</th>
-                <th>Solicitante</th>
-                <th>Assinante</th>
-                <th>Data/Hora assinatura</th>
-            </tr>
-            </thead>
-
-
-            <tbody>
-            {% if object_list %}
-                {% for dados in ultimas_assinaturas_realizadas %}
-                    <tr>
-                        <td>
-                            <a href="{{ dados.url_para_visualizar }}"
-                               class="btn-link">{{ dados.assinatura.documento.identificador_versao }}</a>
-                        </td>
-                        <td><a href="{{ dados.url_para_visualizar }}" class="btn-link">{{ dados.assunto }}</a></td>
-                        <td>{{ dados.grupo_assinante_nome }}</td>
-                        <td>{{ dados.assinatura.nome_cadastrado_por }}</td>
-                        <td>{% if dados.esta_assinado %}{{ dados.assinatura.assinado_nome }}{% else %}-{% endif %}</td>
-                        <td>{% if dados.esta_assinado %}{{ dados.assinatura.assinado_em }}{% else %}-{% endif %}</td>
-
-                        {#                    <td>{% if assinatura.esta_assinado %}-{% else %}<a href="{% url 'documentos:assinar_por_grupo' slug=assinatura.documento.pk_uuid group_id=assinatura.grupo_assinante.pk %}"#}
-                        {#                           class="btn btn-sm btn-primary">Assinar</a>{% endif %}</td>#}
-                    </tr>
-                {% endfor %}
-            {% else %}
-                <tr>
-                    <td colspan="9" class="center-block">
-                        <h4>Não há documentos assinados</h4>
-                    </td>
-                </tr>
-
-            {% endif %}
-            </tbody>
-
-
-            <tfoot>
-            <tr>
-                <th>Documento</th>
-                <th>Assunto</th>
-                <th>Defensoria assinantes</th>
-                <th>Solicitante</th>
-                <th>Assinante</th>
-                <th>Data/Hora assinatura</th>
-            </tr>
-            </tfoot>
-        </table>
-
-    </div>
-
-    <h4>
-        {% if ultimas_assinaturas_realizadas %}
-            Ultimos documentos não finalizados:
-            <div>
-
-                <ul>
-                    {% for documento_nao_finalizado in ultimos_documentos_nao_finalizados %}
-                        <li>{{ documento_nao_finalizado.identificador_versao }}
-                            - {{ documento_nao_finalizado.grupo_dono }} -
-                        </li>
-                    {% endfor %}
-
-                </ul>
-            </div>
-        {% else %}
-            Não existem documentos a serem finalizados
-        {% endif %}
-
-    </h4>
 
 
 
