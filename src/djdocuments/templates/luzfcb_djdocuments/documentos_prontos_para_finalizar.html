@@ -25,15 +25,15 @@
 
         <tbody>
         {% if object_list %}
-            {% for dado in dados_processados %}
+            {% for documento_nao_finalizado in documentos_nao_finalizados %}
                 <tr>
                     <td>
-                        <a href="{{ dado.url_para_visualizar }}"
-                           class="btn-link">{{ dado.documento.identificador_versao }}</a>
+                        <a href="{{ documento_nao_finalizado.url_para_visualizar }}"
+                           class="btn-link">{{ documento_nao_finalizado.documento.identificador_versao }}</a>
                     </td>
-                    <td><a href="{{ dado.url_para_visualizar }}" class="btn-link">{{ dado.assunto }}</a></td>
+                    <td><a href="{{ documento_nao_finalizado.url_para_visualizar }}" class="btn-link">{{ documento_nao_finalizado.documento.assunto }}</a></td>
                     <td>
-                        {% for assinado_nome, grupo_assinante_nome in dado.documento.assinates_nomes %}
+                        {% for assinado_nome, grupo_assinante_nome in documento_nao_finalizado.documento.assinates_nomes %}
                             <ul>
                                 <li>{{ assinado_nome }} - {{ grupo_assinante_nome }}</li>
                             </ul>
@@ -43,8 +43,10 @@
                     </td>
                     <td class="text-center">
                         <div class="btn-group">
-                            <a href="{{ dado.url_para_finalizar }}"
+                            <a href="{{ documento_nao_finalizado.url_para_finalizar }}"
                                class="btn btn-sm btn-primary">Finalizar</a>
+                            <a href="{{ documento_nao_finalizado.url_lista_assinaturas }}"
+                               class="btn btn-sm">Detalhes</a>
                         </div>
                     </td>
 

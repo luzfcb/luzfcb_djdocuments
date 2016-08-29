@@ -16,6 +16,7 @@ class DocumentoQuerySet(models.QuerySet):
     def prontos_para_finalizar(self, grupos_ids=None):
         q = Q()
         q &= Q(esta_assinado=False)
+        q &= Q(eh_modelo=False)
         if grupos_ids and isinstance(grupos_ids, (list, tuple)):
             q &= Q(grupo_dono__in=grupos_ids)
         qs = self.filter(q).annotate(
@@ -44,7 +45,27 @@ class DocumentoAdminManager(models.Manager):
 
 
 class AssinaturaQuerySet(models.QuerySet):
-    pass
+
+    def assinaturas_realizadas(self, grupos_ids=None):
+        q = Q()
+        q &= Q(documento__eh_modelo=False)
+        q &= ~Q(assinado_por=None)
+        q &= Q(ativo=True)
+        if grupos_ids and isinstance(grupos_ids, (list, tuple)):
+            q &= Q(grupo_assinante_id__in=grupos_ids)
+
+        qs = self.select_related('grupo_assinante').filter(q)
+        return qs
+
+    def assinaturas_pendentes(self, grupos_ids=None):
+        q = Q()
+        q &= Q(documento__eh_modelo=False)
+        q &= Q(assinado_por=None)
+        q &= Q(ativo=True)
+        if grupos_ids and isinstance(grupos_ids, (list, tuple)):
+            q &= Q(grupo_assinante_id__in=grupos_ids)
+        qs = self.select_related('grupo_assinante').filter(q)
+        return qs
 
 
 class AssinaturaManager(models.Manager):
@@ -53,19 +74,8 @@ class AssinaturaManager(models.Manager):
     def get_queryset(self):
         return self.queryset_class(model=self.model, using=self._db, hints=self._hints).select_related('documento')
 
-    def ultimas_assinaturas_realizadas(self, grupos_ids=None):
-        q = Q()
-        q &= ~Q(assinado_por=None)
-        q &= Q(ativo=True)
-        if grupos_ids and isinstance(grupos_ids, (list, tuple)):
-            q &= Q(grupo_assinante_id__in=grupos_ids)
+    def assinaturas_realizadas(self, grupos_ids=None):
+        return self.get_queryset().assinaturas_realizadas(grupos_ids=grupos_ids)
 
-        return self.get_queryset().select_related('grupo_assinante').filter(q).order_by('cadastrado_em')
-
-    def ultimas_assinaturas_pendentes(self, grupos_ids=None):
-        q = Q()
-        q &= Q(assinado_por=None)
-        q &= Q(ativo=True)
-        if grupos_ids and isinstance(grupos_ids, (list, tuple)):
-            q &= Q(grupo_assinante_id__in=grupos_ids)
-        return self.get_queryset().select_related('grupo_assinante').filter(q).order_by('cadastrado_em')
+    def assinaturas_pendentes(self, grupos_ids=None):
+        return self.get_queryset().assinaturas_pendentes(grupos_ids=grupos_ids)

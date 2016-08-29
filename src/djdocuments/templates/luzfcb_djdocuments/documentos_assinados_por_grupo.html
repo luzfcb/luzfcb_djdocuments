@@ -21,6 +21,7 @@
             <th>Solicitante</th>
             <th>Assinante</th>
             <th>Data/Hora assinatura</th>
+            <th>Ações</th>
         </tr>
         </thead>
 
@@ -38,9 +39,12 @@
                     <td>{{ dados.assinatura.nome_cadastrado_por }}</td>
                     <td>{% if dados.esta_assinado %}{{ dados.assinatura.assinado_nome }}{% else %}-{% endif %}</td>
                     <td>{% if dados.esta_assinado %}{{ dados.assinatura.assinado_em }}{% else %}-{% endif %}</td>
-
-                    {#                    <td>{% if assinatura.esta_assinado %}-{% else %}<a href="{% url 'documentos:assinar_por_grupo' slug=assinatura.documento.pk_uuid group_id=assinatura.grupo_assinante.pk %}"#}
-                    {#                           class="btn btn-sm btn-primary">Assinar</a>{% endif %}</td>#}
+                    <td class="text-center">
+                        <div class="btn-group">
+                            <a href="{{ dados.url_lista_assinaturas }}"
+                               class="btn btn-sm">Detalhes</a>
+                        </div>
+                    </td>
                 </tr>
             {% endfor %}
         {% else %}
@@ -62,6 +66,7 @@
             <th>Solicitante</th>
             <th>Assinante</th>
             <th>Data/Hora assinatura</th>
+            <th>Ações</th>
         </tr>
         </tfoot>
     </table>
