@@ -64,10 +64,10 @@ class DocumentoPainelGeralView(DjDocumentsBackendMixin, generic.TemplateView):
         return super(DocumentoPainelGeralView, self).dispatch(request, *args, **kwargs)
 
     def get_ultimas_assinaturas_pendentes_queryset(self):
-        return Assinatura.objects.assinaturas_pendentes().order_by('cadastrado_em')[:self.mostrar_ultimas]
+        return Assinatura.objects.assinaturas_pendentes().order_by('-cadastrado_em')[:self.mostrar_ultimas]
 
     def get_ultimas_assinaturas_realizadas_queryset(self):
-        return Assinatura.objects.assinaturas_realizadas().order_by('cadastrado_em')[:self.mostrar_ultimas]
+        return Assinatura.objects.assinaturas_realizadas().order_by('-cadastrado_em')[:self.mostrar_ultimas]
 
     def get_ultimos_documentos_nao_finalizados_queryset(self):
         return Documento.objects.prontos_para_finalizar()[:self.mostrar_ultimas]
@@ -172,11 +172,11 @@ class DocumentoPainelGeralPorGrupoView(DocumentoPainelGeralView):
 
     def get_ultimas_assinaturas_pendentes_queryset(self):
         return Assinatura.objects.assinaturas_pendentes(grupos_ids=self.get_ids_grupos_do_usuario).order_by(
-            'cadastrado_em')[:self.mostrar_ultimas]
+            '-cadastrado_em')[:self.mostrar_ultimas]
 
     def get_ultimas_assinaturas_realizadas_queryset(self):
         return Assinatura.objects.assinaturas_realizadas(grupos_ids=self.get_ids_grupos_do_usuario).order_by(
-            'cadastrado_em')[:self.mostrar_ultimas]
+            '-cadastrado_em')[:self.mostrar_ultimas]
 
 
 class DocumentoListView(generic.ListView):
@@ -461,11 +461,13 @@ class AssinaturasPendentesGrupo(DjDocumentsBackendMixin, generic.ListView):
     def dispatch(self, request, *args, **kwargs):
         return super(AssinaturasPendentesGrupo, self).dispatch(request, *args, **kwargs)
 
+    @cached_property
+    def get_ids_grupos_do_usuario(self):
+        return tuple(self.djdocuments_backend.get_grupos_usuario(self.request.user).values_list('id', flat=True))
+
     def get_queryset(self):
         queryset = super(AssinaturasPendentesGrupo, self).get_queryset()
-
-        grupos = tuple(self.djdocuments_backend.get_grupos_usuario(self.request.user).values_list('id', flat=True))
-        return queryset.assinaturas_pendentes(grupos_ids=grupos)
+        return queryset.assinaturas_pendentes(grupos_ids=self.get_ids_grupos_do_usuario).order_by('-cadastrado_em')
 
     def get_context_data(self, **kwargs):
         context = super(AssinaturasPendentesGrupo, self).get_context_data(**kwargs)

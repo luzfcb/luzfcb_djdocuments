@@ -10,10 +10,10 @@ from .views import autocompletes
 # from .views import documento_template
 
 urlpatterns = [
-    url(r'^$',
-        login_required(documentos_views.DocumentoPainelGeralView.as_view()),
-        name='dashboard'
-        ),
+    # url(r'^$',
+    #     login_required(documentos_views.DocumentoPainelGeralView.as_view()),
+    #     name='dashboard'
+    #     ),
     url(r'^g/$',
         login_required(documentos_views.DocumentoPainelGeralPorGrupoView.as_view()),
         name='dashboard-por-grupo'
