@@ -7,8 +7,6 @@ from django.contrib.auth.decorators import login_required
 from .views import documentos as documentos_views
 from .views import autocompletes
 
-# from .views import documento_template
-
 urlpatterns = [
     # url(r'^$',
     #     login_required(documentos_views.DocumentoPainelGeralView.as_view()),
@@ -90,10 +88,13 @@ urlpatterns = [
         login_required(documentos_views.AdicionarAssinantes.as_view()),
         name='adicionar_assinantes'
         ),
-    url(r'^d/create-template/$',
+    url(r'^d/criar_modelo/$',
         login_required(documentos_views.DocumentoModeloCriar.as_view()),
-        # documentos_views.criar_documento,
-        name='create-template'
+        name='criar_modelo'
+        ),
+    url(r'^d/modelos/$',
+        login_required(documentos_views.DocumentoModeloPainelGeralView.as_view()),
+        name='dashboard_modelos'
         ),
     url(r'^users-autocomplete/$',
         login_required(autocompletes.UserAutocomplete.as_view()),

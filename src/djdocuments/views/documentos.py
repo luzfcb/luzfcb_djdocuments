@@ -55,6 +55,11 @@ logger = logging.getLogger('djdocuments')
 USER_MODEL = get_user_model()
 
 
+class DocumentoModeloPainelGeralView(DjDocumentsBackendMixin, generic.TemplateView):
+    template_name = 'luzfcb_djdocuments/painel_geral.html'
+    mostrar_ultimas = 10
+
+
 class DocumentoPainelGeralView(DjDocumentsBackendMixin, generic.TemplateView):
     template_name = 'luzfcb_djdocuments/painel_geral.html'
     mostrar_ultimas = 10
@@ -161,14 +166,13 @@ class DocumentoPainelGeralView(DjDocumentsBackendMixin, generic.TemplateView):
 
 
 class DocumentoPainelGeralPorGrupoView(DocumentoPainelGeralView):
-
     @cached_property
     def get_ids_grupos_do_usuario(self):
         return tuple(self.djdocuments_backend.get_grupos_usuario(self.request.user).values_list('id', flat=True))
 
     def get_ultimos_documentos_nao_finalizados_queryset(self):
         return Documento.objects.prontos_para_finalizar(grupos_ids=self.get_ids_grupos_do_usuario)[
-            :self.mostrar_ultimas]
+               :self.mostrar_ultimas]
 
     def get_ultimas_assinaturas_pendentes_queryset(self):
         return Assinatura.objects.assinaturas_pendentes(grupos_ids=self.get_ids_grupos_do_usuario).order_by(
