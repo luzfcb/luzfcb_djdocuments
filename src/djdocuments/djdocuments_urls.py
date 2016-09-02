@@ -44,7 +44,7 @@ urlpatterns = [
         login_required(documentos_views.DocumentoEditor.as_view()),
         name='editar'
         ),
-    url(r'^d/m/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/editar/$',
+    url(r'^m/d/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/editar/$',
         login_required(documentos_views.DocumentoEditorModelo.as_view()),
         name='editar-modelo'
         ),
@@ -88,14 +88,19 @@ urlpatterns = [
         login_required(documentos_views.AdicionarAssinantes.as_view()),
         name='adicionar_assinantes'
         ),
-    url(r'^d/criar_modelo/$',
+    url(r'^m/criar_modelo/$',
         login_required(documentos_views.DocumentoModeloCriar.as_view()),
         name='criar_modelo'
         ),
-    url(r'^d/modelos/$',
+    url(r'^m/$',
         login_required(documentos_views.DocumentoModeloPainelGeralView.as_view()),
         name='dashboard_modelos'
         ),
+    url(r'^t/criar_tipo_documento/$',
+        login_required(documentos_views.TipoDocumentoCriar.as_view()),
+        name='dashboard_modelos'
+        ),
+
     url(r'^users-autocomplete/$',
         login_required(autocompletes.UserAutocomplete.as_view()),
         name='user-autocomplete'
@@ -106,7 +111,7 @@ urlpatterns = [
         ),
     url(r'^grupos-autocomplete/$',
         login_required(autocompletes.GruposDoUsuarioAutoComplete.as_view()),
-        name='grupos-autocomplete'
+        name='grupos_do_usuario_autocomplete'
         ),
     url(r'^grupos-autocomplete/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/$',
         login_required(autocompletes.GruposAssinantesDoDocumentoAutoComplete.as_view()),

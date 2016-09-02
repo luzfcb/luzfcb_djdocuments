@@ -56,6 +56,7 @@ LUZFCB_DJDOCUMENTS_APPS = [
     'captcha',
     'dal',
     'dal_select2',
+    'django_addanother',
     'bootstrap_pagination',
     'wkhtmltopdf',
     # end dependencies

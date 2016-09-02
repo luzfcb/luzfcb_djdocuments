@@ -374,10 +374,10 @@ class AuditavelViewMixin(object):
         return super(AuditavelViewMixin, self).form_valid(form)
 
 
-class PopupMixin(object):
+class DjDocumentPopupMixin(object):
 
     def get_initial(self):
-        initial = super(PopupMixin, self).get_initial()
+        initial = super(DjDocumentPopupMixin, self).get_initial()
         initial.update({'is_popup': self.get_is_popup()})
         return initial
 
@@ -388,7 +388,7 @@ class PopupMixin(object):
             return False
 
     def get_context_data(self, **kwargs):
-        context = super(PopupMixin, self).get_context_data(**kwargs)
+        context = super(DjDocumentPopupMixin, self).get_context_data(**kwargs)
         is_popup = self.get_is_popup()
         context['popup'] = is_popup
         if is_popup:

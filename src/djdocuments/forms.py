@@ -6,8 +6,9 @@ from dal import autocomplete
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import check_password
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, reverse_lazy
 from django.utils.translation import ugettext_lazy as _
+from django_addanother.widgets import AddAnotherWidgetWrapper
 
 from .backends import DjDocumentsBackendMixin
 from .form_mixins import BootstrapFormInputMixin, ReadOnlyFieldsMixin
@@ -62,32 +63,27 @@ class DocumentoEditarWithReadOnlyFieldsForm(ReadOnlyFieldsMixin, DocumentoEditar
 
 
 class TipoDocumentoTemplateModelChoiceField(forms.ModelChoiceField):
-
     def label_from_instance(self, obj):
         return obj.titulo
 
 
 class ModeloDocumentoTemplateModelChoiceField(forms.ModelChoiceField):
-
     def label_from_instance(self, obj):
         a = remover_tags_html(obj.modelo_descricao or 'Descricao modelo: {}'.format(obj.pk))
         return a
 
 
 class GrupoModelChoiceField(DjDocumentsBackendMixin, forms.ModelChoiceField):
-
     def label_from_instance(self, obj):
         return self.djdocuments_backend.get_grupo_name(obj)
 
 
 class GrupoModelMultipleChoiceField(DjDocumentsBackendMixin, forms.ModelMultipleChoiceField):
-
     def label_from_instance(self, obj):
         return self.djdocuments_backend.get_grupo_name(obj)
 
 
 class CriarDocumentoForm(BootstrapFormInputMixin, DjDocumentsBackendMixin, forms.Form):
-
     def __init__(self, *args, **kwargs):
         self.current_user = kwargs.pop('user')
         super(CriarDocumentoForm, self).__init__(*args, **kwargs)
@@ -123,7 +119,6 @@ class CriarDocumentoForm(BootstrapFormInputMixin, DjDocumentsBackendMixin, forms
 
 
 class CriarDocumentoParaGrupoForm(CriarDocumentoForm):
-
     def __init__(self, *args, **kwargs):
         grupo_escolhido_queryset = kwargs.get('grupo_escolhido_queryset')
         self.grupo_escolhido = kwargs.get('grupo_escolhido')
@@ -150,8 +145,47 @@ class CriarDocumentoParaGrupoForm(CriarDocumentoForm):
         return self.cleaned_data['grupo']
 
 
-class CriarModeloDocumentoForm(BootstrapFormInputMixin, forms.Form):
-    # titulo = forms.CharField(max_length=500)
+# class CriarModeloDocumentoForm(BootstrapFormInputMixin, forms.Form):
+# class CriarModeloDocumentoForm(CriarDocumentoForm):
+#     # titulo = forms.CharField(max_length=500)
+#     tipo_documento = TipoDocumentoTemplateModelChoiceField(
+#         label='Tipo de Documento',
+#         queryset=TipoDocumento.objects.all(),
+#
+#     )
+#     modelo_documento = ModeloDocumentoTemplateModelChoiceField(
+#         label='Modelo de Documento',
+#         queryset=Documento.admin_objects.all(),
+#         # widget=autocomplete.ModelSelect2(url='documentos:documentocriar-autocomplete',
+#         #                                  forward=('tipo_documento',),
+#         #                                  #clear_on_change=('tipo_documento',)
+#         #                                  ),
+#
+#     )
+#
+#     modelo_descricao = forms.CharField(
+#         label='Descrição do Modelo',
+#         widget=forms.Textarea
+#     )
+class CriarModeloDocumentoForm(BootstrapFormInputMixin, DjDocumentsBackendMixin, forms.Form):
+    def __init__(self, *args, **kwargs):
+        self.current_user = kwargs.pop('user')
+        super(CriarModeloDocumentoForm, self).__init__(*args, **kwargs)
+        if self.current_user:
+            self.fields['grupo'].queryset = self.djdocuments_backend.get_grupos_usuario(self.current_user)
+
+    # titulo = forms.CharField(max_length=500)]
+    grupo = GrupoModelChoiceField(
+        label=get_djdocuments_backend().get_group_label(),
+        queryset=get_grupo_assinante_model_class().objects.none(),
+        # required=False,
+        widget=AddAnotherWidgetWrapper(
+            autocomplete.ModelSelect2(url='documentos:grupos_do_usuario_autocomplete', ),
+            reverse_lazy('person_create'),
+        )
+
+    )
+
     tipo_documento = TipoDocumentoTemplateModelChoiceField(
         label='Tipo de Documento',
         queryset=TipoDocumento.objects.all(),
@@ -160,27 +194,27 @@ class CriarModeloDocumentoForm(BootstrapFormInputMixin, forms.Form):
     modelo_documento = ModeloDocumentoTemplateModelChoiceField(
         label='Modelo de Documento',
         queryset=Documento.admin_objects.all(),
-        # widget=autocomplete.ModelSelect2(url='documentos:documentocriar-autocomplete',
-        #                                  forward=('tipo_documento',),
-        #                                  #clear_on_change=('tipo_documento',)
-        #                                  ),
+        required=False,
+        widget=ModelSelect2ForwardExtras(url='documentos:documentocriar-autocomplete',
+                                         forward=('tipo_documento',),
+                                         clear_on_change=('tipo_documento',)
+                                         ),
 
     )
 
     modelo_descricao = forms.CharField(
         label='Descrição do Modelo',
-        widget=forms.Textarea
+        max_length=70,
+
     )
 
 
 class UserModelChoiceField(forms.ModelChoiceField):
-
     def label_from_instance(self, obj):
         return '{} ({})'.format(obj.get_full_name().title(), getattr(obj, obj.USERNAME_FIELD))
 
 
 class UserModelMultipleChoiceField(forms.ModelMultipleChoiceField):
-
     def label_from_instance(self, obj):
         return '{} ({})'.format(obj.get_full_name().title(), getattr(obj, obj.USERNAME_FIELD))
 
@@ -190,7 +224,6 @@ def create_form_class_adicionar_assinantes(document_object):
                                kwargs={'slug': document_object.pk_uuid})
 
     class AdicionarAssinantesForm(BootstrapFormInputMixin, forms.Form):
-
         def __init__(self, *args, **kwargs):
             grupo_para_adicionar_queryset = kwargs.pop('grupo_para_adicionar_queryset')
             super(AdicionarAssinantesForm, self).__init__(*args, **kwargs)
@@ -243,7 +276,6 @@ class DocumetoValidarForm(BootstrapFormInputMixin, forms.Form):
 
 
 class FinalizarDocumentoForm(BootstrapFormInputMixin, forms.Form):
-
     def __init__(self, *args, **kwargs):
         self.current_logged_user = kwargs.pop('current_logged_user')
         super(FinalizarDocumentoForm, self).__init__(*args, **kwargs)

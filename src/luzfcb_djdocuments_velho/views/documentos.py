@@ -228,7 +228,7 @@ class DocumentoDetailView(NextURLMixin, PopupMixin, generic.DetailView):
         return context
 
 
-# class DocumentoHistoryView(HistoryRecordListViewMixin, NextURLMixin, PopupMixin, generic.DetailView):
+# class DocumentoHistoryView(HistoryRecordListViewMixin, NextURLMixin, DjDocumentPopupMixin, generic.DetailView):
 class DocumentoHistoryView(NextURLMixin, PopupMixin, generic.DetailView):
     template_name = 'luzfcb_djdocuments/documento_detail_with_versions.html'
     model = Documento

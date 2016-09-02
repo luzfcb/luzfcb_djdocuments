@@ -91,7 +91,7 @@ class GruposDoUsuarioAutoComplete(DjDocumentsBackendMixin, autocomplete.Select2Q
 
         if self.q:
             paran_dict = {'{}__icontains'.format(self.djdocuments_backend.group_name_atrib): self.q}
-            qs = qs.filter(Q(paran_dict))
+            qs = qs.filter(Q(paran_dict)).order_by(self.djdocuments_backend.group_name_atrib)
 
         return qs
 
@@ -186,7 +186,6 @@ class UserAutocomplete(DjDocumentsBackendMixin, autocomplete.Select2QuerySetView
 
 
 class DocumentoCriarAutocomplete(autocomplete.Select2QuerySetView):
-
     @method_decorator(never_cache)
     def dispatch(self, request, *args, **kwargs):
         return super(DocumentoCriarAutocomplete, self).dispatch(request, *args, **kwargs)

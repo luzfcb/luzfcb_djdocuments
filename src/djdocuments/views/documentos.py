@@ -21,6 +21,7 @@ from django.utils.functional import cached_property
 from django.views import generic
 from django.views.decorators.cache import never_cache
 from django.views.generic.detail import SingleObjectMixin
+from django_addanother.views import PopupMixin
 from luzfcb_dj_simplelock.views import LuzfcbLockMixin
 from wkhtmltopdf.views import PDFRenderMixin
 
@@ -36,14 +37,14 @@ from ..forms import (
     create_form_class_adicionar_assinantes,
     create_form_class_assinar
 )
-from ..models import Assinatura, Documento
+from ..models import Assinatura, Documento, TipoDocumento
 from .mixins import (
     AjaxFormPostMixin,
     AuditavelViewMixin,
     DocumentoAssinadoRedirectMixin,
     FormActionViewMixin,
     NextURLMixin,
-    PopupMixin,
+    DjDocumentPopupMixin,
     QRCodeValidacaoMixin,
     SingleDocumentObjectMixin,
     SingleGroupObjectMixin,
@@ -58,6 +59,10 @@ USER_MODEL = get_user_model()
 class DocumentoModeloPainelGeralView(DjDocumentsBackendMixin, generic.TemplateView):
     template_name = 'luzfcb_djdocuments/painel_geral_modelos.html'
     mostrar_ultimas = 10
+
+    @method_decorator(never_cache)
+    def dispatch(self, request, *args, **kwargs):
+        return super(DocumentoModeloPainelGeralView, self).dispatch(request, *args, **kwargs)
 
 
 class DocumentoPainelGeralView(DjDocumentsBackendMixin, generic.TemplateView):
@@ -205,7 +210,7 @@ class DocumentoEditor(AjaxFormPostMixin,
                       # DocumentoAssinadoRedirectMixin,
                       AuditavelViewMixin,
                       NextURLMixin,
-                      PopupMixin,
+                      DjDocumentPopupMixin,
                       LuzfcbLockMixin,
                       FormActionViewMixin,
                       generic.UpdateView):
@@ -386,7 +391,14 @@ class DocumentoCriarParaGrupo(SingleGroupObjectMixin, DocumentoCriar):
 
 
 class DocumentoModeloCriar(DocumentoCriar):
+    template_name = 'luzfcb_djdocuments/documento_modelo_criar.html'
     form_class = CriarModeloDocumentoForm
+    form_action = reverse_lazy('documentos:criar_modelo')
+
+
+class TipoDocumentoCriar(PopupMixin, generic.CreateView):
+    model = TipoDocumento
+    fields = '__all__'
 
 
 class VincularDocumentoBaseView(SingleDocumentObjectMixin, SingleObjectMixin, generic.View):
@@ -767,7 +779,7 @@ class AssinarDocumentoView(DocumentoAssinadoRedirectMixin,
         return reverse('documentos:assinaturas', kwargs={'slug': self.document_object.pk_uuid})
 
 
-class DocumentoDetailView(NextURLMixin, PopupMixin, generic.DetailView):
+class DocumentoDetailView(NextURLMixin, DjDocumentPopupMixin, generic.DetailView):
     template_name = 'luzfcb_djdocuments/documento_detail.html'
     # template_name = 'luzfcb_djdocuments/documento_validacao_detail.html'
     model = Documento
