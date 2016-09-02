@@ -32,7 +32,8 @@ class DocumentoAdmin(SimpleHistoryAdmin):
 
         'identificador_documento', 'pk', 'pk_uuid', 'assunto', 'versao_numero', 'identificador_versao',
         'visualizar_versao', 'eh_modelo', 'modelo_descricao', 'editar_documento',
-        # 'esta_assinado', 'assinatura_hash', 'criado_por', 'criado_em', 'visualizar_titulo',
+        # 'esta_assinado', 'assinatura_hash', 'criado_por', 'criado_em',
+        # 'visualizar_titulo',
         # 'modificado_em',
         # 'tipo_documento',
 
@@ -79,10 +80,10 @@ class DocumentoAdmin(SimpleHistoryAdmin):
 
     editar_documento.short_description = 'Editar no Editor'
 
-    def visualizar_titulo(self, obj):
-        return remover_tags_html(obj.titulo)
-
-    visualizar_titulo.short_description = "Título"
+    # def visualizar_titulo(self, obj):
+    #     return remover_tags_html(obj.titulo)
+    #
+    # visualizar_titulo.short_description = "Título"
 
     def remover_assinatura(self, request, queryset):
         for obj in queryset:

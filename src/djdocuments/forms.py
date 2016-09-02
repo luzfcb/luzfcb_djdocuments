@@ -31,11 +31,11 @@ class DocumentoEditarForm(forms.ModelForm):
         label='',
         initial=CABECALHO
     )
-    titulo = forms.CharField(
-        widget=CkeditorTextAreadWidget,
-        label='',
-        initial=TITULO
-    )
+    # titulo = forms.CharField(
+    #     widget=CkeditorTextAreadWidget,
+    #     label='',
+    #     initial=TITULO
+    # )
     conteudo = forms.CharField(
         widget=CkeditorTextAreadWidget,
         label='',
@@ -49,7 +49,12 @@ class DocumentoEditarForm(forms.ModelForm):
 
     class Meta:
         model = Documento
-        fields = ('cabecalho', 'titulo', 'conteudo', 'rodape')
+        fields = (
+            'cabecalho',
+            # 'titulo',
+            'conteudo',
+            'rodape'
+        )
 
 
 class DocumentoEditarWithReadOnlyFieldsForm(ReadOnlyFieldsMixin, DocumentoEditarForm):
@@ -65,7 +70,7 @@ class TipoDocumentoTemplateModelChoiceField(forms.ModelChoiceField):
 class ModeloDocumentoTemplateModelChoiceField(forms.ModelChoiceField):
 
     def label_from_instance(self, obj):
-        a = remover_tags_html(obj.titulo or 'Descricao modelo: {}'.format(obj.pk))
+        a = remover_tags_html(obj.modelo_descricao or 'Descricao modelo: {}'.format(obj.pk))
         return a
 
 
@@ -153,7 +158,7 @@ class CriarModeloDocumentoForm(BootstrapFormInputMixin, forms.Form):
 
     )
     modelo_documento = ModeloDocumentoTemplateModelChoiceField(
-        label='Modelo de Documento2',
+        label='Modelo de Documento',
         queryset=Documento.admin_objects.all(),
         # widget=autocomplete.ModelSelect2(url='documentos:documentocriar-autocomplete',
         #                                  forward=('tipo_documento',),

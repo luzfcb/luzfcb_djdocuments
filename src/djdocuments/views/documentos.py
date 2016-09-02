@@ -56,7 +56,7 @@ USER_MODEL = get_user_model()
 
 
 class DocumentoModeloPainelGeralView(DjDocumentsBackendMixin, generic.TemplateView):
-    template_name = 'luzfcb_djdocuments/painel_geral.html'
+    template_name = 'luzfcb_djdocuments/painel_geral_modelos.html'
     mostrar_ultimas = 10
 
 
@@ -202,7 +202,7 @@ class DocumentoListView(generic.ListView):
 
 
 class DocumentoEditor(AjaxFormPostMixin,
-                      DocumentoAssinadoRedirectMixin,
+                      # DocumentoAssinadoRedirectMixin,
                       AuditavelViewMixin,
                       NextURLMixin,
                       PopupMixin,
@@ -210,7 +210,12 @@ class DocumentoEditor(AjaxFormPostMixin,
                       FormActionViewMixin,
                       generic.UpdateView):
     detail_view_named_url = 'documentos:detail'
-    document_json_fields = ('titulo', 'document_number', 'document_version_number', 'identificador_versao')
+    document_json_fields = (
+        # 'titulo',
+        'document_number',
+        'document_version_number',
+        'identificador_versao'
+    )
     template_name = 'luzfcb_djdocuments/editor/documento_editor.html'
     # template_name = 'luzfcb_djdocuments/documento_update.html'
     lock_revalidated_at_every_x_seconds = 3
@@ -241,7 +246,13 @@ class DocumentoEditor(AjaxFormPostMixin,
 
     def form_valid(self, form):
         status, mensagem = self.object.pode_editar(usuario_atual=self.request.user)
-        logger.info('{klass}:{mensagem}'.format(klass=self.__class__.__name__, mensagem=mensagem))
+        logger.info('{klass}:{mensagem}'.format(klass=self.__class__.__name__, mensagem=mensagem),
+                    extra={'params': {'documento_pk': self.object.pk,
+                                      'documento_pk_uuid': self.object.pk_uuid,
+                                      'documento_eh_modelo': self.object.eh_modelo,
+                                      'usuario': self.request.user
+                                      }}
+                    )
         if not status:
             return render(request=self.request, template_name='luzfcb_djdocuments/erros/erro_403.html',
                           context={'mensagem': mensagem})
@@ -255,7 +266,13 @@ class DocumentoEditor(AjaxFormPostMixin,
         response = super(DocumentoEditor, self).get(request, *args, **kwargs)
 
         status, mensagem = self.object.pode_editar(usuario_atual=self.request.user)
-        logger.info('{klass}:{mensagem}'.format(klass=self.__class__.__name__, mensagem=mensagem))
+        logger.info('{klass}:{mensagem}'.format(klass=self.__class__.__name__, mensagem=mensagem),
+                    extra={'params': {'documento_pk': self.object.pk,
+                                      'documento_pk_uuid': self.object.pk_uuid,
+                                      'documento_eh_modelo': self.object.eh_modelo,
+                                      'usuario': self.request.user
+                                      }}
+                    )
         if not status:
             return render(request=request, template_name='luzfcb_djdocuments/erros/erro_403.html',
                           context={'mensagem': mensagem})
@@ -278,7 +295,7 @@ class DocumentoEditorModelo(DocumentoEditor):
 def create_document_from_document_template(current_user, grupo, documento_modelo, assunto):
     document_kwargs = {
         'cabecalho': documento_modelo.cabecalho,
-        'titulo': documento_modelo.titulo,
+        # 'titulo': documento_modelo.titulo,
         'conteudo': documento_modelo.conteudo,
         'rodape': documento_modelo.rodape,
         'tipo_documento': documento_modelo.tipo_documento,
@@ -828,13 +845,15 @@ class PrintPDFDocumentoDetailValidarView(PDFRenderMixin, DocumentoDetailValidarV
         'print-media-type': True,
 
         # 'margin-top': '57.5mm',
-        'margin-top': '61.5mm',
+        # 'margin-top': '61.5mm',
+        'margin-top': '41.5mm',
         # 'margin-left': '1.5mm',
         'margin-left': '1.0mm',
         # 'margin-right': '6.5mm',
-        'margin-right': '3.5mm',
+        'margin-right': '4.0mm',
         # 'margin-bottom': '45.5mm',
-        'margin-bottom': '47.5mm',
+        # 'margin-bottom': '47.5mm',
+        'margin-bottom': '35.5mm',
         # 'margin-bottom': '87.5mm',
         # 'page-width': '210mm',
         # 'page-height': '297mm',

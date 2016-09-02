@@ -59,7 +59,6 @@ class TipoDocumento(models.Model):
 
 @python_2_unicode_compatible
 class Assinatura(models.Model):
-
     def __str__(self):
         return 'pk: {}, grupo_assinante: {}'.format(self.pk, self.grupo_assinante.pk)
 
@@ -195,14 +194,14 @@ class Documento(models.Model):
 
     assunto = models.CharField(max_length=255, blank=True)
 
-    cabecalho = models.TextField(blank=True)
-    titulo = models.TextField(blank=True)
-    conteudo = models.TextField(blank=True)
-    rodape = models.TextField(blank=True)
+    cabecalho = models.TextField(blank=True, default='')
+    # titulo = models.TextField(blank=True, default='')
+    conteudo = models.TextField(blank=True, default='')
+    rodape = models.TextField(blank=True, default='')
 
     # template
     eh_modelo = models.BooleanField(default=False, editable=True)
-    modelo_descricao = models.TextField(blank=True)
+    modelo_descricao = models.TextField(blank=True, default='')
     # end template
 
     assinatura_hash = models.TextField(blank=True, editable=False, unique=True, null=True)
@@ -366,8 +365,19 @@ class Documento(models.Model):
                 return -1
 
     @cached_property
+    def possui_assinatura_assinada(self):
+        return bool(not self.assinaturas.filter(ativo=True, esta_assinado=False).exists() and
+                    self.assinaturas.filter(ativo=True, esta_assinado=True).exists())
+
+    @cached_property
     def pronto_para_finalizar(self):
         if self.possui_assinatura_pendente < 0 and not self.esta_assinado:
+            return True
+        return False
+
+    @property
+    def esta_assinado_e_finalizado(self):
+        if self.esta_assinado and self.assinatura_hash and not self.possui_assinatura_assinada():
             return True
         return False
 

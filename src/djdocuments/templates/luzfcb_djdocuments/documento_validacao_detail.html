@@ -53,7 +53,7 @@
     </style>
 {% endblock %}
 
-{% block title %}{{ object.titulo|remover_tags_html|slugify|slice:":200" }}_
+{% block title %}{{ object.assunto|remover_tags_html|slugify|slice:":180" }}_
     {{ object.identificador_versao }}{% endblock title %}
 
 {% block project_name %}SOLAR{% endblock project_name %}
@@ -85,7 +85,7 @@
                         <div align="center">
                             {{ object.cabecalho|safe }}
                         </div>
-                        {{ object.titulo|safe }}
+                        {#                        {{ object.titulo|safe }}#}
                         <hr class="borda-dupla">
                     </div>
                 {% endblock cabecalho %}
@@ -140,6 +140,7 @@
 
                 {% block rodape %}
                     <div class="documento-rodape">
+                    <hr class="borda-dupla">
                         {% if object.esta_assinado %}
 
                             <table>

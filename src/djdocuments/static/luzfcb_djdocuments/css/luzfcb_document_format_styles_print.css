@@ -24,6 +24,13 @@ body {
     margin-right: 25px;
 }
 
+.a4-pagina {
+    padding-top: 4mm;
+    padding-bottom: 4mm;
+    padding-left: 3.5mm;
+    padding-right: 3.5mm;
+}
+
 .documento .documento-conteudo {
     padding-top: 20px;
 }
@@ -32,11 +39,15 @@ body {
     text-indent: 40px;
 }
 
-.documento .documento-conteudo p img, hr {
+.documento .documento-conteudo p img {
     margin-left: -40px;
 }
 
-.documento-rodape hr.assinantes-borda, .documento-assinaturas hr.assinantes-borda{
+.documento .documento-conteudo p img, hr {
+    margin-left: 0;
+}
+
+.documento-rodape hr.assinantes-borda, .documento-assinaturas hr.assinantes-borda {
     margin-top: 3px;
     margin-bottom: 3px;
 }

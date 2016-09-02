@@ -3,13 +3,14 @@ from __future__ import absolute_import, print_function, unicode_literals
 
 import pyqrcode
 import status
+from django.contrib import messages
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.http import JsonResponse
 from django.http.response import Http404
-from django.shortcuts import resolve_url
+from django.shortcuts import redirect, resolve_url
 from django.utils import six
 from django.utils.translation import ugettext as _
 from urlobject import URLObject
@@ -429,11 +430,10 @@ class DocumentoAssinadoRedirectMixin(object):
     def get(self, request, *args, **kwargs):
         ret = super(DocumentoAssinadoRedirectMixin, self).get(request, *args, **kwargs)
 
-        # if self.object.esta_assinado:
+        # if self.object.esta_assinado_e_finalizado:
         #     detail_url = reverse('documentos:validar-detail', kwargs={'slug': self.object.pk_uuid})
         #     messages.add_message(request, messages.INFO,
-        #                          'Documentos assinados só podem ser visualizados - {}'.format(
-        #                              self.__class__.__name__))
+        #                          'Documentos assinados só podem ser visualizados - {}')
         #     return redirect(detail_url, permanent=False)
         return ret
 
