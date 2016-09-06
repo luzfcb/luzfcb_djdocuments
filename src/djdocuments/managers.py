@@ -3,7 +3,6 @@ from django.db.models import Case, IntegerField, Q, Sum, Value, When
 
 
 class DocumentoQuerySet(models.QuerySet):
-
     def ativos(self):
         return self.filter(esta_ativo=True)
 
@@ -24,6 +23,14 @@ class DocumentoQuerySet(models.QuerySet):
                                            output_field=IntegerField()))).filter(assinaturas_pendentes=0)
         return qs
 
+    def modelos(self, grupos_ids=None):
+        q = Q()
+        q &= Q(eh_modelo=True)
+        if grupos_ids and isinstance(grupos_ids, (list, tuple)):
+            q &= Q(grupo_dono__in=grupos_ids)
+        qs = self.filter(q)
+        return qs
+
 
 class DocumentoManager(models.Manager):
     queryset_class = DocumentoQuerySet
@@ -36,6 +43,11 @@ class DocumentoManager(models.Manager):
     def prontos_para_finalizar(self, grupos_ids=None):
         return self.get_queryset().prontos_para_finalizar(grupos_ids=grupos_ids)
 
+    def modelos(self, grupos_ids=None):
+        return self.queryset_class(model=self.model,
+                                   using=self._db,
+                                   hints=self._hints).ativos().modelos(grupos_ids=grupos_ids)
+
 
 class DocumentoAdminManager(models.Manager):
     queryset_class = DocumentoQuerySet
@@ -43,9 +55,16 @@ class DocumentoAdminManager(models.Manager):
     def get_queryset(self):
         return self.queryset_class(model=self.model, using=self._db, hints=self._hints)
 
+    def prontos_para_finalizar(self, grupos_ids=None):
+        return self.get_queryset().prontos_para_finalizar(grupos_ids=grupos_ids)
+
+    def modelos(self, grupos_ids=None):
+        return self.queryset_class(model=self.model,
+                                   using=self._db,
+                                   hints=self._hints).ativos().modelos(grupos_ids=grupos_ids)
+
 
 class AssinaturaQuerySet(models.QuerySet):
-
     def assinaturas_realizadas(self, grupos_ids=None):
         q = Q()
         q &= Q(documento__eh_modelo=False)

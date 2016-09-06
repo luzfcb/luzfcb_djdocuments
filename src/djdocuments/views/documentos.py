@@ -21,7 +21,7 @@ from django.utils.functional import cached_property
 from django.views import generic
 from django.views.decorators.cache import never_cache
 from django.views.generic.detail import SingleObjectMixin
-from django_addanother.views import PopupMixin
+from django_addanother.views import CreatePopupMixin
 from luzfcb_dj_simplelock.views import LuzfcbLockMixin
 from wkhtmltopdf.views import PDFRenderMixin
 
@@ -35,8 +35,8 @@ from ..forms import (
     DocumetoValidarForm,
     FinalizarDocumentoForm,
     create_form_class_adicionar_assinantes,
-    create_form_class_assinar
-)
+    create_form_class_assinar,
+    TipoDocumentoForm)
 from ..models import Assinatura, Documento, TipoDocumento
 from .mixins import (
     AjaxFormPostMixin,
@@ -56,13 +56,42 @@ logger = logging.getLogger('djdocuments')
 USER_MODEL = get_user_model()
 
 
-class DocumentoModeloPainelGeralView(DjDocumentsBackendMixin, generic.TemplateView):
+class DocumentoModeloPainelGeralView(DjDocumentsBackendMixin, generic.ListView):
+    model = Documento
     template_name = 'luzfcb_djdocuments/painel_geral_modelos.html'
     mostrar_ultimas = 10
+    paginate_by = 20
 
     @method_decorator(never_cache)
     def dispatch(self, request, *args, **kwargs):
         return super(DocumentoModeloPainelGeralView, self).dispatch(request, *args, **kwargs)
+
+    def get_documentos_dados(self, object_list):
+        dados_processados = []
+        for documento in object_list:
+            dados = {
+                'documento': documento,
+                'url_para_editar': reverse('documentos:editar-modelo',
+                                           kwargs={'slug': documento.pk_uuid}),
+                'url_para_visualizar': reverse('documentos:validar-detail',
+                                               kwargs={'slug': documento.pk_uuid})
+            }
+            dados_processados.append(dados)
+        return dados_processados
+
+    def get_queryset(self):
+        queryset = self.model.objects.modelos().select_related('tipo_documento')
+        ordering = self.get_ordering()
+        if ordering:
+            if isinstance(ordering, six.string_types):
+                ordering = (ordering,)
+            queryset = queryset.order_by(*ordering)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super(DocumentoModeloPainelGeralView, self).get_context_data(**kwargs)
+        context['dados_processados'] = self.get_documentos_dados(context.get('object_list'))
+        return context
 
 
 class DocumentoPainelGeralView(DjDocumentsBackendMixin, generic.TemplateView):
@@ -234,11 +263,21 @@ class DocumentoEditor(AjaxFormPostMixin,
     def get_form_action(self):
         return reverse('documentos:editar', kwargs={'slug': self.object.pk_uuid})
 
+    def get_url_para_assinar(self):
+        group_id = None
+        if hasattr(self.object, 'grupo_dono'):
+            if not self.object.grupo_dono is None:
+                group_id = self.object.grupo_dono.pk
+        if group_id:
+            reverse_lazy('documentos:assinar_por_grupo',
+                         kwargs={'slug': self.object.pk_uuid,
+                                 'group_id': group_id})
+        else:
+            return None
+
     def get_context_data(self, **kwargs):
         context = super(DocumentoEditor, self).get_context_data(**kwargs)
-        context['url_para_assinar'] = reverse_lazy('documentos:assinar_por_grupo',
-                                                   kwargs={'slug': self.object.pk_uuid,
-                                                           'group_id': self.object.grupo_dono.pk})
+        context['url_para_assinar'] = self.get_url_para_assinar()
         return context
 
     @method_decorator(never_cache)
@@ -396,9 +435,18 @@ class DocumentoModeloCriar(DocumentoCriar):
     form_action = reverse_lazy('documentos:criar_modelo')
 
 
-class TipoDocumentoCriar(PopupMixin, generic.CreateView):
+class TipoDocumentoCriar(CreatePopupMixin, generic.CreateView):
+    # form_action = 'documentos:criar_tipo_documento'
+    template_name = 'luzfcb_djdocuments/documento_criar_tipo_documento.html'
     model = TipoDocumento
-    fields = '__all__'
+    form_class = TipoDocumentoForm
+
+    @method_decorator(never_cache)
+    def dispatch(self, request, *args, **kwargs):
+        return super(TipoDocumentoCriar, self).dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse('documentos:dashboard_modelos')
 
 
 class VincularDocumentoBaseView(SingleDocumentObjectMixin, SingleObjectMixin, generic.View):

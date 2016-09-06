@@ -7,7 +7,7 @@ django-autocomplete-light==3.1.5
 psycopg2==2.6.1
 django-bootstrap-pagination==1.6.1
 bleach==1.4.3
-django-addanother
+django-addanother==2.0
 pypng
 
 

@@ -5,6 +5,7 @@ from dal import autocomplete
 from django.db.models.query_utils import Q
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
+from django.utils import six
 
 from .. import models
 from ..backends import DjDocumentsBackendMixin
@@ -217,3 +218,27 @@ class DocumentoCriarAutocomplete(autocomplete.Select2QuerySetView):
     def get_result_label(self, result):
         a = remover_tags_html(result.modelo_descricao)
         return a
+
+
+class TipoDocumentoAutocomplete(autocomplete.Select2QuerySetView):
+    @method_decorator(never_cache)
+    def dispatch(self, request, *args, **kwargs):
+        return super(TipoDocumentoAutocomplete, self).dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        # Don't forget to filter out results depending on the visitor !
+        if not self.request.user.is_authenticated():
+            return models.TipoDocumento.none()
+
+        qs = models.TipoDocumento.objects.all()
+
+        if self.q:
+            qs = qs.filter(Q(titulo__icontains=self.q))
+
+            # qs = qs.annotate(full_name=Concat('first_name', Value(' '), 'last_name', output_field=CharField()))
+            # qs = qs.filter(full_name__icontains=self.q)
+        return qs
+
+    def get_result_label(self, result):
+        a = result.titulo
+        return six.text_type(a)

@@ -179,16 +179,17 @@ class CriarModeloDocumentoForm(BootstrapFormInputMixin, DjDocumentsBackendMixin,
         label=get_djdocuments_backend().get_group_label(),
         queryset=get_grupo_assinante_model_class().objects.none(),
         # required=False,
-        widget=AddAnotherWidgetWrapper(
-            autocomplete.ModelSelect2(url='documentos:grupos_do_usuario_autocomplete', ),
-            reverse_lazy('person_create'),
-        )
+        widget=autocomplete.ModelSelect2(url='documentos:grupos_do_usuario_autocomplete'),
 
     )
 
     tipo_documento = TipoDocumentoTemplateModelChoiceField(
         label='Tipo de Documento',
         queryset=TipoDocumento.objects.all(),
+        widget=AddAnotherWidgetWrapper(
+            widget=autocomplete.ModelSelect2(url='documentos:tipodocumento-autocomplete', ),
+            add_related_url=reverse_lazy('documentos:criar_tipo_documento'),
+        )
 
     )
     modelo_documento = ModeloDocumentoTemplateModelChoiceField(
@@ -378,3 +379,9 @@ def create_form_class_assinar(document_object):
             return password
 
     return AssinarDocumentoForm
+
+
+class TipoDocumentoForm(BootstrapFormInputMixin, forms.ModelForm):
+    class Meta:
+        model = TipoDocumento
+        fields = '__all__'

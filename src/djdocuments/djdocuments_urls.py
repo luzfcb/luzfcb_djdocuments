@@ -98,7 +98,7 @@ urlpatterns = [
         ),
     url(r'^t/criar_tipo_documento/$',
         login_required(documentos_views.TipoDocumentoCriar.as_view()),
-        name='dashboard_modelos'
+        name='criar_tipo_documento'
         ),
 
     url(r'^users-autocomplete/$',
@@ -126,6 +126,10 @@ urlpatterns = [
     url(r'^documento-criarautocomplete/$',
         login_required(autocompletes.DocumentoCriarAutocomplete.as_view()),
         name='documentocriar-autocomplete'
+        ),
+    url(r'^tipodocumento-autocomplete/$',
+        login_required(autocompletes.TipoDocumentoAutocomplete.as_view()),
+        name='tipodocumento-autocomplete'
         ),
 
 ]
