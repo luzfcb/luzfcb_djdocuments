@@ -30,8 +30,8 @@ class DocumentoAdmin(SimpleHistoryAdmin):
     list_display = (
         # 'criado_em', 'criado_por', 'versao_numero', 'visualizar_versao'
 
-        'identificador_documento', 'pk', 'pk_uuid', 'assunto', 'versao_numero', 'identificador_versao',
-        'visualizar_versao', 'eh_modelo', 'modelo_descricao', 'editar_documento',
+        'identificador_documento', 'versao_numero', 'identificador_versao', 'pk', 'pk_uuid', 'assunto',
+        'visualizar_versao', 'eh_modelo', 'modelo_descricao', 'grupo_dono', 'editar_documento',
         # 'esta_assinado', 'assinatura_hash', 'criado_por', 'criado_em',
         # 'visualizar_titulo',
         # 'modificado_em',

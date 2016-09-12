@@ -73,7 +73,7 @@ class DocumentoModeloPainelGeralView(DjDocumentsBackendMixin, generic.ListView):
                 'documento': documento,
                 'url_para_editar': reverse('documentos:editar-modelo',
                                            kwargs={'slug': documento.pk_uuid}),
-                'url_para_visualizar': reverse('documentos:validar-detail',
+                'url_para_visualizar': reverse('documentos:validar-detail-modelo',
                                                kwargs={'slug': documento.pk_uuid})
             }
             dados_processados.append(dados)
@@ -242,6 +242,7 @@ class DocumentoEditor(AjaxFormPostMixin,
                       DjDocumentPopupMixin,
                       LuzfcbLockMixin,
                       FormActionViewMixin,
+                      DjDocumentsBackendMixin,
                       generic.UpdateView):
     detail_view_named_url = 'documentos:detail'
     document_json_fields = (
@@ -265,15 +266,18 @@ class DocumentoEditor(AjaxFormPostMixin,
 
     def get_url_para_assinar(self):
         group_id = None
+        retorno = None
         if hasattr(self.object, 'grupo_dono'):
             if not self.object.grupo_dono is None:
                 group_id = self.object.grupo_dono.pk
         if group_id:
-            reverse_lazy('documentos:assinar_por_grupo',
-                         kwargs={'slug': self.object.pk_uuid,
-                                 'group_id': group_id})
-        else:
-            return None
+            if self.djdocuments_backend.pode_assinar(self.object, self.request.user):
+                retorno = reverse_lazy('documentos:assinar_por_grupo',
+                                       kwargs={'slug': self.object.pk_uuid,
+                                               'group_id': group_id})
+            else:
+                return False
+        return retorno
 
     def get_context_data(self, **kwargs):
         context = super(DocumentoEditor, self).get_context_data(**kwargs)
@@ -857,6 +861,18 @@ class DocumentoDetailValidarView(QRCodeValidacaoMixin, DocumentoDetailView):
 
     def render_to_response(self, context, **response_kwargs):
         return super(DocumentoDetailValidarView, self).render_to_response(context, **response_kwargs)
+
+
+class DocumentoModeloDetailValidarView(QRCodeValidacaoMixin, DocumentoDetailView):
+    template_name = 'luzfcb_djdocuments/documento_validacao_detail.html'
+
+    def get_queryset(self):
+        # qs = super(DocumentoModeloDetailValidarView, self).admin_objects.get_queryset()
+        qs = self.model.admin_objects.modelos()
+        return qs
+
+    def render_to_response(self, context, **response_kwargs):
+        return super(DocumentoModeloDetailValidarView, self).render_to_response(context, **response_kwargs)
 
 
 # class AssinaturaDeleteView(SingleDocumentObjectMixin, generic.DeleteView):

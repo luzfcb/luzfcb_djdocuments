@@ -30,7 +30,8 @@ class DocumentoEditarForm(forms.ModelForm):
     cabecalho = forms.CharField(
         widget=CkeditorTextAreadWidget,
         label='',
-        initial=CABECALHO
+        required=False,
+        initial=CABECALHO,
     )
     # titulo = forms.CharField(
     #     widget=CkeditorTextAreadWidget,
@@ -40,11 +41,13 @@ class DocumentoEditarForm(forms.ModelForm):
     conteudo = forms.CharField(
         widget=CkeditorTextAreadWidget,
         label='',
+        required=False,
         initial=BIG_SAMPLE_HTML
     )
     rodape = forms.CharField(
         widget=CkeditorTextAreadWidget,
         label='',
+        required=False,
         initial=RODAPE
     )
 

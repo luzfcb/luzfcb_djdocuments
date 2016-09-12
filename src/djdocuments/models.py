@@ -413,14 +413,17 @@ class Documento(models.Model):
             return self.assinatura_hash.upper().split('$')[-1]
         return None
 
+    _desabilitar_temporiariamente_versao_numero = False
+
     def save(self, *args, **kwargs):
         if not self.pk_uuid:
             self.pk_uuid = uuid.uuid4()
         if self.pk:
             if hasattr(self._meta, 'simple_history_manager_attribute'):
-                history_manager = getattr(self, self._meta.simple_history_manager_attribute)
-                max_db_value = list(history_manager.aggregate(Max('versao_numero')).values())[0]
-                self.versao_numero = max_db_value + 1 if max_db_value >= self.versao_numero else self.versao_numero + 1
+                if not self._desabilitar_temporiariamente_versao_numero:
+                    history_manager = getattr(self, self._meta.simple_history_manager_attribute)
+                    max_db_value = list(history_manager.aggregate(Max('versao_numero')).values())[0]
+                    self.versao_numero = max_db_value + 1 if max_db_value >= self.versao_numero else self.versao_numero + 1
             else:
                 raise MissingHistoryRecordsField(
                     "The model %(cls)s does not have a HistoryRecords field. Define a HistoryRecords()"

@@ -28,8 +28,8 @@
             <div class="tab-content">
                 <div class="tab-pane fade active in" id="modelos_de_documento">
                     <div class="pull-right actions-m18">
-                        <a href="{% url 'documentos:pendentes' %}"
-                           class="btn btn-sm btn-success">Ver todas as Assinaturas Pendentes</a>
+{#                        <a href="{% url 'documentos:pendentes' %}"#}
+{#                           class="btn btn-sm btn-success">Ver todas as Assinaturas Pendentes</a>#}
                     </div>
                     <div id="tb_modelos">
                         <table class="table table-bordered table-striped table-hover table-condensed">
@@ -67,10 +67,10 @@
                                         </td>
                                         <td class="text-center">
                                             <div class="btn-group">
-                                                <a href="{{ dado.url_para_finalizar }}"
-                                                   class="btn btn-sm btn-primary">Finalizar</a>
+                                                <a href="{{ dado.url_para_visualizar }}"
+                                                   class="btn btn-sm btn-primary djpopup">Visualizar</a>
                                                 <a href="{{ dado.url_para_editar }}"
-                                                   class="btn btn-sm btn-primary">Editar</a>
+                                                   class="btn btn-sm btn-primary djpopup">Editar</a>
                                             </div>
                                         </td>
 
