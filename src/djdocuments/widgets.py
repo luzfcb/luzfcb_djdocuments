@@ -7,10 +7,14 @@ from pprint import pprint
 
 from dal import autocomplete
 from django import forms
+from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
-from django.forms import widgets
+from django.forms import widgets, MultiWidget, MultiValueField, Select, TextInput, ChoiceField, CharField
+from django.utils.encoding import force_unicode
 from django.utils.translation import ugettext
 
+from djdocuments.templatetags.luzfcb_djdocuments_tags import remover_tags_html
+from .models import Documento
 from .utils.split_utils import gsplit
 
 ascii_e_numeros_re = re.compile(r'^[a-zA-Z0-9]+\Z')
@@ -21,7 +25,6 @@ validate_ascii_e_numeros = RegexValidator(ascii_e_numeros_re,
 
 
 class SplitWidget(widgets.MultiWidget):
-
     def __init__(self, attrs=None, split_into=4, value_size=None, value=None, fields_max_length=None):
         assert isinstance(split_into, int) and split_into > 0, '"split_into" parameter expect a positive integer'
         self.split_into = split_into
@@ -130,7 +133,6 @@ class SplitedHashField2(forms.MultiValueField):
 
 
 class SplitWidget2(widgets.MultiWidget):
-
     def __init__(self, attrs=None, split_guide=None, merge_last=True, value=None):
         assert isinstance(split_guide, collections.Iterable) and all(
             isinstance(x, int) and x > 0 for x in
@@ -227,7 +229,6 @@ class SplitedHashField3(forms.MultiValueField):
 
 
 class ForwardExtrasMixin(object):
-
     def __init__(self, url=None, forward=None, clear_on_change=None, *args, **kwargs):
         self.clear_on_change = clear_on_change
         super(ForwardExtrasMixin, self).__init__(url, forward, *args, **kwargs)
@@ -259,9 +260,75 @@ class ModelSelect2MultipleForwardExtras(ForwardExtrasMixin, autocomplete.ModelSe
 
 
 class CkeditorTextAreadWidget(forms.Textarea):
-
     def __init__(self, attrs=None):
         default_attrs = {'data-djckeditor': 'true'}
         if attrs:
             default_attrs.update(attrs)
         super(CkeditorTextAreadWidget, self).__init__(default_attrs)
+
+
+# http://garmoncheg.blogspot.com.br/2014/05/implementing-multiple-radio-select.html
+# https://code.djangoproject.com/ticket/12048
+# https://github.com/eventbrite/kegbot/blob/master/pykeg/src/pykeg/web/kegadmin/widgets.py
+
+class ChoiceWithOtherRenderer(forms.RadioSelect.renderer):
+    """RadioFieldRenderer that renders its last choice with a placeholder."""
+
+    def __init__(self, *args, **kwargs):
+        super(ChoiceWithOtherRenderer, self).__init__(*args, **kwargs)
+        self.choices, self.other = self.choices[:-1], self.choices[-1]
+
+    def __iter__(self):
+        for input in super(ChoiceWithOtherRenderer, self).__iter__():
+            yield input
+        id = '%s_%s' % (self.attrs['id'], self.other[0]) if 'id' in self.attrs else ''
+        label_for = ' for="%s"' % id if id else ''
+        checked = '' if not force_unicode(self.other[0]) == self.value else 'checked="true" '
+        yield '<label%s><input type="radio" id="%s" value="%s" name="%s" %s/> %s</label> %%s' % (
+            label_for, id, self.other[0], self.name, checked, self.other[1])
+
+
+class ChoiceWithOtherWidget(forms.MultiWidget):
+    """MultiWidget for use with ChoiceWithOtherField."""
+
+    def __init__(self, choices):
+        widgets = [
+            forms.RadioSelect(choices=choices, renderer=ChoiceWithOtherRenderer),
+            forms.TextInput
+        ]
+        super(ChoiceWithOtherWidget, self).__init__(widgets)
+
+    def decompress(self, value):
+        if not value:
+            return [None, None]
+        return value
+
+    def format_output(self, rendered_widgets):
+        """Format the output by substituting the "other" choice into the first widget."""
+        return rendered_widgets[0] % rendered_widgets[1]
+
+
+class DefaultOrModelChoiceField(forms.MultiValueField):
+    def __init__(self, *args, **kwargs):
+        fields = [
+            forms.ChoiceField(widget=forms.RadioSelect(renderer=ChoiceWithOtherRenderer), *args, **kwargs),
+            forms.CharField(required=False)
+        ]
+        widget = ChoiceWithOtherWidget(choices=kwargs['choices'])
+        kwargs.pop('choices')
+        self._was_required = kwargs.pop('required', True)
+        kwargs['required'] = False
+        super(DefaultOrModelChoiceField, self).__init__(widget=widget, fields=fields, *args, **kwargs)
+
+    def compress(self, value):
+        if self._was_required and not value or value[0] in (None, ''):
+            raise forms.ValidationError(self.error_messages['required'])
+        if not value:
+            return [None, u'']
+        # Patch to override model specific other choice and return CharField value instead of choice tuple
+        if value[0] == 'Other':
+            return value[1]
+        else:
+            return value[0]
+            # Use this for field to return tuple
+            # return value[0], value[1] if force_unicode(value[0]) == force_unicode(self.fields[0].choices[-1][0]) else u''

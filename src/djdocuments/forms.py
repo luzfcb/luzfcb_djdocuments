@@ -15,7 +15,7 @@ from .form_mixins import BootstrapFormInputMixin, ReadOnlyFieldsMixin
 from .models import Documento, TipoDocumento
 from .templatetags.luzfcb_djdocuments_tags import remover_tags_html
 from .utils import get_djdocuments_backend, get_grupo_assinante_model_class
-from .widgets import CkeditorTextAreadWidget, ModelSelect2ForwardExtras, SplitedHashField3
+from .widgets import CkeditorTextAreadWidget, ModelSelect2ForwardExtras, SplitedHashField3, DefaultOrModelChoiceField
 
 # TODO: remove this ugly hack
 try:
@@ -119,6 +119,8 @@ class CriarDocumentoForm(BootstrapFormInputMixin, DjDocumentsBackendMixin, forms
         max_length=70,
 
     )
+
+    # teste = DefaultOrModelChoiceField(choices=[('1', 'a'), ('2', 'b')])
 
 
 class CriarDocumentoParaGrupoForm(CriarDocumentoForm):
