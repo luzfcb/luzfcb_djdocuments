@@ -9,13 +9,14 @@ from django.contrib.auth.hashers import check_password
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.utils.translation import ugettext_lazy as _
 from django_addanother.widgets import AddAnotherWidgetWrapper
+from dj_waff.choice_with_other import ChoiceWithOtherField
 
 from .backends import DjDocumentsBackendMixin
 from .form_mixins import BootstrapFormInputMixin, ReadOnlyFieldsMixin
 from .models import Documento, TipoDocumento
 from .templatetags.luzfcb_djdocuments_tags import remover_tags_html
 from .utils import get_djdocuments_backend, get_grupo_assinante_model_class
-from .widgets import CkeditorTextAreadWidget, ModelSelect2ForwardExtras, SplitedHashField3, DefaultOrModelChoiceField
+from .widgets import CkeditorTextAreadWidget, ModelSelect2ForwardExtras, SplitedHashField3
 
 # TODO: remove this ugly hack
 try:
@@ -86,7 +87,13 @@ class GrupoModelMultipleChoiceField(DjDocumentsBackendMixin, forms.ModelMultiple
         return self.djdocuments_backend.get_grupo_name(obj)
 
 
-class CriarDocumentoForm(BootstrapFormInputMixin, DjDocumentsBackendMixin, forms.Form):
+CRIAR_DOCUMENTO_CHOICES = [
+    ('__padrao__', 'Modelo Padrao'),
+]
+
+
+# BootstrapFormInputMixin
+class CriarDocumentoForm(DjDocumentsBackendMixin, forms.Form):
     def __init__(self, *args, **kwargs):
         self.current_user = kwargs.pop('user')
         super(CriarDocumentoForm, self).__init__(*args, **kwargs)
@@ -104,15 +111,29 @@ class CriarDocumentoForm(BootstrapFormInputMixin, DjDocumentsBackendMixin, forms
         queryset=TipoDocumento.objects.all(),
 
     )
-    modelo_documento = ModeloDocumentoTemplateModelChoiceField(
-        label='Modelo de Documento',
-        queryset=Documento.admin_objects.all(),
-        widget=ModelSelect2ForwardExtras(url='documentos:documentocriar-autocomplete',
-                                         forward=('tipo_documento',),
-                                         clear_on_change=('tipo_documento',)
-                                         ),
+    modelo_documento = ChoiceWithOtherField(
+        choices=CRIAR_DOCUMENTO_CHOICES,
+        first_is_preselected=True,
+        other_form_field=ModeloDocumentoTemplateModelChoiceField(
+            label='Modelo de Documento',
+            queryset=Documento.admin_objects.all(),
+            widget=autocomplete.ModelSelect2(url='documentos:documentocriar-autocomplete',)
+            # widget=ModelSelect2ForwardExtras(url='documentos:documentocriar-autocomplete',
+            #                                  forward=('tipo_documento',),
+            #                                  clear_on_change=('tipo_documento',)
+            #                                  ),
 
+        )
     )
+    # modelo_documento = ModeloDocumentoTemplateModelChoiceField(
+    #     label='Modelo de Documento',
+    #     queryset=Documento.admin_objects.all(),
+    #     widget=ModelSelect2ForwardExtras(url='documentos:documentocriar-autocomplete',
+    #                                      forward=('tipo_documento',),
+    #                                      clear_on_change=('tipo_documento',)
+    #                                      ),
+    #
+    # )
 
     assunto = forms.CharField(
         label='Assunto do Documento',
