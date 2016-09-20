@@ -198,7 +198,7 @@ class DocumentoCriarAutocomplete(autocomplete.Select2QuerySetView):
 
         tipo_documento = self.forwarded.get('tipo_documento', None)
 
-        qs = models.Documento.admin_objects.filter(eh_modelo=True)
+        qs = models.Documento.admin_objects.modelos().exclude(eh_modelo_padrao=True)
 
         if tipo_documento:
             qs = qs.filter(tipo_documento_id=tipo_documento)

@@ -109,14 +109,15 @@ class CriarDocumentoForm(DjDocumentsBackendMixin, forms.Form):
     tipo_documento = TipoDocumentoTemplateModelChoiceField(
         label='Tipo de Documento',
         queryset=TipoDocumento.objects.all(),
-
+        widget=autocomplete.ModelSelect2(url='documentos:tipodocumento-autocomplete')
     )
+    
     modelo_documento = ChoiceWithOtherField(
         choices=CRIAR_DOCUMENTO_CHOICES,
         first_is_preselected=True,
         other_form_field=ModeloDocumentoTemplateModelChoiceField(
             label='Modelo de Documento',
-            queryset=Documento.admin_objects.all().exclude(eh_modelo_padrao=False),
+            queryset=Documento.admin_objects.all(),
             widget=ModelSelect2ForwardExtras(url='documentos:documentocriar-autocomplete',
                                              forward=('tipo_documento',),
                                              clear_on_change=('tipo_documento',)
@@ -183,7 +184,7 @@ class CriarDocumentoParaGrupoForm(CriarDocumentoForm):
 #         label='Descrição do Modelo',
 #         widget=forms.Textarea
 #     )
-class CriarModeloDocumentoForm(BootstrapFormInputMixin, DjDocumentsBackendMixin, forms.Form):
+class CriarModeloDocumentoForm(DjDocumentsBackendMixin, forms.Form):
     def __init__(self, *args, **kwargs):
         self.current_user = kwargs.pop('user')
         super(CriarModeloDocumentoForm, self).__init__(*args, **kwargs)
@@ -208,15 +209,19 @@ class CriarModeloDocumentoForm(BootstrapFormInputMixin, DjDocumentsBackendMixin,
         )
 
     )
-    modelo_documento = ModeloDocumentoTemplateModelChoiceField(
-        label='Modelo de Documento',
-        queryset=Documento.admin_objects.all(),
-        required=False,
-        widget=ModelSelect2ForwardExtras(url='documentos:documentocriar-autocomplete',
-                                         forward=('tipo_documento',),
-                                         clear_on_change=('tipo_documento',)
-                                         ),
+    modelo_documento = ChoiceWithOtherField(
+        label='asdasd',
+        choices=CRIAR_DOCUMENTO_CHOICES,
+        first_is_preselected=True,
+        other_form_field=ModeloDocumentoTemplateModelChoiceField(
+            label='Modelo de Documento',
+            queryset=Documento.admin_objects.all(),
+            widget=ModelSelect2ForwardExtras(url='documentos:documentocriar-autocomplete',
+                                             forward=('tipo_documento',),
+                                             clear_on_change=('tipo_documento',)
+                                             ),
 
+        )
     )
 
     modelo_descricao = forms.CharField(

@@ -1,53 +1,8 @@
 {% extends "luzfcb_djdocuments/documento_create_base.html" %}
 {% load spurl %}
+{% load bootstrap3 %}
+{% load crispy_forms_tags %}
 {% load luzfcb_djdocuments_tags %}
-
-{#{% block form_section %}#}
-{#{% if form %}#}
-{#    <div class="panel panel-info">#}
-{#        <div class="panel-heading">Selecione um dos modelos abaixo para criar um novo documento</div>#}
-{#        <div class="panel-body">#}
-{#            {% spurl base=form_action add_query="{{ vinculate_view_kwarg }}" add_query="{{ vinculate_value_kwarg }}" as document_create_url %}#}
-{##}
-{#            <form class="form-horizontal" action="{{ document_create_url }}" method="post">#}
-{#                <fieldset>#}
-{#                    {% csrf_token %}#}
-{#                    {% if form.errors %}#}
-{#                        <div class="form-group">#}
-{#                            <div class="col-sm-12">#}
-{#                                <div class="alert alert-danger alert-dismissible" role="alert">#}
-{#                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">#}
-{#                                        <span aria-hidden="true">&times;</span>#}
-{#                                    </button>#}
-{#                                    Selecione um dos modelos para criar um novo documento.#}
-{#                                </div>#}
-{#                            </div>#}
-{#                        </div>#}
-{#                    {% endif %}#}
-{##}
-{#                    {% for form_field in form %}#}
-{#                        <div class="form-group">#}
-{#                            <label for="{{ form_field.id_for_label }}"#}
-{#                                   class="col-sm-2 control-label">{{ form_field.label }}:</label>#}
-{#                            <div class="col-sm-10">#}
-{#                                {{ form_field }}#}
-{#                            </div>#}
-{#                        </div>#}
-{#                    {% endfor %}#}
-{##}
-{#                    <div class="form-group">#}
-{#                        <div class="col-sm-offset-2 col-sm-10">#}
-{#                            <button type="submit" class="btn btn-primary">Criar</button>#}
-{#                        </div>#}
-{#                    </div>#}
-{#                </fieldset>#}
-{#            </form>#}
-{##}
-{#        </div>#}
-{#    </div>#}
-{##}
-{#{% endif %}#}
-
 
 {% block form_section %}
     {#    {% if form %}#}
@@ -60,48 +15,16 @@
             <form class="form-horizontal" action="{{ document_create_url }}" method="post">
                 <fieldset>
                     <legend>
-                        <span>Selecione um dos modelos abaixo para criar um novo documento</span>
+                        <span>Selecione um dos modelos abaixo para criar um novo modelo de documento</span>
                     </legend>
                     {% csrf_token %}
-                    {% if form.non_field_errors %}
-                        <div class="form-group">
-                            <div class="col-sm-12">
-                                <div class="alert alert-danger alert-dismissible" role="alert">
-                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                    {% for error in form.non_field_errors %}
-                                        {{ error }}{% if not forloop.last %}<br>{% endif %}
-                                    {% endfor %}
-                                </div>
-                            </div>
-                        </div>
-                    {% endif %}
-                    {% for form_field in form %}
-                        <div class="form-group {% if form_field.errors %}has-error{% endif %}">
-                            <label for="{{ form_field.id_for_label }}"
-                                   class="col-sm-2 control-label">{{ form_field.label }}:</label>
-                            <div class="col-sm-10">
-                                {{ form_field }}
+                    <style>
+                        
+                    </style>
 
-                                <span id="helpBlock2">
-
-
-                                    {% if form_field.errors %}
-                                        {% for error in form_field.errors %}
-                                            <p id="error_{{ forloop.counter }}_{{ form_field.auto_id }}"
-                                               class="help-block">
-                                                <strong>{{ error }}</strong></p>
-                                        {% endfor %}
-                                    {% endif %}
-                                    {% if form_field.help_text %}
-                                        <p id="hint_{{ form_field.auto_id }}"
-                                           class="help-block">{{ form_field.help_text|safe }}</p>
-                                    {% endif %}
-                                </span>
-                            </div>
-                        </div>
-                    {% endfor %}
+                    {% bootstrap_form form layout="horizontal" %}
+                    {% bootstrap_form_errors form layout="horizontal" %}
+{#                    {% bootstrap_button "Criar" button_type="submit" button_class="btn-primary" %}#}
                     <div class="form-group">
                         <div class="col-sm-offset-2 col-sm-10">
                             <button type="submit" class="btn btn-success">Criar</button>
