@@ -116,24 +116,14 @@ class CriarDocumentoForm(DjDocumentsBackendMixin, forms.Form):
         first_is_preselected=True,
         other_form_field=ModeloDocumentoTemplateModelChoiceField(
             label='Modelo de Documento',
-            queryset=Documento.admin_objects.all(),
-            widget=autocomplete.ModelSelect2(url='documentos:documentocriar-autocomplete',)
-            # widget=ModelSelect2ForwardExtras(url='documentos:documentocriar-autocomplete',
-            #                                  forward=('tipo_documento',),
-            #                                  clear_on_change=('tipo_documento',)
-            #                                  ),
+            queryset=Documento.admin_objects.all().exclude(eh_modelo_padrao=False),
+            widget=ModelSelect2ForwardExtras(url='documentos:documentocriar-autocomplete',
+                                             forward=('tipo_documento',),
+                                             clear_on_change=('tipo_documento',)
+                                             ),
 
         )
     )
-    # modelo_documento = ModeloDocumentoTemplateModelChoiceField(
-    #     label='Modelo de Documento',
-    #     queryset=Documento.admin_objects.all(),
-    #     widget=ModelSelect2ForwardExtras(url='documentos:documentocriar-autocomplete',
-    #                                      forward=('tipo_documento',),
-    #                                      clear_on_change=('tipo_documento',)
-    #                                      ),
-    #
-    # )
 
     assunto = forms.CharField(
         label='Assunto do Documento',

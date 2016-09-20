@@ -378,7 +378,12 @@ class DocumentoCriar(VinculateMixin, FormActionViewMixin, DjDocumentsBackendMixi
 
     def form_valid(self, form):
         self.get_vinculate_parameters()
-        modelo_documento = form.cleaned_data['modelo_documento']
+        from dj_waff.choice_with_other import OTHER_CHOICE
+        chave, modelo_documento = form.cleaned_data['modelo_documento']
+
+        if not chave == OTHER_CHOICE:
+            modelo_documento = Documento.objects.modelos().filter(eh_modelo_padrao=True).first()
+
         grupo = form.cleaned_data['grupo']
         assunto = form.cleaned_data['assunto']
 

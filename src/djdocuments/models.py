@@ -201,6 +201,7 @@ class Documento(models.Model):
 
     # template
     eh_modelo = models.BooleanField(default=False, editable=True)
+    eh_modelo_padrao = models.BooleanField(default=False, editable=True)
     modelo_descricao = models.TextField(blank=True, default='')
     # end template
 
