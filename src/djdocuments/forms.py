@@ -111,7 +111,7 @@ class CriarDocumentoForm(DjDocumentsBackendMixin, forms.Form):
         queryset=TipoDocumento.objects.all(),
         widget=autocomplete.ModelSelect2(url='documentos:tipodocumento-autocomplete')
     )
-    
+
     modelo_documento = ChoiceWithOtherField(
         choices=CRIAR_DOCUMENTO_CHOICES,
         first_is_preselected=True,
@@ -210,7 +210,7 @@ class CriarModeloDocumentoForm(DjDocumentsBackendMixin, forms.Form):
 
     )
     modelo_documento = ChoiceWithOtherField(
-        label='asdasd',
+        label='Modelo de Documento',
         choices=CRIAR_DOCUMENTO_CHOICES,
         first_is_preselected=True,
         other_form_field=ModeloDocumentoTemplateModelChoiceField(

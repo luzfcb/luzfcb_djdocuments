@@ -95,7 +95,7 @@ jQuery(document).ready(function ($) {
                 "statusbar=no," +
                 "menubar=no," +
                 "resizable=0," +
-                "width=980," +
+                "width=990," +
                 "height=980," +
                 //"left = 490," +
                 //"top=300"

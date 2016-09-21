@@ -251,6 +251,7 @@ class DocumentoEditor(AjaxFormPostMixin,
         'document_version_number',
         'identificador_versao'
     )
+    esta_editando_modelo = False
     template_name = 'luzfcb_djdocuments/editor/documento_editor.html'
     # template_name = 'luzfcb_djdocuments/documento_update.html'
     lock_revalidated_at_every_x_seconds = 3
@@ -263,6 +264,9 @@ class DocumentoEditor(AjaxFormPostMixin,
 
     def get_form_action(self):
         return reverse('documentos:editar', kwargs={'slug': self.object.pk_uuid})
+
+    def get_esta_editando_modelo(self):
+        return self.esta_editando_modelo
 
     def get_url_para_assinar(self):
         group_id = None
@@ -282,6 +286,7 @@ class DocumentoEditor(AjaxFormPostMixin,
     def get_context_data(self, **kwargs):
         context = super(DocumentoEditor, self).get_context_data(**kwargs)
         context['url_para_assinar'] = self.get_url_para_assinar()
+        context['esta_editando_modelo'] = self.get_esta_editando_modelo()
         return context
 
     @method_decorator(never_cache)
@@ -332,6 +337,7 @@ class DocumentoEditor(AjaxFormPostMixin,
 
 class DocumentoEditorModelo(DocumentoEditor):
     form_class = DocumentoEditarForm
+    esta_editando_modelo = True
 
     def get_queryset(self):
         return self.model.admin_objects.filter(eh_modelo=True)
@@ -356,6 +362,26 @@ def create_document_from_document_template(current_user, grupo, documento_modelo
     documento_novo = Documento(**document_kwargs)
     documento_novo.save()
     documento_novo.adicionar_grupos_assinantes(grupo, current_user)
+
+    return documento_novo
+
+
+def create_document_template_from_document(current_user, grupo, documento_modelo, modelo_descricao):
+    document_kwargs = {
+        'cabecalho': documento_modelo.cabecalho,
+        # 'titulo': documento_modelo.titulo,
+        'conteudo': documento_modelo.conteudo,
+        'rodape': documento_modelo.rodape,
+        'tipo_documento': documento_modelo.tipo_documento,
+        'criado_por': current_user,
+        'modificado_por': current_user,
+        'grupo_dono': grupo,
+        'modelo_descricao': modelo_descricao,
+        'eh_modelo': True
+    }
+
+    documento_novo = Documento(**document_kwargs)
+    documento_novo.save()
 
     return documento_novo
 
@@ -438,10 +464,36 @@ class DocumentoCriarParaGrupo(SingleGroupObjectMixin, DocumentoCriar):
         return form
 
 
+class DocumentoModeloCriarEscolha(generic.TemplateView):
+    template_name = 'luzfcb_djdocuments/documento_modelo_escolha.html'
 class DocumentoModeloCriar(DocumentoCriar):
     template_name = 'luzfcb_djdocuments/documento_modelo_criar.html'
     form_class = CriarModeloDocumentoForm
     form_action = reverse_lazy('documentos:criar_modelo')
+
+    def form_valid(self, form):
+        self.get_vinculate_parameters()
+        from dj_waff.choice_with_other import OTHER_CHOICE
+        chave, modelo_documento = form.cleaned_data['modelo_documento']
+
+        if not chave == OTHER_CHOICE:
+            modelo_documento = Documento.objects.modelos().filter(eh_modelo_padrao=True).first()
+
+        grupo = form.cleaned_data['grupo']
+        modelo_descricao = form.cleaned_data['modelo_descricao']
+
+        documento_novo = create_document_template_from_document(current_user=self.request.user,
+                                                                grupo=grupo,
+                                                                documento_modelo=modelo_documento,
+                                                                modelo_descricao=modelo_descricao)
+
+        if self.vinculate_view_name and self.vinculate_value:
+            viculate_url = reverse(self.vinculate_view_name, kwargs={'document_pk': documento_novo.pk,
+                                                                     'pk': self.vinculate_value})
+            return redirect(viculate_url, permanent=True)
+        else:
+            editar_url = reverse('documentos:editar-modelo', kwargs={'slug': documento_novo.pk_uuid})
+            return redirect(editar_url, permanent=True)
 
 
 class TipoDocumentoCriar(CreatePopupMixin, generic.CreateView):
