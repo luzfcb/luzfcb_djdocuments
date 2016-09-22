@@ -12,7 +12,7 @@
 
                 <form class="form-horizontal" action="{{ document_create_url }}" method="post">
                     <fieldset>
-                        {#                        <legend>Tem certeza que deseja assinar o documento "{{ object.titulo|remover_tags_html }}"#}
+                        {#                        <legend>Tem certeza que deseja assinar o documento "{{ object.assunto|remover_tags_html }}"#}
                         {#                            número: {{ object.identificador_versao }} ?</legend>#}
                         {% csrf_token %}
                         {% bootstrap_form form layout="horizontal" %}

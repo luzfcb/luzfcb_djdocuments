@@ -20,7 +20,7 @@
                   action="{{ form_action }}">
                 <fieldset>
                     <legend>Tem certeza que deseja remover a pendencia de assinatura do documento
-                        "{{ document_object.titulo|remover_tags_html }}"
+                        "{{ document_object.assunto|remover_tags_html }}"
                         número: {{ document_object.identificador_versao }} para
                         o {{ assinatura.grupo_assinante_nome|capfirst }}?
                     </legend>

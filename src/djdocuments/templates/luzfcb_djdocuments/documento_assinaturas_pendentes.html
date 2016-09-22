@@ -163,7 +163,7 @@
                       action="{% url 'documentos:finalizar_assinatura' slug=document_object.pk_uuid %}">
                     <fieldset>
                         <legend>Tem certeza que deseja finalizar o documento
-                            "{{ document_object.titulo|remover_tags_html }}"
+                            "{{ document_object.assunto|remover_tags_html }}"
                             número: {{ document_object.identificador_versao }}?
                         </legend>
                         {% csrf_token %}

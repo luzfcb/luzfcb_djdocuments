@@ -13,7 +13,7 @@
             <form class="form-horizontal" method="post" action="{{ form_action }}">
                 <fieldset>
                     <legend>
-                        {{ user.get_full_name }}, Tem certeza que deseja assinar o documento "{{ document_object.titulo|remover_tags_html }}"
+                        {{ user.get_full_name }}, Tem certeza que deseja assinar o documento "{{ document_object.assunto|remover_tags_html }}"
                         número: {{ document_object.identificador_versao }} ?
                     </legend>
                     {% csrf_token %}

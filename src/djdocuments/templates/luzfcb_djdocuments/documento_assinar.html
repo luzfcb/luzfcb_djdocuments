@@ -11,7 +11,7 @@
         <div class="panel-body">
             <form class="form-horizontal" method="post" action="">
                 <fieldset>
-                    <legend>Tem certeza que deseja assinar o documento "{{ object.titulo|remover_tags_html }}"
+                    <legend>Tem certeza que deseja assinar o documento "{{ object.assunto|remover_tags_html }}"
                         número: {{ object.identificador_versao }} ?
                     </legend>
                     {% csrf_token %}

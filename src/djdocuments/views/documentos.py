@@ -97,10 +97,14 @@ class DocumentoModeloPainelGeralView(DjDocumentsBackendMixin, generic.ListView):
 class DocumentoPainelGeralView(DjDocumentsBackendMixin, generic.TemplateView):
     template_name = 'luzfcb_djdocuments/painel_geral.html'
     mostrar_ultimas = 10
+    next_success_url = None
 
     @method_decorator(never_cache)
     def dispatch(self, request, *args, **kwargs):
         return super(DocumentoPainelGeralView, self).dispatch(request, *args, **kwargs)
+
+    def get_next_success_url(self):
+        return self.next_success_url
 
     def get_ultimas_assinaturas_pendentes_queryset(self):
         return Assinatura.objects.assinaturas_pendentes().order_by('-cadastrado_em')[:self.mostrar_ultimas]
@@ -184,6 +188,9 @@ class DocumentoPainelGeralView(DjDocumentsBackendMixin, generic.TemplateView):
                 'documento': documento,
                 'url_para_finalizar': reverse('documentos:finalizar_assinatura',
                                               kwargs={'slug': documento.pk_uuid}),
+                'url_lista_assinaturas': reverse_lazy('documentos:assinaturas',
+                                                      kwargs={'slug': documento.pk_uuid,
+                                                              })
             }
             dados_processados.append(dados)
         return dados_processados
@@ -196,6 +203,7 @@ class DocumentoPainelGeralView(DjDocumentsBackendMixin, generic.TemplateView):
         context['ultimas_assinaturas_realizadas'] = self.get_ultimas_assinaturas_realizadas_dados()
         context['ultimos_documentos_nao_finalizados'] = self.get_ultimos_documentos_nao_finalizados_dados()
         context['mostrar_ultimas'] = self.mostrar_ultimas
+        context['next_success_url'] = self.get_next_success_url()
         return context
 
 
@@ -215,6 +223,9 @@ class DocumentoPainelGeralPorGrupoView(DocumentoPainelGeralView):
     def get_ultimas_assinaturas_realizadas_queryset(self):
         return Assinatura.objects.assinaturas_realizadas(grupos_ids=self.get_ids_grupos_do_usuario).order_by(
             '-cadastrado_em')[:self.mostrar_ultimas]
+
+    def get_next_success_url(self):
+        return reverse('documentos:dashboard-por-grupo')
 
 
 class DocumentoListView(generic.ListView):
@@ -466,6 +477,8 @@ class DocumentoCriarParaGrupo(SingleGroupObjectMixin, DocumentoCriar):
 
 class DocumentoModeloCriarEscolha(generic.TemplateView):
     template_name = 'luzfcb_djdocuments/documento_modelo_escolha.html'
+
+
 class DocumentoModeloCriar(DocumentoCriar):
     template_name = 'luzfcb_djdocuments/documento_modelo_criar.html'
     form_class = CriarModeloDocumentoForm
@@ -563,8 +576,11 @@ class FinalizarDocumentoFormView(FormActionViewMixin, SingleDocumentObjectMixin,
     template_name = 'luzfcb_djdocuments/documento_finalizar.html'
 
     def get_form_action(self):
-        return reverse('documentos:finalizar_assinatura', kwargs={'slug': self.document_object.pk_uuid,
-                                                                  })
+        return reverse('documentos:finalizar_assinatura',
+                       kwargs={
+                           'slug': self.document_object.pk_uuid
+                       }
+                       )
 
     # http_method_names = ['post']
 

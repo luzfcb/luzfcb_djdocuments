@@ -132,12 +132,16 @@ class AssinaturaDocumentoAdmin(admin.ModelAdmin):
         'hash_assinatura',
         'assinado_em',
         'esta_assinado',
-        'ativo'
+        'ativo',
+        'documento_eh_modelo',
 
     )
 
     def visualizar_pk_uuid(self, obj):
         return obj.documento.pk_uuid
+
+    def documento_eh_modelo(self, obj):
+        return obj.documento.eh_modelo
 
     visualizar_pk_uuid.short_description = 'PK_UUID'
     readonly_fields = (
@@ -153,5 +157,6 @@ class AssinaturaDocumentoAdmin(admin.ModelAdmin):
         'hash_assinatura',
         'assinado_em',
         'esta_assinado',
-        'nome_excluido_por'
+        'nome_excluido_por',
+        'documento_eh_modelo',
     )
