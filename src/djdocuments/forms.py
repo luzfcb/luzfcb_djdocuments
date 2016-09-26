@@ -88,7 +88,7 @@ class GrupoModelMultipleChoiceField(DjDocumentsBackendMixin, forms.ModelMultiple
 
 
 CRIAR_DOCUMENTO_CHOICES = [
-    ('__padrao__', 'Modelo Padrao'),
+    ('__padrao__', 'Nenhum'),
 ]
 
 
@@ -215,10 +215,13 @@ class CriarModeloDocumentoForm(DjDocumentsBackendMixin, forms.Form):
         first_is_preselected=True,
         other_form_field=ModeloDocumentoTemplateModelChoiceField(
             label='Modelo de Documento',
+            to_field_name='pk_uuid',
             queryset=Documento.admin_objects.all(),
             widget=ModelSelect2ForwardExtras(url='documentos:documentocriar-autocomplete',
+                                             to_field_name='pk_uuid',
                                              forward=('tipo_documento',),
-                                             clear_on_change=('tipo_documento',)
+                                             clear_on_change=('tipo_documento',),
+                                             attrs={'data-preview': True},
                                              ),
 
         )
@@ -297,11 +300,19 @@ class DocumetoValidarForm(BootstrapFormInputMixin, forms.Form):
         #     return codigo_crc
 
 
-class FinalizarDocumentoForm(BootstrapFormInputMixin, forms.Form):
+class FinalizarDocumentoForm(BootstrapFormInputMixin, DjDocumentsBackendMixin, forms.Form):
     def __init__(self, *args, **kwargs):
         self.current_logged_user = kwargs.pop('current_logged_user')
         super(FinalizarDocumentoForm, self).__init__(*args, **kwargs)
 
+    finalizado_por = UserModelChoiceField(
+        label="Assinante",
+        help_text="Selecione o usuário que irá finalizar o documento",
+        # queryset=get_real_user_model_class().objects.all().order_by('username'),
+        queryset=USER_MODEL.objects.all().order_by('username'),
+        widget=ModelSelect2ForwardExtras(url='documentos:user-by-group-autocomplete', ),
+
+    )
     password = forms.CharField(label="Senha",
                                help_text="Digite a senha do usuário atual",
                                widget=forms.PasswordInput())
@@ -372,6 +383,93 @@ def create_form_class_assinar(document_object):
                 self.fields['grupo'] = GrupoModelChoiceField(
                     label=self.djdocuments_backend.get_group_label(),
                     help_text="Selecione o {}".format(self.djdocuments_backend.get_group_label()),
+                    queryset=grupo_escolhido_queryset,
+                    required=False,
+                    empty_label=None,
+                    initial=self.grupo_escolhido,
+                    widget=forms.Select(attrs={'class': 'form-control', 'readonly': True, 'disabled': 'disabled'})
+                )
+                self.fields['assinado_por'].queryset = self.djdocuments_backend.get_usuarios_grupo(
+                    self.grupo_escolhido)
+
+        def clean_grupo(self):
+            if self.grupo_escolhido:
+                return self.grupo_escolhido
+            return self.cleaned_data['grupo']
+
+        def clean_assinado_por(self):
+            assinado_por = self.cleaned_data.get('assinado_por')
+            return assinado_por
+
+        def clean_password(self):
+            password = self.cleaned_data.get('password')
+            user = self.cleaned_data.get('assinado_por')
+            valid = check_password(password, user.password)
+            if not valid:
+                raise forms.ValidationError('Invalid password')
+
+            return password
+
+    return AssinarDocumentoForm
+
+
+def create_form_class_finalizar(document_object):
+    url_autocomplete = reverse('documentos:grupos_assinantes_do_documento_autocomplete',
+                               kwargs={'slug': document_object.pk_uuid})
+    djdocuments_backend = get_djdocuments_backend()
+    grupos = djdocuments_backend.get_grupo_model().objects.filter(pk=document_object.grupo_dono.pk)
+
+    class AssinarDocumentoForm(BootstrapFormInputMixin, DjDocumentsBackendMixin, forms.Form):
+        # titulo = forms.CharField(max_length=500)]
+        grupo = forms.ChoiceField(
+            label=djdocuments_backend.get_group_label(),
+            help_text="Selecione a {}. Somente a Defensoria criadora do documento pode finaliza-lo".format(
+                djdocuments_backend.get_group_label()),
+            # queryset=get_grupo_assinante_model_class().objects.all(),
+            choices=grupos,
+            widget=autocomplete.ModelSelect2(url=url_autocomplete, forward=('grupo',)),
+        )
+
+        assinado_por = UserModelChoiceField(
+            label="Assinante",
+            help_text="Selecione o usuário que irá assinar o documento",
+            # queryset=get_real_user_model_class().objects.all().order_by('username'),
+            queryset=USER_MODEL.objects.all().order_by('username'),
+            widget=ModelSelect2ForwardExtras(url='documentos:user-by-group-autocomplete',
+                                             forward=('grupo',), clear_on_change=('grupo',)),
+
+        )
+
+        password = forms.CharField(label="Senha",
+                                   help_text="Digite a senha do usuário selecionado",
+                                   widget=forms.PasswordInput())
+
+        error_messages = {
+            'invalid_login': _("Please enter a correct %(username)s and password. "
+                               "Note that both fields may be case-sensitive."),
+            'inactive': _("This account is inactive."),
+        }
+
+        def __init__(self, *args, **kwargs):
+            self.current_logged_user = kwargs.pop('current_logged_user')
+            grupo_escolhido_queryset = kwargs.get('grupo_escolhido_queryset')
+            grupo_escolhido = kwargs.get('grupo_escolhido')
+            if grupo_escolhido_queryset:
+                kwargs.pop('grupo_escolhido_queryset')
+                kwargs.pop('grupo_escolhido')
+            self.grupo_escolhido = grupo_escolhido
+            super(AssinarDocumentoForm, self).__init__(*args, **kwargs)
+
+            if grupo_escolhido_queryset:
+                self.initial['assinado_por'] = self.current_logged_user
+
+                if not grupo_escolhido_queryset:
+                    pass
+                    # raise backend.get_grupo_model.
+                self.fields['grupo'] = GrupoModelChoiceField(
+                    label=self.djdocuments_backend.get_group_label(),
+                    help_text="Selecione a {}. Somente a Defensoria criadora do documento pode finaliza-lo".format(
+                        djdocuments_backend.get_group_label()),
                     queryset=grupo_escolhido_queryset,
                     required=False,
                     empty_label=None,

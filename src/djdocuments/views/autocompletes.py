@@ -2,6 +2,8 @@
 from __future__ import absolute_import, division, print_function, unicode_literals  # isort:skip
 
 from dal import autocomplete
+from django import http
+from django.core.exceptions import ImproperlyConfigured
 from django.db.models.query_utils import Q
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
@@ -208,12 +210,31 @@ class DocumentoCriarAutocomplete(autocomplete.Select2QuerySetView):
         else:
             qs = models.Documento.admin_objects.none()
 
-        # if self.q:
-        #     qs = qs.filter(Q(first_name__icontains=self.q) | Q(last_name__icontains=self.q))
-        #
-        #     # qs = qs.annotate(full_name=Concat('first_name', Value(' '), 'last_name', output_field=CharField()))
-        #     # qs = qs.filter(full_name__icontains=self.q)
         return qs
+
+    def get_result_value(self, result):
+        """Return the value of a result."""
+        return six.text_type(result.pk_uuid)
+
+    def post(self, request):
+        """Create an object given a text after checking permissions."""
+        if not self.has_add_permission(request):
+            return http.HttpResponseForbidden()
+
+        if not self.create_field:
+            raise ImproperlyConfigured()
+
+        text = request.POST.get('text', None)
+
+        if text is None:
+            return http.HttpResponseBadRequest()
+
+        result = self.create_object(text)
+
+        return http.JsonResponse({
+            'id': self.get_result_value(result),
+            'text': six.text_type(result),
+        })
 
     def get_result_label(self, result):
         a = remover_tags_html(result.modelo_descricao)

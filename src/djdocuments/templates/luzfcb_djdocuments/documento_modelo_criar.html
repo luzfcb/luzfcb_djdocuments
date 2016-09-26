@@ -1,56 +1,96 @@
 {% extends "luzfcb_djdocuments/documento_create_base.html" %}
+{% load staticfiles %}
 {% load spurl %}
 {% load bootstrap3 %}
 {% load crispy_forms_tags %}
 {% load luzfcb_djdocuments_tags %}
 
 {% block form_section %}
-    {#    {% if form %}#}
+    <div class="row">
+        <div class="col-md-6">
+            <div class="panel panel-info">
+                <div class="panel-heading">Criar Modelo de Documento</div>
+                <div class="panel-body">
+                    {% spurl base=form_action add_query="{{ vinculate_view_kwarg }}" add_query="{{ vinculate_value_kwarg }}" as document_create_url %}
 
-    <div class="panel panel-info">
-        <div class="panel-heading">Criar Modelo de Documento</div>
-        <div class="panel-body">
-            {% spurl base=form_action add_query="{{ vinculate_view_kwarg }}" add_query="{{ vinculate_value_kwarg }}" as document_create_url %}
+                    <form class="form-horizontal" action="{{ document_create_url }}" method="post">
+                        <fieldset>
+                            <legend>
+                                <span>Selecione um dos modelos abaixo para criar um novo modelo de documento</span>
+                            </legend>
+                            {% csrf_token %}
 
-            <form class="form-horizontal" action="{{ document_create_url }}" method="post">
-                <fieldset>
-                    <legend>
-                        <span>Selecione um dos modelos abaixo para criar um novo modelo de documento</span>
-                    </legend>
-                    {% csrf_token %}
-                    <style>
+                            {% bootstrap_form form layout="horizontal" %}
+                            {% bootstrap_form_errors form layout="horizontal" %}
+                            <div class="form-group">
+                                <div class="pull-right">
+                                    <button type="submit" class="btn btn-success">Criar</button>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </form>
 
-                    </style>
 
-                    {% bootstrap_form form layout="horizontal" %}
-                    {% bootstrap_form_errors form layout="horizontal" %}
-{#                    {% bootstrap_button "Criar" button_type="submit" button_class="btn-primary" %}#}
-                    <div class="form-group">
-                        <div class="col-sm-offset-2 col-sm-10">
-                            <button type="submit" class="btn btn-success">Criar</button>
-                        </div>
-                    </div>
-                </fieldset>
-            </form>
-
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 text-center">
+            <strong class="text-info">Pré-visualizar </strong>
+            <iframe id="iframeview" frameborder="0" width="100%" height="450" class="iframe_style">
+            </iframe>
         </div>
     </div>
-
-    {#    {% else %}#}
-    {#        sem formaluario#}
-    {#    {% endif %}#}
 
 
 
 
 {% endblock form_section %}
 {% block js_app %}
-
+    <script type="text/javascript" src="{% static 'django_js_reverse/js/reverse.js' %}"></script>
+    <script src="{% url 'js_reverse' %}" type="text/javascript"></script>
 
     {% if form %}
         {{ form.media }}
     {% endif %}
 
+
+    <script type="application/javascript">
+
+        $(document).ready(function () {
+            var ifm = $('#iframeview');
+            $('[data-preview]').change(function () {
+                var pk = $(this).val();
+                if (pk != null) {
+                    var ulr = Urls['documentos:validar-detail-modelo'](pk);
+                    ifm.prop('src', ulr + '?no_nav=1');
+
+                }
+                else {
+                    ifm.prop('src', '');
+                }
+
+            });
+
+            ifm.load(function () {
+                (function () {
+                    console.log("iniciando Pace");
+                    Pace.start();
+                    console.log("talvez tenha iniciado");
+                })();
+                $('#iframeview').contents().find("head").append(
+                        "<style>" +
+                        "body{" +
+                        "zoom: 0.8;" +
+                        "-moz-transform: scale(0.8);" +
+                        "-moz-transform-origin: 0 0;" +
+                        "-o-transform: scale(0.8);" +
+                        "-o-transform-origin: 0 0;" +
+                        "-webkit-transform: scale(0.8);" +
+                        "-webkit-transform-origin: 0 0;" +
+                        "}</style>");
+            });
+        });
+    </script>
 {% endblock js_app %}
 
 

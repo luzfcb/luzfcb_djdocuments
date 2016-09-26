@@ -36,7 +36,7 @@ from ..forms import (
     FinalizarDocumentoForm,
     create_form_class_adicionar_assinantes,
     create_form_class_assinar,
-    TipoDocumentoForm)
+    TipoDocumentoForm, create_form_class_finalizar)
 from ..models import Assinatura, Documento, TipoDocumento
 from .mixins import (
     AjaxFormPostMixin,
@@ -86,7 +86,7 @@ class DocumentoModeloPainelGeralView(DjDocumentsBackendMixin, generic.ListView):
             if isinstance(ordering, six.string_types):
                 ordering = (ordering,)
             queryset = queryset.order_by(*ordering)
-        return queryset
+        return queryset.exclude(eh_modelo_padrao=True)
 
     def get_context_data(self, **kwargs):
         context = super(DocumentoModeloPainelGeralView, self).get_context_data(**kwargs)
@@ -377,13 +377,13 @@ def create_document_from_document_template(current_user, grupo, documento_modelo
     return documento_novo
 
 
-def create_document_template_from_document(current_user, grupo, documento_modelo, modelo_descricao):
+def create_document_template_from_document(current_user, grupo, documento_modelo, modelo_descricao, tipo_documento):
     document_kwargs = {
         'cabecalho': documento_modelo.cabecalho,
         # 'titulo': documento_modelo.titulo,
         'conteudo': documento_modelo.conteudo,
         'rodape': documento_modelo.rodape,
-        'tipo_documento': documento_modelo.tipo_documento,
+        'tipo_documento': tipo_documento,
         'criado_por': current_user,
         'modificado_por': current_user,
         'grupo_dono': grupo,
@@ -494,11 +494,14 @@ class DocumentoModeloCriar(DocumentoCriar):
 
         grupo = form.cleaned_data['grupo']
         modelo_descricao = form.cleaned_data['modelo_descricao']
+        tipo_documento = form.cleaned_data['tipo_documento']
 
         documento_novo = create_document_template_from_document(current_user=self.request.user,
                                                                 grupo=grupo,
                                                                 documento_modelo=modelo_documento,
-                                                                modelo_descricao=modelo_descricao)
+                                                                modelo_descricao=modelo_descricao,
+                                                                tipo_documento=tipo_documento
+                                                                )
 
         if self.vinculate_view_name and self.vinculate_value:
             viculate_url = reverse(self.vinculate_view_name, kwargs={'document_pk': documento_novo.pk,
@@ -571,8 +574,9 @@ class VincularDocumentoBaseView(SingleDocumentObjectMixin, SingleObjectMixin, ge
         return False
 
 
-class FinalizarDocumentoFormView(FormActionViewMixin, SingleDocumentObjectMixin, generic.FormView):
-    form_class = FinalizarDocumentoForm
+class FinalizarDocumentoFormView(FormActionViewMixin, SingleDocumentObjectMixin, DjDocumentsBackendMixin,
+                                 generic.FormView):
+    # form_class = FinalizarDocumentoForm
     template_name = 'luzfcb_djdocuments/documento_finalizar.html'
 
     def get_form_action(self):
@@ -583,14 +587,33 @@ class FinalizarDocumentoFormView(FormActionViewMixin, SingleDocumentObjectMixin,
                        )
 
     # http_method_names = ['post']
+    def get_form_class(self):
+        return create_form_class_finalizar(self.document_object)
 
     @method_decorator(never_cache)
     def dispatch(self, request, *args, **kwargs):
         return super(FinalizarDocumentoFormView, self).dispatch(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        context = super(FinalizarDocumentoFormView, self).get_context_data(**kwargs)
+        context['next'] = self.request.GET.get('next')
+        return context
+
+    # def get_form_kwargs(self):
+    #     kwargs = super(FinalizarDocumentoFormView, self).get_form_kwargs()
+    #     kwargs['current_logged_user'] = self.request.user
+    #     return kwargs
+
     def get_form_kwargs(self):
         kwargs = super(FinalizarDocumentoFormView, self).get_form_kwargs()
-        kwargs['current_logged_user'] = self.request.user
+        current_logged_user = self.request.user
+        kwargs['current_logged_user'] = current_logged_user
+        group_id = self.document_object.grupo_dono.pk
+        group_queryset = self.djdocuments_backend.get_grupo_model().objects.filter(pk=group_id)
+        # kwargs['grupo_escolhido'] = None
+        if group_id:
+            kwargs['grupo_escolhido_queryset'] = group_queryset
+            kwargs['grupo_escolhido'] = self.document_object.grupo_dono
         return kwargs
 
     def form_valid(self, form):
@@ -926,6 +949,7 @@ class DocumentoDetailView(NextURLMixin, DjDocumentPopupMixin, generic.DetailView
                                               kwargs={'slug': self.object.pk_uuid})
         # context['assinaturas'] = self.object.assinaturas.select_related('assinado_por').all()
         context['assinaturas'] = self.object.assinaturas.all()
+        context['no_nav'] = True if self.request.GET.get('no_nav') else False
         return context
 
 

@@ -9,6 +9,7 @@ from dal import autocomplete
 from django import forms
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
+from django.db.models import Q
 from django.forms import widgets, MultiWidget, MultiValueField, Select, TextInput, ChoiceField, CharField
 from django.utils.encoding import force_unicode
 from django.utils.translation import ugettext
@@ -252,7 +253,16 @@ class ForwardExtrasMixin(object):
 
 
 class ModelSelect2ForwardExtras(ForwardExtrasMixin, autocomplete.ModelSelect2):
-    pass
+    def __init__(self, url=None, forward=None, clear_on_change=None, to_field_name='pk', *args, **kwargs):
+        self.to_field_name = to_field_name
+        super(ModelSelect2ForwardExtras, self).__init__(url, forward, clear_on_change, *args, **kwargs)
+
+    def filter_choices_to_render(self, selected_choices):
+        """Filter out un-selected choices if choices is a QuerySet."""
+        d = {'{}__in'.format(self.to_field_name): [c for c in selected_choices if c]}
+        self.choices.queryset = self.choices.queryset.filter(
+            **d
+        )
 
 
 class ModelSelect2MultipleForwardExtras(ForwardExtrasMixin, autocomplete.ModelSelect2Multiple):
@@ -265,4 +275,3 @@ class CkeditorTextAreadWidget(forms.Textarea):
         if attrs:
             default_attrs.update(attrs)
         super(CkeditorTextAreadWidget, self).__init__(default_attrs)
-

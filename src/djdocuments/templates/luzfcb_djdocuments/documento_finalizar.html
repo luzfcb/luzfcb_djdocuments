@@ -1,6 +1,7 @@
 
 {% extends "luzfcb_djdocuments/documento_assinar_base.html" %}
 {% load luzfcb_djdocuments_tags %}
+{% load spurl %}
 
 
 
@@ -10,10 +11,12 @@
     <div class="panel panel-info">
         <div class="panel-heading">Finalizar Documento</div>
         <div class="panel-body">
-            <form class="form-horizontal" method="post" action="{{ form_action }}">
+         {% spurl base=form_action add_query="next={{ next }}" as form_action_com_url %}
+
+            <form class="form-horizontal" method="post" action="{{ form_action_com_url }}">
                 <fieldset>
                     <legend>
-                        {{ user.get_full_name }}, Tem certeza que deseja assinar o documento "{{ document_object.assunto|remover_tags_html }}"
+                        {{ user.get_full_name }}, <br/>Tem certeza que deseja finalizar o documento "{{ document_object.assunto|remover_tags_html }}"
                         número: {{ document_object.identificador_versao }} ?
                     </legend>
                     {% csrf_token %}
