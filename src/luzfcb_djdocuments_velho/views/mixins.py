@@ -51,8 +51,8 @@ class NextURLMixin(object):
             next_page = self.request.POST.get(next_kwarg_name,
                                               self.request.GET.get(next_kwarg_name))
             # Security check -- don't allow redirection to a different host.
-            # if not is_safe_url(url=next_page, host=self.request.get_host()):
-            #     next_page = self.request.path
+            # if not is_safe_url(url=next_page_url, host=self.request.get_host()):
+            #     next_page_url = self.request.path
 
         return next_page
 

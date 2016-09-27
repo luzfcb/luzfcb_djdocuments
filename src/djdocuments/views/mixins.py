@@ -15,6 +15,7 @@ from django.utils import six
 from django.utils.translation import ugettext as _
 from urlobject import URLObject
 
+from djdocuments.utils.http import is_safe_url
 from ..models import Documento
 from ..templatetags.luzfcb_djdocuments_tags import absolute_uri
 from ..utils.base64utils import png_as_base64_str
@@ -41,7 +42,6 @@ class FormActionViewMixin(object):
 
 
 class QRCodeValidacaoMixin(object):
-
     def get_context_data(self, **kwargs):
         # http://stackoverflow.com/a/7389616/2975300
         context = super(QRCodeValidacaoMixin, self).get_context_data(**kwargs)
@@ -66,79 +66,80 @@ class QRCodeValidacaoMixin(object):
         return context
 
 
-class NextURLMixin(object):
-    next_kwarg_name = 'next'
-    next_page_url = None
-
-    def get_next_kwarg_name(self):
-        if not hasattr(self, 'next_kwarg_name'):
-            raise ImproperlyConfigured(
-                '{0} is missing an next_kwarg_name.'
-                ' Define '
-                '{0}.next_kwarg_name or override '
-                '{0}.get_next_kwarg_name().'.format(
-                    self.__class__.__name__))
-        return self.next_kwarg_name
-
-    def get_next_page_url(self):
-        next_kwarg_name = self.get_next_kwarg_name()
-        next_page = None
-
-        if not hasattr(self, 'next_page_url'):
-            raise ImproperlyConfigured(
-                '{0} is missing an next_page_url '
-                'url to redirect to. Define '
-                '{0}.next_page_url or override '
-                '{0}.get_next_page_url().'.format(
-                    self.__class__.__name__))
-
-        if self.next_page_url is not None:
-            # print('if self.next_page_url is not None:')
-            next_page = resolve_url(self.next_page_url)
-
-        if next_kwarg_name in self.request.POST or next_kwarg_name in self.request.GET:
-            # print('if next_kwarg_name in self.request.POST or next_kwarg_name in self.request.GET: id:', id(self))
-            next_page = self.request.POST.get(next_kwarg_name,
-                                              self.request.GET.get(next_kwarg_name))
-            # Security check -- don't allow redirection to a different host.
-            # if not is_safe_url(url=next_page, host=self.request.get_host()):
-            #     next_page = self.request.path
-
-        return next_page
-
-    def form_valid(self, form):
-        self.next_page_url = form.cleaned_data.get('proximo')
-        return super(NextURLMixin, self).form_valid(form)
-
-    def get_initial(self):
-        initial = super(NextURLMixin, self).get_initial()
-        initial.update({'proximo': self.get_next_page_url()})
-        return initial
-
-    def post(self, request, *args, **kwargs):
-        ret = super(NextURLMixin, self).post(request, *args, **kwargs)
-        self.next_page_url = self.get_next_page_url()
-        return ret
-
-    #
-    def get(self, *args, **kwargs):
-        ret = super(NextURLMixin, self).get(*args, **kwargs)
-        self.next_page_url = self.get_next_page_url()
-        return ret
-
-    def get_context_data(self, **kwargs):
-
-        context = super(NextURLMixin, self).get_context_data(**kwargs)
-        next_kwarg_name = self.next_kwarg_name  # self.get_next_kwarg_name()
-        next_page_url = self.next_page_url or self.get_next_page_url()
-        context['next_kwarg_name'] = next_kwarg_name
-        context['next_page_url'] = next_page_url
-        if next_kwarg_name and next_page_url:
-            context['next_page_paran'] = '{}={}'.format(next_kwarg_name, next_page_url)
-        else:
-            context['next_page_paran'] = ''
-        # context['next_url2'] = self.request.build_absolute_uri(self.get_next_page_url())
-        return context
+#
+# class NextURLMixin(object):
+#     next_kwarg_name = 'next'
+#     next_page_url = None
+#
+#     def get_next_kwarg_name(self):
+#         if not hasattr(self, 'next_kwarg_name'):
+#             raise ImproperlyConfigured(
+#                 '{0} is missing an next_kwarg_name.'
+#                 ' Define '
+#                 '{0}.next_kwarg_name or override '
+#                 '{0}.get_next_kwarg_name().'.format(
+#                     self.__class__.__name__))
+#         return self.next_kwarg_name
+#
+#     def get_next_page_url(self):
+#         next_kwarg_name = self.get_next_kwarg_name()
+#         next_page_url = None
+#
+#         if not hasattr(self, 'next_page_url'):
+#             raise ImproperlyConfigured(
+#                 '{0} is missing an next_page_url '
+#                 'url to redirect to. Define '
+#                 '{0}.next_page_url or override '
+#                 '{0}.get_next_page_url().'.format(
+#                     self.__class__.__name__))
+#
+#         if self.next_page_url is not None:
+#             # print('if self.next_page_url is not None:')
+#             next_page_url = resolve_url(self.next_page_url)
+#
+#         if next_kwarg_name in self.request.POST or next_kwarg_name in self.request.GET:
+#             # print('if next_kwarg_name in self.request.POST or next_kwarg_name in self.request.GET: id:', id(self))
+#             next_page_url = self.request.POST.get(next_kwarg_name,
+#                                               self.request.GET.get(next_kwarg_name))
+#             # Security check -- don't allow redirection to a different host.
+#             # if not is_safe_url(url=next_page_url, host=self.request.get_host()):
+#             #     next_page_url = self.request.path
+#
+#         return next_page_url
+#
+#     def form_valid(self, form):
+#         self.next_page_url = form.cleaned_data.get('proximo')
+#         return super(NextURLMixin, self).form_valid(form)
+#
+#     def get_initial(self):
+#         initial = super(NextURLMixin, self).get_initial()
+#         initial.update({'proximo': self.get_next_page_url()})
+#         return initial
+#
+#     def post(self, request, *args, **kwargs):
+#         ret = super(NextURLMixin, self).post(request, *args, **kwargs)
+#         self.next_page_url = self.get_next_page_url()
+#         return ret
+#
+#     #
+#     def get(self, *args, **kwargs):
+#         ret = super(NextURLMixin, self).get(*args, **kwargs)
+#         self.next_page_url = self.get_next_page_url()
+#         return ret
+#
+#     def get_context_data(self, **kwargs):
+#
+#         context = super(NextURLMixin, self).get_context_data(**kwargs)
+#         next_kwarg_name = self.next_kwarg_name  # self.get_next_kwarg_name()
+#         next_page_url = self.next_page_url or self.get_next_page_url()
+#         context['next_kwarg_name'] = next_kwarg_name
+#         context['next_page_url'] = next_page_url
+#         if next_kwarg_name and next_page_url:
+#             context['next_page_paran'] = '{}={}'.format(next_kwarg_name, next_page_url)
+#         else:
+#             context['next_page_paran'] = ''
+#         # context['next_url2'] = self.request.build_absolute_uri(self.get_next_page_url())
+#         return context
 
 
 class SingleDocumentObjectMixin(object):
@@ -365,7 +366,6 @@ class SingleGroupObjectMixin(object):
 
 
 class AuditavelViewMixin(object):
-
     def form_valid(self, form):
         if hasattr(self.request, 'user') and not isinstance(self.request.user, AnonymousUser):
             if not form.instance.criado_por:
@@ -375,7 +375,6 @@ class AuditavelViewMixin(object):
 
 
 class DjDocumentPopupMixin(object):
-
     def get_initial(self):
         initial = super(DjDocumentPopupMixin, self).get_initial()
         initial.update({'is_popup': self.get_is_popup()})
@@ -399,7 +398,6 @@ class DjDocumentPopupMixin(object):
 
 
 class CopyDocumentContentMixin(object):
-
     def get_initial(self):
         initial = super(CopyDocumentContentMixin, self).get_initial()
         documento_instance = self.get_documento_instance()
@@ -426,7 +424,6 @@ class CopyDocumentContentMixin(object):
 
 
 class DocumentoAssinadoRedirectMixin(object):
-
     def get(self, request, *args, **kwargs):
         ret = super(DocumentoAssinadoRedirectMixin, self).get(request, *args, **kwargs)
 
@@ -500,3 +497,59 @@ class VinculateMixin(object):
             context['vinculate_view_kwarg'] = '{}={}'.format(self.vinculate_view_field, self.vinculate_view_name)
             context['vinculate_value_kwarg'] = '{}={}'.format(self.vinculate_value_field, self.vinculate_value)
         return context
+
+
+# backport of django 1.11
+# https://github.com/django/django/blob/master/django/contrib/auth/views.py#L56-L62
+class SuccessURLAllowedHostsMixin(object):
+    success_url_allowed_hosts = set()
+
+    def get_success_url_allowed_hosts(self):
+        allowed_hosts = {self.request.get_host()}
+        allowed_hosts.update(self.success_url_allowed_hosts)
+        return allowed_hosts
+
+
+class NextPageURLMixin(SuccessURLAllowedHostsMixin):
+    next_page_url = None
+    next_page_redirect_field_name = 'next'
+
+    def get_context_data(self, **kwargs):
+        context = super(NextPageURLMixin, self).get_context_data(**kwargs)
+        next_page_redirect_field_name = self.get_next_page_redirect_field_name()
+        context['next_page_redirect_field_name'] = next_page_redirect_field_name
+        context['next_page_url'] = self.get_next_page()
+        return context
+
+    def get_next_page_redirect_field_name(self):
+        return self.next_page_redirect_field_name
+
+    def get_next_page(self):
+        next_page_redirect_field_name = self.get_next_page_redirect_field_name()
+        if self.next_page_url is not None:
+            next_page = resolve_url(self.next_page_url)
+        else:
+            next_page = self.next_page_url
+
+        if (next_page_redirect_field_name in self.request.POST or
+                    next_page_redirect_field_name in self.request.GET):
+            next_page = self.request.POST.get(
+                next_page_redirect_field_name,
+                self.request.GET.get(next_page_redirect_field_name)
+            )
+            url_is_safe = is_safe_url(
+                url=next_page,
+                allowed_hosts=self.get_success_url_allowed_hosts(),
+                require_https=self.request.is_secure(),
+            )
+            # Security check -- Ensure the user-originating redirection URL is
+            # safe.
+            if not url_is_safe:
+                next_page = self.request.path
+        return next_page
+
+    def get_success_url(self):
+        next_page = self.get_next_page()
+        if not self.get_next_page() == self.request.path:
+            return next_page
+        return super(NextPageURLMixin, self).get_success_url()

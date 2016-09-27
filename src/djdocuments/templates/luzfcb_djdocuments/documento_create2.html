@@ -1,71 +1,91 @@
 {% extends "luzfcb_djdocuments/documento_create_base.html" %}
+{% load staticfiles %}
 {% load spurl %}
 {% load bootstrap3 %}
+{% load crispy_forms_tags %}
 {% load luzfcb_djdocuments_tags %}
 
 {% block form_section %}
-    {% if form %}
-        <div class="panel panel-info">
-            <div class="panel-heading">Selecione um dos modelos abaixo para criar um novo documento</div>
-            <div class="panel-body">
-                {% spurl base=form_action add_query="{{ vinculate_view_kwarg }}" add_query="{{ vinculate_value_kwarg }}" as document_create_url %}
+    <div class="row">
+        <div class="col-md-6">
+            <div class="panel panel-info">
+                <div class="panel-heading">Selecione um dos modelos abaixo para criar um novo documento</div>
+                <div class="panel-body">
+                    {% spurl base=form_action add_query="{{ vinculate_view_kwarg }}" add_query="{{ vinculate_value_kwarg }}" as document_create_url %}
 
-                <form class="form-horizontal" action="{{ document_create_url }}" method="post">
-                    <fieldset>
-                        {#                        <legend>Tem certeza que deseja assinar o documento "{{ object.assunto|remover_tags_html }}"#}
-                        {#                            número: {{ object.identificador_versao }} ?</legend>#}
-                        {% csrf_token %}
-                        {% bootstrap_form form layout="horizontal" %}
-                        {% bootstrap_form_errors form layout="horizontal" %}
-                        {% bootstrap_button "Criar" button_type="submit" button_class="btn-primary" %}
-{#                        {% if form.errors %}#}
-{#                            <div class="form-group">#}
-{#                                <div class="col-sm-12">#}
-{#                                    <div class="alert alert-danger alert-dismissible" role="alert">#}
-{#                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">#}
-{#                                            <span aria-hidden="true">&times;</span>#}
-{#                                        </button>#}
-{#                                        Selecione um dos modelos para criar um novo documento.#}
-{#                                    </div>#}
-{#                                </div>#}
-{#                            </div>#}
-{#                        {% endif %}#}
-{##}
-{#                        {% for form_field in form %}#}
-{#                            <div class="form-group">#}
-{#                                <label for="{{ form_field.id_for_label }}"#}
-{#                                       class="col-sm-2 control-label">{{ form_field.label }}:</label>#}
-{#                                <div class="col-sm-10">#}
-{#                                    {{ form_field }}#}
-{#                                </div>#}
-{#                            </div>#}
-{#                        {% endfor %}#}
-{##}
-{#                        <div class="form-group">#}
-{#                            <div class="col-sm-offset-2 col-sm-10">#}
-{#                                <button type="submit" class="btn btn-primary">Criar</button>#}
-{#                            </div>#}
-{#                        </div>#}
-                    </fieldset>
-                </form>
+                    <form class="form-horizontal" action="{{ document_create_url }}" method="post">
+                        <fieldset>
+                            <legend>
+                                <span>Selecione um dos modelos abaixo para criar um novo modelo de documento</span>
+                            </legend>
+                            {% csrf_token %}
 
+                            {% bootstrap_form form layout="horizontal" %}
+                            {% bootstrap_form_errors form layout="horizontal" %}
+                            <div class="form-group">
+                                <div class="col-sm-offset-10 col-sm-10">
+                                    <button type="submit" class="btn btn-success">Criar</button>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </form>
+
+
+                </div>
             </div>
         </div>
-
-    {% endif %}
+        <div class="col-md-6 text-center">
+            <strong class="text-info">Pré-visualizar </strong>
+            <iframe id="iframeview" frameborder="0" width="100%" height="450" class="iframe_style">
+            </iframe>
+        </div>
+    </div>
 
 
 
 
 {% endblock form_section %}
 {% block js_app %}
-
+    <script type="text/javascript" src="{% static 'django_js_reverse/js/reverse.js' %}"></script>
+    <script src="{% url 'js_reverse' %}" type="text/javascript"></script>
 
     {% if form %}
         {{ form.media }}
     {% endif %}
 
-{% endblock js_app %}
 
+    <script type="application/javascript">
+
+        $(document).ready(function () {
+            var ifm = $('#iframeview');
+            $('[data-preview]').change(function () {
+                var pk = $(this).val();
+                if (pk != null) {
+                    var ulr = Urls['documentos:validar-detail-modelo'](pk);
+                    ifm.prop('src', ulr + '?no_nav=1');
+
+                }
+                else {
+                    ifm.prop('src', '');
+                }
+
+            });
+
+            ifm.load(function () {
+                $('#iframeview').contents().find("head").append(
+                        "<style>" +
+                        "body{" +
+                        "zoom: 0.8;" +
+                        "-moz-transform: scale(0.8);" +
+                        "-moz-transform-origin: 0 0;" +
+                        "-o-transform: scale(0.8);" +
+                        "-o-transform-origin: 0 0;" +
+                        "-webkit-transform: scale(0.8);" +
+                        "-webkit-transform-origin: 0 0;" +
+                        "}</style>");
+            });
+        });
+    </script>
+{% endblock js_app %}
 
 

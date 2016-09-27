@@ -43,13 +43,13 @@ from .mixins import (
     AuditavelViewMixin,
     DocumentoAssinadoRedirectMixin,
     FormActionViewMixin,
-    NextURLMixin,
+    # NextURLMixin,
     DjDocumentPopupMixin,
     QRCodeValidacaoMixin,
     SingleDocumentObjectMixin,
     SingleGroupObjectMixin,
-    VinculateMixin
-)
+    VinculateMixin,
+    NextPageURLMixin)
 
 logger = logging.getLogger('djdocuments')
 
@@ -249,7 +249,7 @@ class DocumentoListView(generic.ListView):
 class DocumentoEditor(AjaxFormPostMixin,
                       # DocumentoAssinadoRedirectMixin,
                       AuditavelViewMixin,
-                      NextURLMixin,
+                      NextPageURLMixin,
                       DjDocumentPopupMixin,
                       LuzfcbLockMixin,
                       FormActionViewMixin,
@@ -475,6 +475,7 @@ class DocumentoCriarParaGrupo(SingleGroupObjectMixin, DocumentoCriar):
         return form
 
 
+# todo apagar
 class DocumentoModeloCriarEscolha(generic.TemplateView):
     template_name = 'luzfcb_djdocuments/documento_modelo_escolha.html'
 
@@ -510,6 +511,11 @@ class DocumentoModeloCriar(DocumentoCriar):
         else:
             editar_url = reverse('documentos:editar-modelo', kwargs={'slug': documento_novo.pk_uuid})
             return redirect(editar_url, permanent=True)
+
+
+# todo
+class CriarModeloDeDocumentoExistente(DocumentoModeloCriar):
+    form_class = CriarModeloDocumentoForm
 
 
 class TipoDocumentoCriar(CreatePopupMixin, generic.CreateView):
@@ -575,7 +581,7 @@ class VincularDocumentoBaseView(SingleDocumentObjectMixin, SingleObjectMixin, ge
 
 
 class FinalizarDocumentoFormView(FormActionViewMixin, SingleDocumentObjectMixin, DjDocumentsBackendMixin,
-                                 generic.FormView):
+                                 NextPageURLMixin, generic.FormView):
     # form_class = FinalizarDocumentoForm
     template_name = 'luzfcb_djdocuments/documento_finalizar.html'
 
@@ -815,8 +821,32 @@ class DocumentoAssinaturasListView(SingleDocumentObjectMixin, DjDocumentsBackend
         context['dados_processados'] = dados_processados
         context['url_para_visualizar'] = reverse('documentos:validar-detail',
                                                  kwargs={'slug': self.document_object.pk_uuid})
-        context['form'] = FinalizarDocumentoForm(current_logged_user=self.request.user)
+
+        context['form'] = self.get_form()
         return context
+
+    def get_form_kwargs(self):
+        kwargs = {}
+        current_logged_user = self.request.user
+        kwargs['current_logged_user'] = current_logged_user
+        group_id = self.document_object.grupo_dono.pk
+        group_queryset = self.djdocuments_backend.get_grupo_model().objects.filter(pk=group_id)
+        # kwargs['grupo_escolhido'] = None
+        if group_id:
+            kwargs['grupo_escolhido_queryset'] = group_queryset
+            kwargs['grupo_escolhido'] = self.document_object.grupo_dono
+        return kwargs
+
+    def get_form(self, form_class=None):
+        """
+        Returns an instance of the form to be used in this view.
+        """
+        if form_class is None:
+            form_class = self.get_form_class()
+        return form_class(**self.get_form_kwargs())
+
+    def get_form_class(self):
+        return create_form_class_finalizar(self.document_object)
 
 
 class AdicionarAssinantes(SingleDocumentObjectMixin, DjDocumentsBackendMixin, generic.FormView):
@@ -851,6 +881,7 @@ class AdicionarAssinantes(SingleDocumentObjectMixin, DjDocumentsBackendMixin, ge
 class AssinarDocumentoView(DocumentoAssinadoRedirectMixin,
                            SingleDocumentObjectMixin,
                            DjDocumentsBackendMixin,
+                           NextPageURLMixin,
                            generic.FormView):
     template_name = 'luzfcb_djdocuments/documento_assinar.html'
     # form_class = AssinarDocumentoForm
@@ -921,13 +952,13 @@ class AssinarDocumentoView(DocumentoAssinadoRedirectMixin,
         return ret
 
     def get_success_url(self):
-        next_url = self.request.GET.get('next')
-        if next_url:
+        next_url = self.get_next_page()
+        if not next_url == self.request.path:
             return next_url
         return reverse('documentos:assinaturas', kwargs={'slug': self.document_object.pk_uuid})
 
 
-class DocumentoDetailView(NextURLMixin, DjDocumentPopupMixin, generic.DetailView):
+class DocumentoDetailView(NextPageURLMixin, DjDocumentPopupMixin, generic.DetailView):
     template_name = 'luzfcb_djdocuments/documento_detail.html'
     # template_name = 'luzfcb_djdocuments/documento_validacao_detail.html'
     model = Documento

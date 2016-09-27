@@ -23,7 +23,7 @@
                             {% bootstrap_form form layout="horizontal" %}
                             {% bootstrap_form_errors form layout="horizontal" %}
                             <div class="form-group">
-                                <div class="pull-right">
+                                <div class="col-sm-offset-10 col-sm-10">
                                     <button type="submit" class="btn btn-success">Criar</button>
                                 </div>
                             </div>
@@ -72,11 +72,6 @@
             });
 
             ifm.load(function () {
-                (function () {
-                    console.log("iniciando Pace");
-                    Pace.start();
-                    console.log("talvez tenha iniciado");
-                })();
                 $('#iframeview').contents().find("head").append(
                         "<style>" +
                         "body{" +

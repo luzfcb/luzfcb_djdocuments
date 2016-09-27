@@ -112,15 +112,32 @@ class CriarDocumentoForm(DjDocumentsBackendMixin, forms.Form):
         widget=autocomplete.ModelSelect2(url='documentos:tipodocumento-autocomplete')
     )
 
+    # modelo_documento = ChoiceWithOtherField(
+    #     choices=CRIAR_DOCUMENTO_CHOICES,
+    #     first_is_preselected=True,
+    #     other_form_field=ModeloDocumentoTemplateModelChoiceField(
+    #         label='Modelo de Documento',
+    #         queryset=Documento.admin_objects.all(),
+    #         widget=ModelSelect2ForwardExtras(url='documentos:documentocriar-autocomplete',
+    #                                          forward=('tipo_documento',),
+    #                                          clear_on_change=('tipo_documento',)
+    #                                          ),
+    #
+    #     )
+    # )
     modelo_documento = ChoiceWithOtherField(
+        label='Modelo de Documento',
         choices=CRIAR_DOCUMENTO_CHOICES,
         first_is_preselected=True,
         other_form_field=ModeloDocumentoTemplateModelChoiceField(
             label='Modelo de Documento',
+            to_field_name='pk_uuid',
             queryset=Documento.admin_objects.all(),
             widget=ModelSelect2ForwardExtras(url='documentos:documentocriar-autocomplete',
+                                             to_field_name='pk_uuid',
                                              forward=('tipo_documento',),
-                                             clear_on_change=('tipo_documento',)
+                                             clear_on_change=('tipo_documento',),
+                                             attrs={'data-preview': True},
                                              ),
 
         )

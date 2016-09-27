@@ -44,7 +44,7 @@ class AccessMixin(object):
 
     def get_redirect_field_name(self):
         """
-        Override this method to override the redirect_field_name attribute.
+        Override this method to override the next_page_redirect_field_name attribute.
         """
         return self.redirect_field_name
 

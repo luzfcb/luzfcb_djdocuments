@@ -58,16 +58,17 @@ jQuery(document).ready(function ($) {
         var desabilitado = $(this).attr("disabled") || false;
 
         if (!desabilitado) {
-
-
+            console.table($(this));
+            var width = 990;
+            var height = 980;
             //var h = $(this).data('height');
             //var s = $(this).data('scrollbars');
-            //var fullscreen = $(this).data('fullscreen');
-            //if (fullscreen === "no") {
-            //	console.log(fullscreen);
-            //} else {
-            //	console.log('nada');
-            //}
+            var fullscreen = $(this).hasClass('djfullscreen');
+
+            if (fullscreen) {
+                width = screen.width;
+                height = screen.height
+            }
             //
             //
             //var left = (screen.width / 2) - (w / 2);
@@ -95,8 +96,8 @@ jQuery(document).ready(function ($) {
                 "statusbar=no," +
                 "menubar=no," +
                 "resizable=0," +
-                "width=990," +
-                "height=980," +
+                "width=" + width + "," +
+                "height=" + height + "," +
                 //"left = 490," +
                 //"top=300"
                 "";
