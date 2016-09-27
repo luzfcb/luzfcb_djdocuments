@@ -67,7 +67,8 @@
                                         </td>
                                         <td class="text-center">
                                             <div class="btn-group">
-                                                <a href="{{ dado.url_para_visualizar }}"
+                                                   {% spurl base=dado.url_para_visualizar add_query="no_nav=1" as url_para_visualizar_com_query %}
+                                                <a href="{{ url_para_visualizar_com_query }}"
                                                    class="btn btn-sm btn-primary djpopup">Visualizar</a>
                                                 <a href="{{ dado.url_para_editar }}"
                                                    class="btn btn-sm btn-primary djpopup">Editar</a>
