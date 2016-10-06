@@ -245,6 +245,19 @@ class Documento(models.Model):
     admin_objects = managers.DocumentoAdminManager()
 
     @property
+    def estado_documental_str(self):
+        if self.possui_assinatura_pendente == 0:
+            msg = 'Ainda não possui assinantes cadastrados'
+        elif self.possui_assinatura_pendente == 1:
+            msg = 'Possui assinaturas pendentes'
+        elif self.pronto_para_finalizar:
+            msg = 'Pronto para Finalizar'
+        else:
+            msg = 'Assinado e Finalizado'
+
+        return msg
+
+    @property
     def assinates_nomes(self):
         z = self.assinaturas.filter(~models.Q(assinado_por=None)).order_by('grupo_assinante_nome').values_list(
             'assinado_nome', 'grupo_assinante_nome',

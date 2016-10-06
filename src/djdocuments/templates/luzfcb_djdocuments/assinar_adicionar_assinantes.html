@@ -5,7 +5,7 @@
 {% block form_section %}
     {% if form %}
         <div class="panel panel-info">
-            <div class="panel-heading">Selecione um dos modelos abaixo para criar um novo documento</div>
+            <div class="panel-heading">Escolha um ou mais grupos assinantes, para criar uma nova pendência de assinatura para os mesmos</div>
             <div class="panel-body">
                 {% url 'documentos:adicionar_assinantes' slug=document_object.pk_uuid as adicionar_assinantes_url %}
 

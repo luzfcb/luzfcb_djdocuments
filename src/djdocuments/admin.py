@@ -119,7 +119,8 @@ class DocumentoAdmin(SimpleHistoryAdmin):
 
 @admin.register(models.TipoDocumento)
 class TipoDocumentoAdmin(admin.ModelAdmin):
-    pass
+    search_fields = ('id', 'titulo', 'descricao')
+    list_display = ('id', 'titulo', 'descricao')
 
 
 @admin.register(models.Assinatura)
