@@ -953,7 +953,7 @@ class AssinarDocumentoView(DocumentoAssinadoRedirectMixin,
 
     def get_success_url(self):
         next_url = self.get_next_page()
-        if not next_url == self.request.path:
+        if next_url != self.request.path:
             return next_url
         return reverse('documentos:assinaturas', kwargs={'slug': self.document_object.pk_uuid})
 
@@ -1027,6 +1027,7 @@ class AssinaturaDeleteView(generic.DeleteView):
         context['form_action'] = reverse_lazy('documentos:remover_assinatura',
                                               kwargs={'document_slug': self.object.documento.pk_uuid,
                                                       'pk': self.object.pk})
+        context['document_object'] = self.object.documento
         return context
 
     def get_success_url(self):

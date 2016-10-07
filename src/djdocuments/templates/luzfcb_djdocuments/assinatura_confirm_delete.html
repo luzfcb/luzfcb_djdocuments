@@ -19,15 +19,40 @@
             <form class="form-horizontal" method="post"
                   action="{{ form_action }}">
                 <fieldset>
-                    <legend>Tem certeza que deseja remover a pendencia de assinatura do documento
-                        "{{ document_object.assunto|remover_tags_html }}"
-                        número: {{ document_object.identificador_versao }} para
-                        o {{ assinatura.grupo_assinante_nome|capfirst }}?
+                    <legend>
+                        Tem certeza que deseja remover a pendência de assinatura para
+                        a {{ assinatura.grupo_assinante_nome|capfirst }} do documento:
+
+
+                        {#                        "{{ document_object.assunto }}"#}
+                        {#                        número: {{ document_object.identificador_versao }} para#}
+                        {#                        o {{ assinatura.grupo_assinante_nome|capfirst }}?#}
                     </legend>
+                    <!-- Text input-->
+                    <div class="form-group">
+                        <label class="col-md-4 control-label" for="textinput">Número:</label>
+                        <div class="col-md-5">
+                            <input id="textinput" name="textinput" type="text" value="{{ document_object.identificador_versao }}"
+                                   class="form-control input-md" readonly disabled>
+
+                        </div>
+                    </div>
+                    <!-- Text input-->
+                    <div class="form-group">
+                        <label class="col-md-4 control-label" for="textinput">Assunto:</label>
+                        <div class="col-md-5">
+                            <input id="textinput" name="textinput" type="text" value="{{ document_object.assunto }}"
+                                   class="form-control input-md" readonly disabled>
+
+                        </div>
+                    </div>
+
+
+
                     {% csrf_token %}
                     <div class="form-group">
-                        <div class="col-sm-offset-2 col-sm-10">
-                            <button type="submit" class="btn btn-success">Excluir?</button>
+                        <div class="col-sm-offset-8 col-sm-4">
+                            <button type="submit" class="btn btn-success">Excluir agora</button>
                         </div>
                     </div>
                 </fieldset>
