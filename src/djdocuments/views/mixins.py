@@ -529,9 +529,14 @@ class NextPageURLMixin(SuccessURLAllowedHostsMixin):
         if self.next_page_url is not None:
             next_page = resolve_url(self.next_page_url)
         else:
-            a = self.request.META.get('HTTP_REFERER')
-            parsed = six.moves.urllib.parse.urlparse(a)
-            next_page = self.next_page_url or parsed.path
+            http_referer = self.request.META.get('HTTP_REFERER')
+
+            if http_referer:
+                parsed = six.moves.urllib.parse.urlparse(http_referer)
+                if not self.next_page_url:
+                    next_page = parsed.path
+            else:
+                next_page = self.next_page_url
 
         if (next_page_redirect_field_name in self.request.POST or
                     next_page_redirect_field_name in self.request.GET):
@@ -552,7 +557,6 @@ class NextPageURLMixin(SuccessURLAllowedHostsMixin):
 
     def get_success_url(self):
         next_page = self.get_next_page()
-        return next_page
-        # if not self.get_next_page() == self.request.path:
-        #     return next_page
-        # return super(NextPageURLMixin, self).get_success_url()
+        if not self.get_next_page() == self.request.path:
+            return next_page
+        return super(NextPageURLMixin, self).get_success_url()

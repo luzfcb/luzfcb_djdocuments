@@ -931,8 +931,9 @@ class AssinarDocumentoView(DocumentoAssinadoRedirectMixin,
         # kwargs['grupo_escolhido'] = None
         if group_id:
             grupo_escolhido_queryset = self.document_object.grupos_assinates.all()
-            if not grupo_escolhido_queryset:
-                return HttpResponseNotFound('Grupo nao existe')
+            # if not grupo_escolhido_queryset:
+            #     logger.info("grupo id '{}' nao existe".format(group_id))
+            #     return HttpResponseNotFound('Grupo nao existe')
             kwargs['grupo_escolhido_queryset'] = grupo_escolhido_queryset
             kwargs['grupo_escolhido'] = self.document_object.grupos_assinates.get(id=group_id)
 
@@ -958,7 +959,7 @@ class AssinarDocumentoView(DocumentoAssinadoRedirectMixin,
         return reverse('documentos:assinaturas', kwargs={'slug': self.document_object.pk_uuid})
 
 
-class DocumentoDetailView(NextPageURLMixin, DjDocumentPopupMixin, generic.DetailView):
+class DocumentoDetailView(NextPageURLMixin, DjDocumentsBackendMixin, DjDocumentPopupMixin, generic.DetailView):
     template_name = 'luzfcb_djdocuments/documento_detail.html'
     # template_name = 'luzfcb_djdocuments/documento_validacao_detail.html'
     model = Documento
@@ -975,12 +976,32 @@ class DocumentoDetailView(NextPageURLMixin, DjDocumentPopupMixin, generic.Detail
 
     def get_context_data(self, **kwargs):
         context = super(DocumentoDetailView, self).get_context_data(**kwargs)
-
-        context['url_imprimir_pdf'] = reverse('documentos:validar_detail_pdf',
-                                              kwargs={'slug': self.object.pk_uuid})
+        context['url_imprimir_pdf'] = None
+        if self.object.esta_assinado:
+            context['url_imprimir_pdf'] = reverse('documentos:validar_detail_pdf',
+                                                  kwargs={'slug': self.object.pk_uuid})
         # context['assinaturas'] = self.object.assinaturas.select_related('assinado_por').all()
-        context['assinaturas'] = self.object.assinaturas.all()
+        assinaturas = self.object.assinaturas.all()
+        context['assinaturas'] = assinaturas
         context['no_nav'] = True if self.request.GET.get('no_nav') else False
+        # assinatuas_pks = assinaturas.filter(ativo=True, esta_assinado=False).values_list('pk')
+        pks_grupos = [x[0] for x in self.djdocuments_backend.get_grupos_usuario(self.request.user).values_list('pk')]
+        context['menu_assinaturas'] = False
+        context['url_para_assinar'] = None
+        context['url_para_finalizar'] = None
+        if not self.object.esta_assinado:
+            if self.object.grupo_dono and self.object.grupo_dono.pk in pks_grupos:
+                context['menu_assinaturas'] = True
+                assinatura = assinaturas.filter(grupo_assinante_id=self.object.grupo_dono.pk).first()
+                if assinatura and assinatura.ativo and not assinatura.esta_assinado:
+                    context['url_para_assinar'] = reverse_lazy('documentos:assinar_por_grupo',
+                                                               kwargs={'slug': self.object.pk_uuid,
+                                                                       'group_id': assinatura.grupo_assinante.pk})
+                if self.object.pronto_para_finalizar:
+                    context['url_para_finalizar'] = reverse_lazy('documentos:finalizar_assinatura',
+                                                                 kwargs={'slug': self.object.pk_uuid,
+                                                                         })
+
         return context
 
 

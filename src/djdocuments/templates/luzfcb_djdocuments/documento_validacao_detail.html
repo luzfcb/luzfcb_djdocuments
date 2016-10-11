@@ -61,15 +61,25 @@
 {% block navbar_botoes %}
     <li class="active">
         <p class="navbar-btn">
+            {% if url_imprimir_pdf %}
+                <a href="{{ url_imprimir_pdf }}"
+                   class="btn btn-default djpopup nolock hidden-print print-this has-spinner"><span class="spinner"><i
+                        class="icon-spin icon-refresh"></i></span>Imprimir</a>
+            {% endif %}
+            {% if url_para_assinar %}
+                <a class="btn btn-default djpopup nolock" href="{{ url_para_assinar }}">Assinar</a>
+            {% endif %}
+            {% if url_para_finalizar %}
+                <a class="btn btn-default djpopup nolock"
+                   href="{{ url_para_finalizar }}">Finalizar</a>
+            {% endif %}
+            {% if menu_assinaturas %}
+                <a class="btn btn-default djpopup nolock" href="{% url 'documentos:assinaturas' slug=object.pk_uuid %}">Assinaturas</a>
+            {% endif %}
 
-            <a href="{{ url_imprimir_pdf }}"
-               class="btn btn-default djpopup nolock hidden-print print-this has-spinner"><span class="spinner"><i
-                    class="icon-spin icon-refresh"></i></span>Imprimir</a>
         </p>
     </li>
-    <li>
-        <a href="#about">About</a>
-    </li>
+
 {% endblock %}
 
 
@@ -140,7 +150,7 @@
 
                 {% block rodape %}
                     <div class="documento-rodape">
-                    <hr class="borda-dupla">
+                        <hr class="borda-dupla">
                         {% if object.esta_assinado %}
 
                             <table>
