@@ -11,9 +11,9 @@
     <div class="panel panel-info">
         <div class="panel-heading">Finalizar Documento</div>
         <div class="panel-body">
-         {% spurl base=form_action add_query="next={{ next }}" as form_action_com_url %}
+{#         {% spurl base=form_action add_query="next={{ next }}" as form_action_com_url %}#}
 
-            <form class="form-horizontal" method="post" action="{{ form_action_com_url }}">
+            <form class="form-horizontal" method="post" action="{{ form_action }}">
                 <fieldset>
                     <legend>
                         {{ user.get_full_name }}, <br/>Tem certeza que deseja finalizar o documento "{{ document_object.assunto|remover_tags_html }}"

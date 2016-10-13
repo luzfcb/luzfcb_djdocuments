@@ -602,7 +602,7 @@ class FinalizarDocumentoFormView(FormActionViewMixin, SingleDocumentObjectMixin,
 
     def get_context_data(self, **kwargs):
         context = super(FinalizarDocumentoFormView, self).get_context_data(**kwargs)
-        context['next'] = self.request.GET.get('next')
+        # context['next'] = self.request.GET.get('next')
         return context
 
     # def get_form_kwargs(self):
@@ -633,10 +633,14 @@ class FinalizarDocumentoFormView(FormActionViewMixin, SingleDocumentObjectMixin,
 
         return super(FinalizarDocumentoFormView, self).form_valid(form)
 
+    # def get_success_url(self):
+    #
+    #     return reverse('documentos:assinaturas', kwargs={'slug': self.document_object.pk_uuid})
+
     def get_success_url(self):
-        next_url = self.request.GET.get('next')
-        if next_url:
-            return next_url
+        next_page = self.get_next_page()
+        if not self.get_next_page() == self.request.path:
+            return next_page
         return reverse('documentos:assinaturas', kwargs={'slug': self.document_object.pk_uuid})
 
 
