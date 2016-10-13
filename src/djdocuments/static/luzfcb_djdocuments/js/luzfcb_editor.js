@@ -118,7 +118,19 @@
 
     function startCkEditor(ckeditor_config) {
         ckenabledElementIds.map(function (id_elemento) {
-            CKEDITOR.replace(id_elemento, ckeditor_config);
+            var current_config = ckeditor_config;
+            var el = document.getElementById(id_elemento);
+            if (el.hasAttribute('autofocus')){
+                var new_config = create_ckeditor_config();
+                new_config.startupFocus = true;
+                log_to_console('autofocus em elemento id=' + id_elemento);
+                current_config = new_config;
+            }
+            if (luzfcb.editor.debug) {
+                current_config.toolbar_Basic[4]['items'] =  ['Source', 'Zoom'];
+            }
+
+            CKEDITOR.replace(id_elemento, current_config);
             // vicula a funcao para controlar a ativacao/desativacao do botao salvar, no evento de quando ha mudancas no editor
             CKEDITOR.instances[id_elemento].on('change', function () {
                 ativarDesativarSalvar();
@@ -127,67 +139,72 @@
         ativarDesativarSalvar();
     }
 
+    function create_ckeditor_config() {
+        var new_config = {
+            extraPlugins: [
+                'sharedspace',
+
+                'autolink',
+                'autogrow',
+                "base64image",
+                "dialog", // required by base64image
+                "dialogui", // required by base64image
+                "maiuscula",
+                "extenso",
+                // "zoom"
+                // habilita o plugin stylesheetparser: http://ckeditor.com/addon/stylesheetparser
+                // requer desabilitar o suporte a Advanced Content Filter
+                //'stylesheetparser'
+                // end habilita o plugin stylesheetparser
+
+            ].join(),
+            removePlugins: 'resize,maximize,magicline',
+            removeButtons: 'resize,Maximize',
+            sharedSpaces: {
+                'top': 'top',
+                'bottom': 'bottom'
+            },
+            stylesSet: selected_style,
+            contentsCss: ckeditor_contentsCss,
+            // format_p: { element: 'p', attributes: { class: 'Texto_Justificado_Recuo_Primeira_Linha' }},
+            startupShowBorders: false,
+            autoGrow_onStartup: true,
+            autoGrow_minHeight: 0,
+            autoGrow_bottomSpace: 0,
+            toolbar: 'Basic',
+            toolbar_Basic: [
+                {
+                    name: 'basicstyles',
+                    items: ['Find', 'Replace', '-', 'RemoveFormat', 'Bold', 'Italic', 'Underline', 'Strike', 'Maiuscula', 'Minuscula', 'TextColor', 'BGColor']
+                },
+                {
+                    name: 'clipboard',
+                    items: ['Cut', 'Copy', 'PasteFromWord', 'PasteText', '-', 'Undo', 'Redo', 'ShowBlocks']
+                },
+                {
+                    name: 'paragraph',
+                    items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', 'base64image', '-', 'Blockquote']
+                },
+                {name: 'insert', items: ['Table', 'SpecialChar', 'HorizontalRule', 'Extenso']},
+                {name: 'document', items: ['Zoom']},
+                {name: 'styles', items: ['Styles']}
+
+            ],
+            // desativa o Advanced Content Filter
+            // http://docs.ckeditor.com/#!/guide/dev_advanced_content_filter
+            // para poder utilizar o plugin stylesheetparser http://ckeditor.com/addon/stylesheetparser
+            //allowedContent: true,
+            // end desativa o Advanced Content Filter
+            base64image_disableUrlImages: true,
+            justifyClasses: ['AlignLeft', 'AlignCenter', 'AlignRight', 'AlignJustify']
+
+
+        };
+        return new_config;
+    }
 
     // configuracao das intancias do ckeditor
-    luzfcb.editor.ckeditor_config = {
-        extraPlugins: [
-            'sharedspace',
-
-            'autolink',
-            'autogrow',
-            "base64image",
-            "dialog", // required by base64image
-            "dialogui", // required by base64image
-            "maiuscula",
-            "extenso",
-            // "zoom"
-            // habilita o plugin stylesheetparser: http://ckeditor.com/addon/stylesheetparser
-            // requer desabilitar o suporte a Advanced Content Filter
-            //'stylesheetparser'
-            // end habilita o plugin stylesheetparser
-
-        ].join(),
-        removePlugins: 'resize,maximize,magicline',
-        removeButtons: 'resize,Maximize',
-        sharedSpaces: {
-            'top': 'top',
-            'bottom': 'bottom'
-        },
-        stylesSet: selected_style,
-        contentsCss: ckeditor_contentsCss,
-        startupShowBorders: false,
-        autoGrow_onStartup: true,
-        autoGrow_minHeight: 0,
-        autoGrow_bottomSpace: 0,
-        toolbar: 'Basic',
-        toolbar_Basic: [
-            {
-                name: 'basicstyles',
-                items: ['Find', 'Replace', '-', 'RemoveFormat', 'Bold', 'Italic', 'Underline', 'Strike', 'Maiuscula', 'Minuscula', 'TextColor', 'BGColor']
-            },
-            {
-                name: 'clipboard',
-                items: ['Cut', 'Copy', 'PasteFromWord', 'PasteText', '-', 'Undo', 'Redo', 'ShowBlocks']
-            },
-            {
-                name: 'paragraph',
-                items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', 'base64image', '-', 'Blockquote']
-            },
-            {name: 'insert', items: ['Table', 'SpecialChar', 'HorizontalRule', 'Extenso']},
-            {name: 'document', items: ['Source', 'Zoom']},
-            {name: 'styles', items: ['Styles']}
-
-        ],
-        // desativa o Advanced Content Filter
-        // http://docs.ckeditor.com/#!/guide/dev_advanced_content_filter
-        // para poder utilizar o plugin stylesheetparser http://ckeditor.com/addon/stylesheetparser
-        //allowedContent: true,
-        // end desativa o Advanced Content Filter
-        base64image_disableUrlImages: true,
-        justifyClasses: ['AlignLeft', 'AlignCenter', 'AlignRight', 'AlignJustify']
-
-
-    };
+    luzfcb.editor.ckeditor_config = create_ckeditor_config();
 
 
     function init_page_scripts() {

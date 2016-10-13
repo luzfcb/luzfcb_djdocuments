@@ -40,7 +40,7 @@ class DocumentoEditarForm(forms.ModelForm):
     #     initial=TITULO
     # )
     conteudo = forms.CharField(
-        widget=CkeditorTextAreadWidget,
+        widget=CkeditorTextAreadWidget(attrs={'autofocus': True}),
         label='',
         required=False,
         initial=BIG_SAMPLE_HTML
