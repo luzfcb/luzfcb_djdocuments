@@ -36,7 +36,7 @@ from ..forms import (
     FinalizarDocumentoForm,
     create_form_class_adicionar_assinantes,
     create_form_class_assinar,
-    TipoDocumentoForm, create_form_class_finalizar)
+    TipoDocumentoForm, create_form_class_finalizar, CriarModeloDocumentoApartirDoDocumentoForm)
 from ..models import Assinatura, Documento, TipoDocumento
 from .mixins import (
     AjaxFormPostMixin,
@@ -413,13 +413,17 @@ class DocumentoCriar(VinculateMixin, FormActionViewMixin, DjDocumentsBackendMixi
         kwargs.update({'user': self.request.user})
         return kwargs
 
-    def form_valid(self, form):
-        self.get_vinculate_parameters()
+    def get_modelo_from_form(self, form):
         from dj_waff.choice_with_other import OTHER_CHOICE
         chave, modelo_documento = form.cleaned_data['modelo_documento']
-
         if not chave == OTHER_CHOICE:
             modelo_documento = Documento.objects.modelos().filter(eh_modelo_padrao=True).first()
+        return modelo_documento
+
+    def form_valid(self, form):
+        self.get_vinculate_parameters()
+
+        modelo_documento = self.get_modelo_from_form(form)
 
         grupo = form.cleaned_data['grupo']
         assunto = form.cleaned_data['assunto']
@@ -487,11 +491,8 @@ class DocumentoModeloCriar(DocumentoCriar):
 
     def form_valid(self, form):
         self.get_vinculate_parameters()
-        from dj_waff.choice_with_other import OTHER_CHOICE
-        chave, modelo_documento = form.cleaned_data['modelo_documento']
 
-        if not chave == OTHER_CHOICE:
-            modelo_documento = Documento.objects.modelos().filter(eh_modelo_padrao=True).first()
+        modelo_documento = self.get_modelo_from_form(form)
 
         grupo = form.cleaned_data['grupo']
         modelo_descricao = form.cleaned_data['modelo_descricao']
@@ -514,8 +515,21 @@ class DocumentoModeloCriar(DocumentoCriar):
 
 
 # todo
-class CriarModeloDeDocumentoExistente(DocumentoModeloCriar):
-    form_class = CriarModeloDocumentoForm
+class CriarModeloDeDocumentoExistente(SingleDocumentObjectMixin, DocumentoModeloCriar):
+    document_slug_url_kwarg = 'document_slug'
+    form_class = CriarModeloDocumentoApartirDoDocumentoForm
+
+    def get_form_action(self):
+        return reverse_lazy('documentos:criar_modelo_apartir_de_documento_existente',
+                            kwargs={'document_slug': self.document_object.pk_uuid})
+
+    def get_form_kwargs(self):
+        kwargs = super(CriarModeloDeDocumentoExistente, self).get_form_kwargs()
+        kwargs['document_object'] = self.document_object
+        return kwargs
+
+    def get_modelo_from_form(self, form):
+        return self.document_object
 
 
 class TipoDocumentoCriar(CreatePopupMixin, generic.CreateView):
@@ -988,23 +1002,29 @@ class DocumentoDetailView(NextPageURLMixin, DjDocumentsBackendMixin, DjDocumentP
         assinaturas = self.object.assinaturas.all()
         context['assinaturas'] = assinaturas
         context['no_nav'] = True if self.request.GET.get('no_nav') else False
-        # assinatuas_pks = assinaturas.filter(ativo=True, esta_assinado=False).values_list('pk')
-        pks_grupos = [x[0] for x in self.djdocuments_backend.get_grupos_usuario(self.request.user).values_list('pk')]
         context['menu_assinaturas'] = False
         context['url_para_assinar'] = None
         context['url_para_finalizar'] = None
+        context['url_criar_modelo_apartir_deste'] = reverse('documentos:criar_modelo_apartir_de_documento_existente',
+                                                            kwargs={
+                                                                'document_slug': self.object.pk_uuid
+                                                            }
+                                                            )
         if not self.object.esta_assinado:
+            pks_grupos = [x[0] for x in
+                          self.djdocuments_backend.get_grupos_usuario(self.request.user).values_list('pk')]
             if self.object.grupo_dono and self.object.grupo_dono.pk in pks_grupos:
-                context['menu_assinaturas'] = True
-                assinatura = assinaturas.filter(grupo_assinante_id=self.object.grupo_dono.pk).first()
-                if assinatura and assinatura.ativo and not assinatura.esta_assinado:
-                    context['url_para_assinar'] = reverse_lazy('documentos:assinar_por_grupo',
-                                                               kwargs={'slug': self.object.pk_uuid,
-                                                                       'group_id': assinatura.grupo_assinante.pk})
-                if self.object.pronto_para_finalizar:
-                    context['url_para_finalizar'] = reverse_lazy('documentos:finalizar_assinatura',
-                                                                 kwargs={'slug': self.object.pk_uuid,
-                                                                         })
+                if not self.object.eh_modelo:
+                    context['menu_assinaturas'] = True
+                    assinatura = assinaturas.filter(grupo_assinante_id=self.object.grupo_dono.pk).first()
+                    if assinatura and assinatura.ativo and not assinatura.esta_assinado:
+                        context['url_para_assinar'] = reverse_lazy('documentos:assinar_por_grupo',
+                                                                   kwargs={'slug': self.object.pk_uuid,
+                                                                           'group_id': assinatura.grupo_assinante.pk})
+                    if self.object.pronto_para_finalizar:
+                        context['url_para_finalizar'] = reverse_lazy('documentos:finalizar_assinatura',
+                                                                     kwargs={'slug': self.object.pk_uuid,
+                                                                             })
 
         return context
 

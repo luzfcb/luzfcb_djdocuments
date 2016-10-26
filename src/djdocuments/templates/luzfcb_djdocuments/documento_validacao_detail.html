@@ -76,7 +76,10 @@
             {% if menu_assinaturas %}
                 <a class="btn btn-default djpopup nolock" href="{% url 'documentos:assinaturas' slug=object.pk_uuid %}">Assinaturas</a>
             {% endif %}
-
+            {% if url_criar_modelo_apartir_deste %}
+                <a class="btn btn-default djpopup nolock djfullscreen"
+                   href="{{ url_criar_modelo_apartir_deste }}">Criar Modelo</a>
+            {% endif %}
         </p>
     </li>
 
@@ -211,6 +214,7 @@
 {% endblock conteudo_app %}
 
 {% block js_app %}
+
     <iframe id="iframeprint" style="display: none;"></iframe>
     <script>
         jQuery(document).ready(function ($) {
@@ -251,4 +255,5 @@
             });
         });
     </script>
+    <script src="{% static 'luzfcb_djdocuments/js/luzfcb_djdocuments.js' %}"></script>
 {% endblock js_app %}

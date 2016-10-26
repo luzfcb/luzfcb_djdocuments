@@ -73,8 +73,11 @@ class TipoDocumentoTemplateModelChoiceField(forms.ModelChoiceField):
 
 class ModeloDocumentoTemplateModelChoiceField(forms.ModelChoiceField):
     def label_from_instance(self, obj):
-        a = remover_tags_html(obj.modelo_descricao or 'Descricao modelo: {}'.format(obj.pk))
-        return a
+        if obj.eh_modelo:
+            ret = remover_tags_html(obj.modelo_descricao or 'Descricao modelo: {}'.format(obj.pk))
+        else:
+            ret = remover_tags_html(obj.identificador_versao)
+        return ret
 
 
 class GrupoModelChoiceField(DjDocumentsBackendMixin, forms.ModelChoiceField):
@@ -249,6 +252,44 @@ class CriarModeloDocumentoForm(DjDocumentsBackendMixin, forms.Form):
         max_length=70,
 
     )
+
+
+class CriarModeloDocumentoApartirDoDocumentoForm(CriarModeloDocumentoForm):
+
+    def __init__(self, *args, **kwargs):
+        self.document_object = kwargs.pop('document_object')
+        # initial = {'modelo_documento': self.document_object.pk_uuid}
+        super(CriarModeloDocumentoApartirDoDocumentoForm, self).__init__(*args, **kwargs)
+        if self.document_object:
+            self.fields['modelo_documento'].queryset = Documento.admin_objects.filter(
+                pk_uuid=self.document_object.pk_uuid)
+            self.fields['modelo_documento'].limit_choices_to = {'pk_uuid': self.document_object.pk_uuid}
+            self.fields['modelo_documento'].initial = self.document_object
+
+            self.fields['modelo_documento'].widget.attrs.update(
+                {'not-is-model': 'true' if not self.document_object.eh_modelo else False,
+                 'data-preview': True,
+                 'disabled': True
+                 }
+            )
+
+    tipo_documento = TipoDocumentoTemplateModelChoiceField(
+        label='Tipo de Documento',
+        queryset=TipoDocumento.objects.all(),
+        widget=autocomplete.ModelSelect2(url='documentos:tipodocumento-autocomplete', ),
+
+    )
+
+    modelo_documento = ModeloDocumentoTemplateModelChoiceField(
+        label='Modelo de Documento',
+        to_field_name='pk_uuid',
+        required=False,
+        queryset=Documento.admin_objects.none(),
+
+    )
+
+    def clean_modelo_documento(self):
+        return self.document_object
 
 
 class UserModelChoiceField(forms.ModelChoiceField):

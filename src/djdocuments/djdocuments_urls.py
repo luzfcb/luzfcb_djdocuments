@@ -29,14 +29,17 @@ urlpatterns = [
         name='create'
         ),
     url(r'^d/validar/$',
+        # url publica, acesso anonimo
         documentos_views.DocumentoValidacaoView.as_view(),
         name='validar'
         ),
     url(r'^d/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/validar-detail/pdf$',
+        # url publica, acesso anonimo
         documentos_views.PrintPDFDocumentoDetailValidarView.as_view(),
         name='validar_detail_pdf'
         ),
     url(r'^d/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/validar-detail/$',
+        # url publica, acesso anonimo
         documentos_views.DocumentoDetailValidarView.as_view(),
         name='validar-detail'
         ),
@@ -53,14 +56,12 @@ urlpatterns = [
         name='assinar'
         ),
     url(
-        r'^d/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/assinaturas/assinar/(?P<group_id>\d+)/$',
-        # noqa
+        r'^d/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/assinaturas/assinar/(?P<group_id>\d+)/$',  # noqa
         login_required(documentos_views.AssinarDocumentoView.as_view()),
         name='assinar_por_grupo'
     ),
     url(
-        r'^d/(?P<document_slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/assinaturas/remover/(?P<pk>\d+)/$',
-        # noqa
+        r'^d/(?P<document_slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/assinaturas/remover/(?P<pk>\d+)/$',  # noqa
         login_required(documentos_views.AssinaturaDeleteView.as_view()),
         name='remover_assinatura'
     ),
@@ -92,6 +93,10 @@ urlpatterns = [
         login_required(documentos_views.DocumentoModeloCriar.as_view()),
         name='criar_modelo'
         ),
+    url(r'^m/criar_modelo/(?P<document_slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/$',
+        login_required(documentos_views.CriarModeloDeDocumentoExistente.as_view()),
+        name='criar_modelo_apartir_de_documento_existente'
+        ),
     url(r'^m/$',
         login_required(documentos_views.DocumentoModeloPainelGeralView.as_view()),
         name='dashboard_modelos'
@@ -101,6 +106,7 @@ urlpatterns = [
         name='criar_tipo_documento'
         ),
     url(r'^m/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/validar-detail/$',
+        # url publica, acesso anonimo
         documentos_views.DocumentoModeloDetailValidarView.as_view(),
         name='validar-detail-modelo'
         ),
@@ -120,8 +126,7 @@ urlpatterns = [
         login_required(autocompletes.GruposAssinantesDoDocumentoAutoComplete.as_view()),
         name='grupos_assinantes_do_documento_autocomplete'
         ),
-    url(
-        r'^grupos-nao-assintantes-autocomplete/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/$',
+    url(r'^grupos-nao-assintantes-autocomplete/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/$',
         login_required(autocompletes.GrupoAindaNaoAssinantesDoDocumentoAutoComplete.as_view()),
         name='grupos_ainda_nao_assinantes_do_documento_autocomplete'
     ),

@@ -58,20 +58,37 @@
 
         $(document).ready(function () {
             var ifm = $('#iframeview');
-            $('[data-preview]').change(function () {
-                var pk = $(this).val();
+            var preview_fields = $('[data-preview]');
+
+            function empty(str) {
+                return !!(typeof str == 'undefined' || !str || str.length === 0 || str === "" || !/[^\s]/.test(str) || /^\s*$/.test(str) || str.replace(/\s/g, "") === "");
+            }
+
+            function carregar_iframe(el, pk) {
                 if (pk != null) {
-                    var ulr = Urls['documentos:validar-detail-modelo'](pk);
-                    ifm.prop('src', ulr + '?no_nav=1');
+                    var view_name = '';
+                    if(el.attr('not-is-model')){
+                        view_name = 'documentos:validar-detail';
+                    }else {
+                        view_name = 'documentos:validar-detail-modelo';
+                    }
+                    var url_to_load = Urls['' + view_name +''](pk);
+                    console.log('url:' + url_to_load);
+                    ifm.prop('src', url_to_load + '?no_nav=1');
 
                 }
                 else {
                     ifm.prop('src', '');
                 }
+            }
 
+            preview_fields.change(function () {
+                var pk = $(this).val();
+                carregar_iframe($(this), pk);
             });
 
             ifm.load(function () {
+                console.log('carregando iframe...');
                 $('#iframeview').contents().find("head").append(
                         "<style>" +
                         "body{" +
@@ -84,6 +101,15 @@
                         "-webkit-transform-origin: 0 0;" +
                         "}</style>");
             });
+            preview_fields.each(
+                    function () {
+                        var pk = $(this).val();
+                        if (!empty(pk) || ! pk == '---------') {
+
+                            carregar_iframe($(this), pk);
+                        }
+                    }
+            )
         });
     </script>
 {% endblock js_app %}
