@@ -489,6 +489,10 @@ class DocumentoModeloCriar(DocumentoCriar):
     form_class = CriarModeloDocumentoForm
     form_action = reverse_lazy('documentos:criar_modelo')
 
+    def get_modelo_from_form(self, form):
+        modelo_documento = Documento.objects.modelos().filter(eh_modelo_padrao=True).first()
+        return modelo_documento
+
     def form_valid(self, form):
         self.get_vinculate_parameters()
 
