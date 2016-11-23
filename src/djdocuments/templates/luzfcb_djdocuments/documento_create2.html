@@ -11,7 +11,11 @@
             <div class="panel panel-info">
                 <div class="panel-heading">Selecione um dos modelos abaixo para criar um novo documento</div>
                 <div class="panel-body">
-                    {% spurl base=form_action add_query="{{ vinculate_view_kwarg }}" add_query="{{ vinculate_value_kwarg }}" as document_create_url %}
+                    {% if is_popup %}
+                        {% spurl base=form_action add_query="{{ vinculate_view_kwarg }}" add_query="{{ vinculate_value_kwarg }}" add_query="_popup=1" as document_create_url %}
+                    {% else %}
+                        {% spurl base=form_action add_query="{{ vinculate_view_kwarg }}" add_query="{{ vinculate_value_kwarg }}" as document_create_url %}
+                    {% endif %}
 
                     <form class="form-horizontal" action="{{ document_create_url }}" method="post">
                         <fieldset>

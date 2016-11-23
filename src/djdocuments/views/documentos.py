@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function, unicode_literals
 
+import json
 import logging
 
 from captcha.helpers import captcha_image_url
@@ -246,7 +247,11 @@ class DocumentoListView(generic.ListView):
         return qs
 
 
-class DocumentoEditor(AjaxFormPostMixin,
+from django_addanother.views import CreatePopupMixin
+
+
+class DocumentoEditor(CreatePopupMixin,
+                      AjaxFormPostMixin,
                       # DocumentoAssinadoRedirectMixin,
                       AuditavelViewMixin,
                       NextPageURLMixin,
@@ -298,6 +303,16 @@ class DocumentoEditor(AjaxFormPostMixin,
         context = super(DocumentoEditor, self).get_context_data(**kwargs)
         context['url_para_assinar'] = self.get_url_para_assinar()
         context['esta_editando_modelo'] = self.get_esta_editando_modelo()
+        if self.is_popup():
+            ctx = {
+                'action': self.POPUP_ACTION,
+                'value': six.text_type(self._get_created_obj_pk(self.object)),
+                'obj': six.text_type(self.label_from_instance(self.object)),
+                'new_value': six.text_type(self._get_created_obj_pk(self.object))
+            }
+            context['popup_response_data'] = json.dumps(ctx)
+        else:
+            context['popup_response_data'] = False
         return context
 
     @method_decorator(never_cache)
@@ -397,12 +412,17 @@ def create_document_template_from_document(current_user, grupo, documento_modelo
     return documento_novo
 
 
-class DocumentoCriar(VinculateMixin, FormActionViewMixin, DjDocumentsBackendMixin, generic.FormView):
+class DocumentoCriar(CreatePopupMixin, VinculateMixin, FormActionViewMixin, DjDocumentsBackendMixin, generic.FormView):
     template_name = 'luzfcb_djdocuments/documento_create2.html'
     form_class = CriarDocumentoForm
     default_selected_document_template_pk = None
     document_slug_url_kwarg = 'document_pk'
     form_action = reverse_lazy('documentos:create')
+
+    def get_context_data(self, **kwargs):
+        context = super(DocumentoCriar, self).get_context_data(**kwargs)
+        context['is_popup'] = self.is_popup()
+        return context
 
     @method_decorator(never_cache)
     def dispatch(self, request, *args, **kwargs):
@@ -434,13 +454,16 @@ class DocumentoCriar(VinculateMixin, FormActionViewMixin, DjDocumentsBackendMixi
                                                                 assunto=assunto)
         # vinculate_view_name = self.request.GET.get(self.vinculate_view_field, None)
         # vinculate_value = self.request.GET.get(self.vinculate_value_field, None)
-
         if self.vinculate_view_name and self.vinculate_value:
             viculate_url = reverse(self.vinculate_view_name, kwargs={'document_pk': documento_novo.pk,
                                                                      'pk': self.vinculate_value})
+            if self.is_popup():
+                viculate_url = '{}?_popup=1'.format(viculate_url)
             return redirect(viculate_url, permanent=True)
         else:
             editar_url = reverse('documentos:editar', kwargs={'slug': documento_novo.pk_uuid})
+            if self.is_popup():
+                editar_url = '{}?_popup=1'.format(editar_url)
             return redirect(editar_url, permanent=True)
 
 
@@ -550,7 +573,7 @@ class TipoDocumentoCriar(CreatePopupMixin, generic.CreateView):
         return reverse('documentos:dashboard_modelos')
 
 
-class VincularDocumentoBaseView(SingleDocumentObjectMixin, SingleObjectMixin, generic.View):
+class VincularDocumentoBaseView(CreatePopupMixin, SingleDocumentObjectMixin, SingleObjectMixin, generic.View):
     model = None
     documents_field_name = None
 
@@ -581,6 +604,8 @@ class VincularDocumentoBaseView(SingleDocumentObjectMixin, SingleObjectMixin, ge
         self.vinculate()
 
         editar_url = reverse(self.document_edit_named_view, kwargs={'slug': self.document_object.pk_uuid})
+        if self.is_popup():
+            editar_url = '{}?_popup=1'.format(editar_url)
         return redirect(editar_url, permanent=True)
 
     def vinculate(self):
