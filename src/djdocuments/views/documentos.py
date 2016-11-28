@@ -9,9 +9,11 @@ from captcha.models import CaptchaStore
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ImproperlyConfigured
+from django.core.serializers.json import DjangoJSONEncoder
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.db import transaction
 from django.db.models import Q
+from django.utils.encoding import force_text
 from django.db.utils import IntegrityError
 from django.http import HttpResponseNotFound
 from django.http.response import HttpResponseForbidden, HttpResponseRedirect, JsonResponse
@@ -247,10 +249,37 @@ class DocumentoListView(generic.ListView):
         return qs
 
 
-from django_addanother.views import CreatePopupMixin
+class AAAA(object):
+    def get_adicional_dict(self):
+        d = {
+            'editar_url': self.get_form_action()
+        }
+        print('dict adicional', d)
+        return d
 
+    def get_instance_object(self):
+        return self.object
 
-class DocumentoEditor(CreatePopupMixin,
+    def get_add_another_context_data(self):
+        context_dict = None
+        # if self.is_popup():
+        context_dict = {
+            'action': self.POPUP_ACTION,
+            'value': six.text_type(self._get_created_obj_pk(self.get_instance_object())),
+            'obj': six.text_type(self.label_from_instance(self.get_instance_object())),
+            'new_value': six.text_type(self._get_created_obj_pk(self.get_instance_object())),
+            'other': self.get_adicional_dict()
+        }
+
+        return context_dict
+
+    def get_context_data(self, **kwargs):
+        context = super(AAAA, self).get_context_data(**kwargs)
+
+        context['popup_response_data'] = json.dumps(self.get_add_another_context_data(), cls=DjangoJSONEncoder)
+        return context
+
+class DocumentoEditor(AAAA, CreatePopupMixin,
                       AjaxFormPostMixin,
                       # DocumentoAssinadoRedirectMixin,
                       AuditavelViewMixin,
@@ -278,6 +307,15 @@ class DocumentoEditor(CreatePopupMixin,
     form_class = DocumentoEditarWithReadOnlyFieldsForm
     success_url = reverse_lazy('documentos:list')
 
+    def label_from_instance(self, related_instance):
+        """Return the label to show in the "main form" for the
+        newly created object.
+
+        Overwrite this to customize the label that is being shown.
+        """
+        numero = related_instance.identificador_versao
+        return force_text(numero)
+
     def get_form_action(self):
         return reverse('documentos:editar', kwargs={'slug': self.object.pk_uuid})
 
@@ -303,16 +341,6 @@ class DocumentoEditor(CreatePopupMixin,
         context = super(DocumentoEditor, self).get_context_data(**kwargs)
         context['url_para_assinar'] = self.get_url_para_assinar()
         context['esta_editando_modelo'] = self.get_esta_editando_modelo()
-        if self.is_popup():
-            ctx = {
-                'action': self.POPUP_ACTION,
-                'value': six.text_type(self._get_created_obj_pk(self.object)),
-                'obj': six.text_type(self.label_from_instance(self.object)),
-                'new_value': six.text_type(self._get_created_obj_pk(self.object))
-            }
-            context['popup_response_data'] = json.dumps(ctx)
-        else:
-            context['popup_response_data'] = False
         return context
 
     @method_decorator(never_cache)
@@ -412,7 +440,7 @@ def create_document_template_from_document(current_user, grupo, documento_modelo
     return documento_novo
 
 
-class DocumentoCriar(CreatePopupMixin, VinculateMixin, FormActionViewMixin, DjDocumentsBackendMixin, generic.FormView):
+class DocumentoCriar( CreatePopupMixin, VinculateMixin, FormActionViewMixin, DjDocumentsBackendMixin, generic.FormView):
     template_name = 'luzfcb_djdocuments/documento_create2.html'
     form_class = CriarDocumentoForm
     default_selected_document_template_pk = None

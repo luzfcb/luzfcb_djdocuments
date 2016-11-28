@@ -73,13 +73,17 @@
         }
     }
 
-    function dismissAddRelatedObjectPopup(win, newId, newRepr) {
+    function dismissAddRelatedObjectPopup(win, newId, newRepr, other) {
         var name = windowname_to_id(win.name);
         var elem = document.getElementById(name);
         if (elem) {
             var elemName = elem.nodeName.toUpperCase();
             if (elemName === 'SELECT') {
                 elem.options[elem.options.length] = new Option(newRepr, newId, true, true);
+                for(var key in other){
+                    elem.options[elem.options.length].setAttribute(key, other[value]);
+                }
+
             } else if (elemName === 'INPUT') {
                 if (elem.className.indexOf('vManyToManyRawIdAdminField') !== -1 && elem.value) {
                     elem.value += ',' + newId;
@@ -93,12 +97,15 @@
             var toId = name + "_to";
             var o = new Option(newRepr, newId);
             SelectBox.add_to_cache(toId, o);
+            for (var key in other) {
+                o.setAttribute(key, other[value]);
+            }
             SelectBox.redisplay(toId);
         }
         // win.close();
     }
 
-    function dismissChangeRelatedObjectPopup(win, objId, newRepr, newId) {
+    function dismissChangeRelatedObjectPopup(win, objId, newRepr, newId, other) {
         var id = windowname_to_id(win.name).replace(/^edit_/, '');
         var selectsSelector = interpolate('#%s, #%s_from, #%s_to', [id, id, id]);
         var selects = $(selectsSelector);
@@ -111,7 +118,7 @@
        // win.close();
     }
 
-    function dismissDeleteRelatedObjectPopup(win, objId) {
+    function dismissDeleteRelatedObjectPopup(win, objId, other) {
         var id = windowname_to_id(win.name).replace(/^delete_/, '');
         var selectsSelector = interpolate('#%s, #%s_from, #%s_to', [id, id, id]);
         var selects = $(selectsSelector);

@@ -183,12 +183,7 @@
 {% include 'luzfcb_dj_simplelock/dj_simplelock.html' %}
 {# end luzfcb_dj_simplelock includes. #}
 {% if popup_response_data %}
-    <script type="application/javascript" src="{% static "luzfcb_djdocuments/js/RelatedObjectLookups.js" %}"></script>
-    <script type="text/javascript"
-            id="django-admin-popup-response-constants"
-            src="{% static "luzfcb_djdocuments/js/popup_response.js" %}"
-            data-popup-response="{{ popup_response_data }}">
-    </script>
+    {% include 'luzfcb_djdocuments/popup_response.html' with popup_response_data=popup_response_data %}
 {% endif %}
 <script>
     (function (i, s, o, g, r, a, m) {
