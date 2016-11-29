@@ -278,8 +278,10 @@ class AAAA(object):
 
     def get_context_data(self, **kwargs):
         context = super(AAAA, self).get_context_data(**kwargs)
-
-        context['popup_response_data'] = json.dumps(self.get_add_another_context_data(), cls=DjangoJSONEncoder)
+        if self.is_popup():
+            context['popup_response_data'] = json.dumps(self.get_add_another_context_data(), cls=DjangoJSONEncoder)
+        else:
+            context['popup_response_data'] = False
         return context
 
 class DocumentoEditor(AAAA, CreatePopupMixin,
