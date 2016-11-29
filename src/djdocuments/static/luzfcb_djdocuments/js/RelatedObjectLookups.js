@@ -79,27 +79,42 @@
         if (elem) {
             var elemName = elem.nodeName.toUpperCase();
             if (elemName === 'SELECT') {
-                elem.options[elem.options.length] = new Option(newRepr, newId, true, true);
-                for(var key in other){
-                    elem.options[elem.options.length].setAttribute(key, other[value]);
-                }
+                var option = new Option(newRepr, newId, true, true);
+                var new_dict = {};
+                new_dict['value'] = newId;
+                new_dict['repr'] = newRepr;
+                new_dict['other'] = other;
+                // for (var key in other) {
+                //     if (other.hasOwnProperty(key)) {
+                //         new_dict[''+ key + ''] = other[key];
+                //     }
+                // }
+                option.setAttribute('value', JSON.stringify(new_dict));
+                elem.options[elem.options.length] = option;
 
-            } else if (elemName === 'INPUT') {
+
+
+            }
+            else if (elemName === 'INPUT') {
                 if (elem.className.indexOf('vManyToManyRawIdAdminField') !== -1 && elem.value) {
                     elem.value += ',' + newId;
-                } else {
+                }
+                else {
                     elem.value = newId;
                 }
             }
             // Trigger a change event to update related links if required.
             $(elem).trigger('change');
-        } else {
+        }
+        else {
             var toId = name + "_to";
             var o = new Option(newRepr, newId);
             SelectBox.add_to_cache(toId, o);
-            for (var key in other) {
-                o.setAttribute(key, other[value]);
-            }
+            // for (var key in other) {
+            //     if (other.hasOwnProperty(key)) {
+            //         o.setAttribute(key, other[value]);
+            //     }
+            // }
             SelectBox.redisplay(toId);
         }
         // win.close();

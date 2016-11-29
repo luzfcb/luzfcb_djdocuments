@@ -252,9 +252,12 @@ class DocumentoListView(generic.ListView):
 class AAAA(object):
     def get_adicional_dict(self):
         d = {
-            'editar_url': self.get_form_action()
+            'pk': self.get_instance_object().pk,
+            'pk_uuid': self.get_instance_object().pk_uuid,
+            'assunto': self.get_instance_object().assunto,
+            'numero': self.get_instance_object().identificador_versao,
+            'edit_url': self.get_form_action()
         }
-        print('dict adicional', d)
         return d
 
     def get_instance_object(self):
