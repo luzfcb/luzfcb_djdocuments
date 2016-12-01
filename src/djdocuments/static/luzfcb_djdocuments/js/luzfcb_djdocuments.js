@@ -58,7 +58,7 @@ jQuery(document).ready(function ($) {
         var desabilitado = $(this).attr("disabled") || false;
 
         if (!desabilitado) {
-            console.table($(this));
+            // console.table($(this));
             var width = 990;
             var height = 980;
             //var h = $(this).data('height');

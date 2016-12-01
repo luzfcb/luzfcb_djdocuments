@@ -1,7 +1,6 @@
 /*global SelectBox, interpolate*/
 // Handles related-objects functionality: lookup link for raw_id_fields
 // and Add Another links.
-
 (function($) {
     'use strict';
 
@@ -32,7 +31,26 @@
                 href += '&_popup=1';
             }
         }
-        var win = window.open(href, name, 'height=500,width=800,resizable=yes,scrollbars=yes');
+        var width = 990;
+        var height = 980;
+        var fullscreen = hasClass(triggeringLink, 'djfullscreen');
+
+        if (fullscreen) {
+            width = screen.width;
+            height = screen.height
+        }
+        var popup_windows_options = "resizable=yes" +
+            "scrollbars=yes," +
+            "location=no," +
+            "statusbar=no," +
+            "menubar=no," +
+            "width=" + width + "," +
+            "height=" + height + "," +
+            "";
+
+
+
+        var win = window.open(href, name, popup_windows_options);
         win.focus();
         return false;
     }
@@ -145,6 +163,16 @@
        // win.close();
     }
 
+    function hasClass(el, cn) {
+        // https://jsperf.com/pure-js-hasclass-vs-jquery-hasclass/51
+        var classes = el.classList;
+        for (var j = 0; j < classes.length; j++) {
+            if (classes[j] == cn) {
+                return true;
+            }
+        }
+        return false;
+    }
     // Global for testing purposes
     window.id_to_windowname = id_to_windowname;
     window.windowname_to_id = windowname_to_id;
