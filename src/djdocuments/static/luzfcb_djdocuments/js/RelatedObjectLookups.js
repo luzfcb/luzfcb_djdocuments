@@ -1,7 +1,7 @@
 /*global SelectBox, interpolate*/
 // Handles related-objects functionality: lookup link for raw_id_fields
 // and Add Another links.
-(function($) {
+(function ($) {
     'use strict';
 
     // IE doesn't accept periods or dashes in the window name, but the element IDs
@@ -24,35 +24,46 @@
         var name = triggeringLink.id.replace(name_regexp, '');
         name = id_to_windowname(name);
         var href = triggeringLink.href;
-        if (add_popup) {
-            if (href.indexOf('?') === -1) {
-                href += '?_popup=1';
-            } else {
-                href += '&_popup=1';
+        if (!triggeringLink.hasAttribute('disabled')) {
+            if (add_popup) {
+                if (href.indexOf('?') === -1) {
+                    href += '?_popup=1';
+                }
+                else {
+                    href += '&_popup=1';
+                }
             }
+            var width = 990;
+            var height = 980;
+            var fullscreen = hasClass(triggeringLink, 'djfullscreen');
+
+            if (fullscreen) {
+                width = screen.width;
+                height = screen.height
+            }
+            var popup_windows_options = "resizable=yes" +
+                "scrollbars=yes," +
+                "location=no," +
+                "statusbar=no," +
+                "menubar=no," +
+                "width=" + width + "," +
+                "height=" + height + "," +
+                "";
+
+
+            var win = window.open(href, name, popup_windows_options);
+            if (window.focus) {
+                win.focus();
+            }
+
+            if (hasClass(triggeringLink, '.nolock') === false) {
+
+                LoadModalDiv(win);
+                autoHideModalDivIfPopUPClosed(win);
+            }
+
+            return false;
         }
-        var width = 990;
-        var height = 980;
-        var fullscreen = hasClass(triggeringLink, 'djfullscreen');
-
-        if (fullscreen) {
-            width = screen.width;
-            height = screen.height
-        }
-        var popup_windows_options = "resizable=yes" +
-            "scrollbars=yes," +
-            "location=no," +
-            "statusbar=no," +
-            "menubar=no," +
-            "width=" + width + "," +
-            "height=" + height + "," +
-            "";
-
-
-
-        var win = window.open(href, name, popup_windows_options);
-        win.focus();
-        return false;
     }
 
     function showRelatedObjectLookupPopup(triggeringLink) {
@@ -64,10 +75,11 @@
         var elem = document.getElementById(name);
         if (elem.className.indexOf('vManyToManyRawIdAdminField') !== -1 && elem.value) {
             elem.value += ',' + chosenId;
-        } else {
+        }
+        else {
             document.getElementById(name).value = chosenId;
         }
-       // win.close();
+        // win.close();
     }
 
     function showRelatedObjectPopup(triggeringLink) {
@@ -82,11 +94,12 @@
         }
         var value = $this.val();
         if (value) {
-            siblings.each(function() {
+            siblings.each(function () {
                 var elm = $(this);
                 elm.attr('href', elm.attr('data-href-template').replace('__fk__', value));
             });
-        } else {
+        }
+        else {
             siblings.removeAttr('href');
         }
     }
@@ -109,7 +122,6 @@
                 // }
                 option.setAttribute('value', JSON.stringify(new_dict));
                 elem.options[elem.options.length] = option;
-
 
 
             }
@@ -142,25 +154,25 @@
         var id = windowname_to_id(win.name).replace(/^edit_/, '');
         var selectsSelector = interpolate('#%s, #%s_from, #%s_to', [id, id, id]);
         var selects = $(selectsSelector);
-        selects.find('option').each(function() {
+        selects.find('option').each(function () {
             if (this.value === objId) {
                 this.textContent = newRepr;
                 this.value = newId;
             }
         });
-       // win.close();
+        // win.close();
     }
 
     function dismissDeleteRelatedObjectPopup(win, objId, other) {
         var id = windowname_to_id(win.name).replace(/^delete_/, '');
         var selectsSelector = interpolate('#%s, #%s_from, #%s_to', [id, id, id]);
         var selects = $(selectsSelector);
-        selects.find('option').each(function() {
+        selects.find('option').each(function () {
             if (this.value === objId) {
                 $(this).remove();
             }
         }).trigger('change');
-       // win.close();
+        // win.close();
     }
 
     function hasClass(el, cn) {
@@ -173,6 +185,43 @@
         }
         return false;
     }
+    function autoHideModalDivIfPopUPClosed(popUpObj) {
+        var timer = setInterval(function () {
+            if (popUpObj.closed) {
+                clearInterval(timer);
+                HideModalDiv(popUpObj);
+            }
+        }, 500);
+
+    }
+
+    function LoadModalDiv(popUpObj) {
+        var jdDivBackground_id = "jdDivBackground";
+        var bcgDiv = document.getElementById(jdDivBackground_id);
+        if (bcgDiv === null) {
+            bcgDiv = document.createElement("div");
+            bcgDiv.setAttribute("id", jdDivBackground_id);
+            bcgDiv.setAttribute("style", " position:fixed; top:0px; left:0px;background-color:black; z-index:100000;opacity: 0.8;filter:alpha(opacity=60); -moz-opacity: 0.8; overflow:hidden; display:none");
+            document.body.appendChild(bcgDiv);
+        }
+        function focus_on_popup() {
+            popUpObj.focus();
+        }
+
+        if (popUpObj) {
+            bcgDiv.onclick = focus_on_popup;
+        }
+
+
+        bcgDiv.style.display = "block";
+
+
+        if (bcgDiv != null) {
+            bcgDiv.style.width = "100%";
+            bcgDiv.style.height = "100%";
+        }
+    }
+
     // Global for testing purposes
     window.id_to_windowname = id_to_windowname;
     window.windowname_to_id = windowname_to_id;
@@ -189,12 +238,12 @@
     window.showAddAnotherPopup = showRelatedObjectPopup;
     window.dismissAddAnotherPopup = dismissAddRelatedObjectPopup;
 
-    $(document).ready(function() {
-        $("a[data-popup-opener]").click(function(event) {
+    $(document).ready(function () {
+        $("a[data-popup-opener]").click(function (event) {
             event.preventDefault();
             opener.dismissRelatedLookupPopup(window, $(this).data("popup-opener"));
         });
-        $('body').on('click', '.related-widget-wrapper-link', function(e) {
+        $('body').on('click', '.related-widget-wrapper-link', function (e) {
             e.preventDefault();
             if (this.href) {
                 var event = $.Event('django:show-related', {href: this.href});
@@ -204,7 +253,7 @@
                 }
             }
         });
-        $('body').on('change', '.related-widget-wrapper select', function(e) {
+        $('body').on('change', '.related-widget-wrapper select', function (e) {
             var event = $.Event('django:update-related');
             $(this).trigger(event);
             if (!event.isDefaultPrevented()) {
@@ -212,7 +261,7 @@
             }
         });
         $('.related-widget-wrapper select').trigger('change');
-        $('body').on('click', '.related-lookup', function(e) {
+        $('body').on('click', '.related-lookup', function (e) {
             e.preventDefault();
             var event = $.Event('django:lookup-related');
             $(this).trigger(event);
