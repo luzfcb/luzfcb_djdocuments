@@ -107,7 +107,7 @@
                     <td>{% if dados.esta_assinado %}-{% else %}
                         {{ dados.assinatura.cadastrado_em|naturaltime }}{% endif %}</td>
                     {#                    <td>{% pode_assinar document_object user assinatura.grupo_assinante %}</td>#}
-                    <td>{% if dados.esta_assinado %}{{ dados.assinatura.assinado_nome }}{% else %}-{% endif %}</td>
+                    <td>{% if dados.assinatura.assinado_nome %}{{ dados.assinatura.assinado_nome }}{% else %}-{% endif %}</td>
                     <td>{% if dados.esta_assinado %}{{ dados.assinatura.assinado_em }}{% else %}-{% endif %}</td>
 
                     {#                    <td>{% if assinatura.esta_assinado %}-{% else %}<a href="{% url 'documentos:assinar_por_grupo' slug=assinatura.documento.pk_uuid group_id=assinatura.grupo_assinante.pk %}"#}

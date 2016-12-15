@@ -10,6 +10,7 @@ from django.contrib.auth.hashers import SHA1PasswordHasher, check_password
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Max
+from django.db.models import Q
 from django.utils import timezone
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.functional import cached_property
@@ -60,7 +61,8 @@ class TipoDocumento(models.Model):
 @python_2_unicode_compatible
 class Assinatura(models.Model):
     def __str__(self):
-        return 'pk: {}, grupo_assinante: {}'.format(self.pk, self.grupo_assinante.pk)
+        nome = self.assinado_por.get_full_name() if self.assinado_por else False
+        return 'pk: {}, grupo_assinante: {}, nome_assinante: {}'.format(self.pk, self.grupo_assinante.pk, nome)
 
     # documento
     documento = models.ForeignKey('Documento', related_name='assinaturas')
@@ -141,6 +143,9 @@ class Assinatura(models.Model):
                                  usuario_assinante=usuario_assinante,
                                  agora=agora):
             raise NaoPodeAssinarException('Usuario não pode assinar esse documento')
+        if self.assinado_por:
+            if not self.assinado_por == usuario_assinante:
+                raise NaoPodeAssinarException('Usuario não pode assinar esse documento')
 
         self.assinado_por = usuario_assinante
         self.assinado_em = agora
@@ -181,6 +186,9 @@ class Assinatura(models.Model):
             if not self.pk:
                 self.cadastrado_em = timezone.now()
                 self.nome_cadastrado_por = self.cadastrado_por.get_full_name()
+        if not self.assinado_nome:
+            if self.assinado_por:
+                self.assinado_nome = self.assinado_por.get_full_name()
         super(Assinatura, self).save(args, kwargs)
         # post save
 
@@ -312,13 +320,36 @@ class Documento(models.Model):
                 usuario=usuario_atual
             )
 
+    def adicionar_pendencia_de_assinatura_por_usuario(self, grupo, assinado_por, cadastrado_por):
+        # se usuario esta no grupo
+        if grupo.pk in [d.pk for d in DjDocumentsBackend.get_grupos_usuario(assinado_por)]:
+            # se usuario nao possui assinatura pendente
+            if not self.grupos_assinates.through.objects.filter(documento=self, assinado_por=assinado_por,
+                                                                grupo_assinante=grupo, ativo=True).exists():
+                # entao, incluir pendencia de assinatura
+                assinatura = None
+                try:
+                    # verificar se existe assinatura pendente para o grupo, sem usuario
+                    assinatura = self.grupos_assinates.through.objects.get(documento=self, assinado_por=None,
+                                                                           grupo_assinante=grupo, ativo=True)
+                    assinatura.assinado_por = assinado_por
+                    assinatura.cadastrado_por = cadastrado_por
+                except self.grupos_assinates.through.DoesNotExist:
+
+                    assinatura = self.grupos_assinates.through(documento=self,
+                                                               grupo_assinante=grupo,
+                                                               assinado_por=assinado_por,
+                                                               cadastrado_por=cadastrado_por)
+                finally:
+                    assinatura.save()
+                    return True
+        return False
+
     def adicionar_grupos_assinantes(self, grupos_assinantes, cadastrado_por):
         if not isinstance(grupos_assinantes, Iterable):
             grupos_assinantes = [grupos_assinantes]
         for grupo in grupos_assinantes:
-            try:
-                self.grupos_assinates.through.objects.get(documento=self, grupo_assinante=grupo)
-            except self.grupos_assinates.through.DoesNotExist:
+            if not self.grupos_assinates.through.objects.filter(documento=self, grupo_assinante=grupo).exists():
                 obj = self.grupos_assinates.through(documento=self,
                                                     grupo_assinante=grupo,
                                                     cadastrado_por=cadastrado_por)
@@ -341,27 +372,30 @@ class Documento(models.Model):
             )
 
     def assinar(self, grupo_assinante, usuario_assinante, senha, usuario_atual=None):
-        try:
-            assinatura = self.assinaturas.get(
-                grupo_assinante=grupo_assinante,
-                ativo=True,
+
+        assinatura = self.assinaturas.filter(
+            Q(grupo_assinante=grupo_assinante) &
+            Q(ativo=True) & (
+                Q(assinado_por=None) | Q(assinado_por=usuario_assinante)
             )
+        ).first()
+
+        if assinatura:
             if assinatura.esta_assinado:
                 raise JaEstaAssinado('Documento já esta assinado')
-            if assinatura:
-                try:
-                    assinatura.assinar(usuario_assinante=usuario_assinante, senha=senha)
-                except NaoPodeAssinarException as e:
-                    logger.error(e)
-                    raise e
-                except AssertionError as e:
-                    logger.error(e)
-                    raise e
-
+            try:
+                assinatura.assinar(usuario_assinante=usuario_assinante, senha=senha)
+            except NaoPodeAssinarException as e:
+                logger.error(e)
+                raise e
+            except AssertionError as e:
+                logger.error(e)
+                raise e
             return assinatura
-        except self.grupos_assinates.through.DoesNotExist as e:
-            logger.error(e)
-            raise GrupoNaoPodeAssinarException('GrupoNaoPodeAssinarException')
+        else:
+            raise NaoPodeAssinarException('Usuario não pode assinar esse documento')
+
+
 
     @cached_property
     def possui_assinatura_pendente(self):
@@ -457,3 +491,4 @@ class Documento(models.Model):
         if not self.esta_assinado:
             self.assinatura_hash = None
         super(Documento, self).save(*args, **kwargs)
+

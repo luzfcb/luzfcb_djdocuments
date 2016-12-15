@@ -1015,7 +1015,7 @@ class AssinarDocumentoView(DocumentoAssinadoRedirectMixin,
             #     logger.info("grupo id '{}' nao existe".format(group_id))
             #     return HttpResponseNotFound('Grupo nao existe')
             kwargs['grupo_escolhido_queryset'] = grupo_escolhido_queryset
-            kwargs['grupo_escolhido'] = self.document_object.grupos_assinates.get(id=group_id)
+            kwargs['grupo_escolhido'] = self.document_object.grupos_assinates.filter(id=group_id).first()
 
         return kwargs
 
