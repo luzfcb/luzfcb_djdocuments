@@ -31,7 +31,10 @@ class DocumentoAdmin(SimpleHistoryAdmin):
         # 'criado_em', 'criado_por', 'versao_numero', 'visualizar_versao'
 
         'identificador_documento', 'versao_numero', 'identificador_versao', 'pk', 'pk_uuid', 'assunto',
-        'visualizar_versao', 'eh_modelo', 'eh_modelo_padrao', 'modelo_descricao', 'grupo_dono', 'editar_documento',
+        'visualizar_versao', 'eh_modelo', 'eh_modelo_padrao', 'modelo_descricao',
+        #'grupo_dono',
+        'editar_documento',
+        'visualizar_documento', 'gerar_e_visualizar_pdf',
         # 'esta_assinado', 'assinatura_hash', 'criado_por', 'criado_em',
         # 'visualizar_titulo',
         # 'modificado_em',
@@ -65,7 +68,7 @@ class DocumentoAdmin(SimpleHistoryAdmin):
         url_triplet = self.admin_site.name, self.model._meta.app_label, self.model._meta.model_name
         history_url = reverse('%s:%s_%s_history' % url_triplet,
                               args=(obj.pk,))
-        html = format_html('<a href="{}">{}</a>'.format(history_url, 'Visualizar'))
+        html = format_html('<a href="{}">{}</a>'.format(history_url, 'Versões'))
         return html
 
     visualizar_versao.allow_tags = True
@@ -80,6 +83,23 @@ class DocumentoAdmin(SimpleHistoryAdmin):
 
     editar_documento.short_description = 'Editar no Editor'
 
+    def visualizar_documento(self, obj):
+        if obj.eh_modelo:
+            url_visualizacao = reverse('documentos:validar-detail-modelo', kwargs={'slug': obj.pk_uuid})
+        else:
+            url_visualizacao = reverse('documentos:validar-detail', kwargs={'slug': obj.pk_uuid})
+        return format_html('<a href="{}" target="_blank">{}</a>'.format(url_visualizacao, 'Visualizar'))
+
+    visualizar_documento.short_description = 'Visualizar Documento'
+
+    def gerar_e_visualizar_pdf(self, obj):
+        if obj.eh_modelo:
+            url_visualizacao = reverse('documentos:validar_detail_pdf', kwargs={'slug': obj.pk_uuid})
+        else:
+            url_visualizacao = reverse('documentos:validar_detail_pdf', kwargs={'slug': obj.pk_uuid})
+        return format_html('<a href="{}" target="_blank">{}</a>'.format(url_visualizacao, 'Gerar PDF'))
+
+    gerar_e_visualizar_pdf.short_description = 'Gerar PDF'
     # def visualizar_titulo(self, obj):
     #     return remover_tags_html(obj.titulo)
     #

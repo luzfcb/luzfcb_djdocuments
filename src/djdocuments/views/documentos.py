@@ -1174,6 +1174,23 @@ class PrintPDFDocumentoDetailValidarView(PDFRenderMixin, DocumentoDetailValidarV
         'page-size': 'A4'
     }
 
+    def get_cmd_options(self):
+        cmd_options = super(PrintPDFDocumentoDetailValidarView, self).get_cmd_options()
+        # page_margin_top
+        # page_margin_bottom
+        # page_margin_left
+        # page_margin_right
+        if self.object.page_margin_top:
+            cmd_options['margin-top'] = '{}mm'.format(self.object.page_margin_top)
+        if self.object.page_margin_bottom:
+            cmd_options['margin-bottom'] = '{}mm'.format(self.object.page_margin_bottom)
+        if self.object.page_margin_left:
+            cmd_options['margin-left'] = '{}mm'.format(self.object.page_margin_left)
+        if self.object.page_margin_right:
+            cmd_options['margin-right'] = '{}mm'.format(self.object.page_margin_right)
+
+        return cmd_options
+
     def render_to_response(self, context, **response_kwargs):
         return super(PrintPDFDocumentoDetailValidarView, self).render_to_response(context, **response_kwargs)
 
