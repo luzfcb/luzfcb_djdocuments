@@ -110,6 +110,11 @@ urlpatterns = [
         documentos_views.DocumentoModeloDetailValidarView.as_view(),
         name='validar-detail-modelo'
         ),
+    url(r'^m/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/validar-detail/pdf$',
+        # url publica, acesso anonimo
+        documentos_views.PrintPDFDocumentoModeloDetailValidarView.as_view(),
+        name='validar-detail-modelo-pdf'
+        ),
     url(r'^users-autocomplete/$',
         login_required(autocompletes.UserAutocomplete.as_view()),
         name='user-autocomplete'
