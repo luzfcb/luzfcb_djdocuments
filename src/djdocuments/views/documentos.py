@@ -1146,7 +1146,7 @@ class AssinaturaDeleteView(generic.DeleteView):
         return reverse('documentos:assinaturas', kwargs={'slug': self.object.documento.pk_uuid})
 
 
-class PrintPDFDocumentoDetailValidarView(PDFRenderMixin, DocumentoDetailValidarView):
+class PrintPDFConfiguracaoMixin(object):
     pdf_template_name = 'luzfcb_djdocuments/pdf/corpo.html'
     pdf_header_template = 'luzfcb_djdocuments/pdf/cabecalho.html'
     pdf_footer_template = 'luzfcb_djdocuments/pdf/rodape.html'
@@ -1156,17 +1156,14 @@ class PrintPDFDocumentoDetailValidarView(PDFRenderMixin, DocumentoDetailValidarV
     cmd_options = {
         'print-media-type': True,
 
-        # 'margin-top': '57.5mm',
-        # 'margin-top': '61.5mm',
         'margin-top': '41.5mm',
-        # 'margin-left': '1.5mm',
+
         'margin-left': '1.0mm',
-        # 'margin-right': '6.5mm',
+
         'margin-right': '4.0mm',
-        # 'margin-bottom': '45.5mm',
-        # 'margin-bottom': '47.5mm',
+
         'margin-bottom': '35.5mm',
-        # 'margin-bottom': '87.5mm',
+
         # 'page-width': '210mm',
         # 'page-height': '297mm',
         # 'viewport-size': '210mmX297mm',
@@ -1175,7 +1172,7 @@ class PrintPDFDocumentoDetailValidarView(PDFRenderMixin, DocumentoDetailValidarV
     }
 
     def get_cmd_options(self):
-        cmd_options = super(PrintPDFDocumentoDetailValidarView, self).get_cmd_options()
+        cmd_options = super(PrintPDFConfiguracaoMixin, self).get_cmd_options()
         # page_margin_top
         # page_margin_bottom
         # page_margin_left
@@ -1191,8 +1188,21 @@ class PrintPDFDocumentoDetailValidarView(PDFRenderMixin, DocumentoDetailValidarV
 
         return cmd_options
 
+    def get_context_data(self, **kwargs):
+        context = super(PrintPDFConfiguracaoMixin, self).get_context_data(**kwargs)
+        context['is_pdf'] = True
+        return context
+
     def render_to_response(self, context, **response_kwargs):
-        return super(PrintPDFDocumentoDetailValidarView, self).render_to_response(context, **response_kwargs)
+        return super(PrintPDFConfiguracaoMixin, self).render_to_response(context, **response_kwargs)
+
+
+class PrintPDFDocumentoDetailValidarView(PrintPDFConfiguracaoMixin, PDFRenderMixin, DocumentoDetailValidarView):
+    pass
+
+
+class PrintPDFDocumentoModeloDetailValidarView(PrintPDFConfiguracaoMixin, PDFRenderMixin, DocumentoModeloDetailValidarView):
+    pass
 
 
 class DocumentoValidacaoView(generic.FormView):
