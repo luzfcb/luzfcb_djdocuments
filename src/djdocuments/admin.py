@@ -94,7 +94,7 @@ class DocumentoAdmin(SimpleHistoryAdmin):
 
     def gerar_e_visualizar_pdf(self, obj):
         if obj.eh_modelo:
-            url_visualizacao = reverse('documentos:validar_detail_pdf', kwargs={'slug': obj.pk_uuid})
+            url_visualizacao = reverse('documentos:validar-detail-modelo-pdf', kwargs={'slug': obj.pk_uuid})
         else:
             url_visualizacao = reverse('documentos:validar_detail_pdf', kwargs={'slug': obj.pk_uuid})
         return format_html('<a href="{}" target="_blank">{}</a>'.format(url_visualizacao, 'Gerar PDF'))
