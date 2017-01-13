@@ -1163,6 +1163,8 @@ class PrintPDFConfiguracaoMixin(object):
         'margin-right': '4.0mm',
 
         'margin-bottom': '35.5mm',
+        'dpi': '112',
+        'zoom': '1.46',
 
         # 'page-width': '210mm',
         # 'page-height': '297mm',

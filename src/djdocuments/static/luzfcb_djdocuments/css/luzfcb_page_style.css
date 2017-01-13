@@ -53,7 +53,7 @@ body{
     }
 
     .a4-pagina {
-        width: 100% !important;
+        /*width: 100% !important;*/
         background: transparent !important;
         display: block !important;
         box-shadow: none !important;
