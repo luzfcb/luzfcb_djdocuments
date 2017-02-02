@@ -46,9 +46,20 @@
                 width: 19px;
             }
 
-            .documento-conteudo
         }
-
+        .msg-browser-print {
+            display: none;
+        }
+        @media print {
+        {% if not is_pdf %}
+            .documento-cabecalho, .documento-rodape, .documento-assinaturas, .documento-conteudo {
+                display: none;
+            }
+            .msg-browser-print {
+                display: block;
+            }
+        {% endif %}
+        }
 
     </style>
 {% endblock %}
@@ -57,7 +68,10 @@
     {{ object.identificador_versao }}{% endblock title %}
 
 {% block project_name %}SOLAR{% endblock project_name %}
-
+{% if is_pdf %}
+    {% block navbar_pricipal %}
+    {% endblock navbar_pricipal %}
+{% endif %}
 {% block navbar_botoes %}
     <li class="active">
         <p class="navbar-btn">
@@ -92,6 +106,11 @@
     {% spurl base=validar_url_view query="h={{ object.get_assinatura_hash_upper_limpo }}" as validar_url %}
     <div class="row center-block conteudo" id="conteudo">
         <div class="a4-pagina">
+            {% if not is_pdf %}
+                <h3 class="msg-browser-print">
+                    Por favor, utilize o botão "Imprimir" acima
+                </h3>
+            {% endif %}
             <div class="documento">
                 {% block cabecalho %}
                     <div class="documento-cabecalho">

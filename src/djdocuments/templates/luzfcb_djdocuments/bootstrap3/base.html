@@ -44,6 +44,9 @@
 
 <body>
 
+{% block navbar_pricipal %}
+
+
 <!-- Fixed navbar -->
 <nav class="navbar navbar-default navbar-inverse navbar-fixed-top hidden-print" {% if no_nav %}style="display:none;"{% endif %}>
     <div class="container">
@@ -75,6 +78,7 @@
         </div><!--/.nav-collapse -->
     </div>
 </nav>
+{% endblock navbar_pricipal %}
 
 <div class="container">
     {% block conteudo_app %}
