@@ -25,7 +25,7 @@ class DocumentoAdmin(SimpleHistoryAdmin):
             qs = qs.order_by(*ordering)
         return qs
 
-    list_filter = ['eh_modelo', 'esta_assinado']
+    list_filter = ['eh_modelo', 'esta_assinado', 'grupo_dono']
     # form = DocumentoEditarForm
     list_display = (
         # 'criado_em', 'criado_por', 'versao_numero', 'visualizar_versao'
@@ -116,6 +116,8 @@ class DocumentoAdmin(SimpleHistoryAdmin):
     def save_model(self, request, obj, form, change):
         if not obj.criado_por:
             obj.criado_por = request.user
+
+
         super(DocumentoAdmin, self).save_model(request, obj, form, change)
 
 

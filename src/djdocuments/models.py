@@ -193,8 +193,11 @@ class Assinatura(models.Model):
         # post save
 
 
+from model_utils.models import SoftDeletableModel
+
+
 # Create your models here.
-class Documento(models.Model):
+class Documento(SoftDeletableModel):
     pk_uuid = models.UUIDField(editable=False, unique=True, null=True, db_index=True, default=uuid.uuid4)
 
     def __unicode__(self):
@@ -249,11 +252,14 @@ class Documento(models.Model):
     esta_ativo = models.NullBooleanField(default=True, editable=False)
 
     # pdf
-    page_margin_top = models.FloatField(help_text='Margem superior em relação a pagina', default=41.5, blank=True, null=True)
-    page_margin_bottom = models.FloatField(help_text='Margem inferior em relação a pagina', default=35.5, blank=True, null=True)
-    page_margin_left = models.FloatField(help_text='Margem esquerda em relação a pagina', default=1.0, blank=True, null=True)
-    page_margin_right = models.FloatField(help_text='Margem direita em relação a pagina', default=4.0, blank=True, null=True)
-
+    page_margin_top = models.FloatField(help_text='Margem superior em relação a pagina', default=41.5, blank=True,
+                                        null=True)
+    page_margin_bottom = models.FloatField(help_text='Margem inferior em relação a pagina', default=35.5, blank=True,
+                                           null=True)
+    page_margin_left = models.FloatField(help_text='Margem esquerda em relação a pagina', default=1.0, blank=True,
+                                         null=True)
+    page_margin_right = models.FloatField(help_text='Margem direita em relação a pagina', default=4.0, blank=True,
+                                          null=True)
 
     versoes = HistoricalRecords()
     objects = managers.DocumentoManager()
@@ -402,8 +408,6 @@ class Documento(models.Model):
         else:
             raise NaoPodeAssinarException('Usuario não pode assinar esse documento')
 
-
-
     @cached_property
     def possui_assinatura_pendente(self):
         """
@@ -498,4 +502,3 @@ class Documento(models.Model):
         if not self.esta_assinado:
             self.assinatura_hash = None
         super(Documento, self).save(*args, **kwargs)
-

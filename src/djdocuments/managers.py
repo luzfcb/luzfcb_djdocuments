@@ -1,8 +1,10 @@
 from django.db import models
 from django.db.models import Case, IntegerField, Q, Sum, Value, When
 
+from model_utils.managers import SoftDeletableManager, SoftDeletableQuerySet
 
-class DocumentoQuerySet(models.QuerySet):
+
+class DocumentoQuerySet(SoftDeletableQuerySet):
     def ativos(self):
         return self.filter(esta_ativo=True)
 
@@ -32,11 +34,11 @@ class DocumentoQuerySet(models.QuerySet):
         return qs
 
 
-class DocumentoManager(models.Manager):
-    queryset_class = DocumentoQuerySet
+class DocumentoManager(SoftDeletableManager):
+    _queryset_class = DocumentoQuerySet
 
     def get_queryset(self):
-        return self.queryset_class(model=self.model,
+        return self._queryset_class(model=self.model,
                                    using=self._db,
                                    hints=self._hints).ativos().filter(eh_modelo=False)
 
@@ -44,22 +46,22 @@ class DocumentoManager(models.Manager):
         return self.get_queryset().prontos_para_finalizar(grupos_ids=grupos_ids)
 
     def modelos(self, grupos_ids=None):
-        return self.queryset_class(model=self.model,
+        return self._queryset_class(model=self.model,
                                    using=self._db,
                                    hints=self._hints).ativos().modelos(grupos_ids=grupos_ids)
 
 
-class DocumentoAdminManager(models.Manager):
-    queryset_class = DocumentoQuerySet
+class DocumentoAdminManager(SoftDeletableManager):
+    _queryset_class = DocumentoQuerySet
 
     def get_queryset(self):
-        return self.queryset_class(model=self.model, using=self._db, hints=self._hints)
+        return self._queryset_class(model=self.model, using=self._db, hints=self._hints)
 
     def prontos_para_finalizar(self, grupos_ids=None):
         return self.get_queryset().prontos_para_finalizar(grupos_ids=grupos_ids)
 
     def modelos(self, grupos_ids=None):
-        return self.queryset_class(model=self.model,
+        return self._queryset_class(model=self.model,
                                    using=self._db,
                                    hints=self._hints).ativos().modelos(grupos_ids=grupos_ids)
 
