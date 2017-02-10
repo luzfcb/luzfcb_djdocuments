@@ -89,6 +89,15 @@ urlpatterns = [
         login_required(documentos_views.AdicionarAssinantes.as_view()),
         name='adicionar_assinantes'
         ),
+    url(r'^d/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/excluir/$',
+        login_required(documentos_views.DocumentoExcluirView.as_view()),
+        name='excluir'
+        ),
+    # url(
+    #     r'^d/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/excluir/(?P<group_id>\d+)/$',  # noqa
+    #     login_required(documentos_views.DocumentoExcluirView.as_view()),
+    #     name='excluir_por_grupo'
+    # ),
     url(r'^m/criar_modelo/$',
         login_required(documentos_views.DocumentoModeloCriar.as_view()),
         name='criar_modelo'

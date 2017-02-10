@@ -33,6 +33,7 @@ class DocumentoAdmin(SimpleHistoryAdmin):
         'identificador_documento', 'versao_numero', 'identificador_versao', 'pk', 'pk_uuid', 'assunto',
         'visualizar_versao', 'eh_modelo', 'eh_modelo_padrao', 'modelo_descricao',
         #'grupo_dono',
+        'excluir_documento',
         'editar_documento',
         'visualizar_documento', 'gerar_e_visualizar_pdf',
         # 'esta_assinado', 'assinatura_hash', 'criado_por', 'criado_em',
@@ -63,6 +64,19 @@ class DocumentoAdmin(SimpleHistoryAdmin):
     #                    'revertido_da_versao',
     #                    )
     actions = ['remover_assinatura', ]
+
+    def get_actions(self, request):
+        # Disable delete
+        actions = super(DocumentoAdmin, self).get_actions(request)
+        try:
+            del actions['delete_selected']
+        except KeyError:
+            pass
+        return actions
+
+    def has_delete_permission(self, request, obj=None):
+        # Disable delete
+        return False
 
     def visualizar_versao(self, obj):
         url_triplet = self.admin_site.name, self.model._meta.app_label, self.model._meta.model_name
@@ -100,6 +114,15 @@ class DocumentoAdmin(SimpleHistoryAdmin):
         return format_html('<a href="{}" target="_blank">{}</a>'.format(url_visualizacao, 'Gerar PDF'))
 
     gerar_e_visualizar_pdf.short_description = 'Gerar PDF'
+
+    def excluir_documento(self, obj):
+        if obj.eh_modelo:
+            url_exclusao = reverse('documentos:excluir', kwargs={'slug': obj.pk_uuid})
+        else:
+            url_exclusao = reverse('documentos:excluir', kwargs={'slug': obj.pk_uuid})
+        return format_html('<a href="{}" target="_blank">{}</a>'.format(url_exclusao, 'Excluir'))
+
+    excluir_documento.short_description = 'Excluir'
     # def visualizar_titulo(self, obj):
     #     return remover_tags_html(obj.titulo)
     #

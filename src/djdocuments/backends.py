@@ -64,6 +64,9 @@ class DjDocumentsBaseBackend(object):
     def pode_assinar(self, document, usuario, **kwargs):
         raise NotImplemented()
 
+    def pode_exluir_documento(self, document, usuario, **kwargs):
+        raise NotImplemented()
+
     def pode_editar(self, document, usuario, **kwargs):
         raise NotImplemented()
 

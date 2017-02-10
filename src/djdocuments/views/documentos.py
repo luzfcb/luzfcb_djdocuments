@@ -39,7 +39,7 @@ from ..forms import (
     FinalizarDocumentoForm,
     create_form_class_adicionar_assinantes,
     create_form_class_assinar,
-    TipoDocumentoForm, create_form_class_finalizar, CriarModeloDocumentoApartirDoDocumentoForm)
+    TipoDocumentoForm, create_form_class_finalizar, CriarModeloDocumentoApartirDoDocumentoForm, ExcluirDocumentoForm)
 from ..models import Assinatura, Documento, TipoDocumento
 from .mixins import (
     AjaxFormPostMixin,
@@ -708,6 +708,84 @@ class FinalizarDocumentoFormView(FormActionViewMixin, SingleDocumentObjectMixin,
             return HttpResponseForbidden()
 
         return super(FinalizarDocumentoFormView, self).form_valid(form)
+
+    # def get_success_url(self):
+    #
+    #     return reverse('documentos:assinaturas', kwargs={'slug': self.document_object.pk_uuid})
+
+    def get_success_url(self):
+        next_page = self.get_next_page()
+        if not self.get_next_page() == self.request.path:
+            return next_page
+        return reverse('documentos:assinaturas', kwargs={'slug': self.document_object.pk_uuid})
+
+
+class DocumentoExcluirView(FormActionViewMixin, SingleDocumentObjectMixin, DjDocumentsBackendMixin,
+                                 NextPageURLMixin, generic.FormView):
+
+    template_name = 'luzfcb_djdocuments/documento_excluir.html'
+    form_class = ExcluirDocumentoForm
+    model = Documento
+    slug_field = 'pk_uuid'
+    group_pk_url_kwarg = 'group_id'
+
+    def get(self, request, *args, **kwargs):
+        response = super(DocumentoExcluirView, self).get(request, *args, **kwargs)
+        status, mensagem = self.document_object.pode_exluir_documento(self.request.user)
+        logger.info('{klass}:{mensagem}'.format(klass=self.__class__.__name__, mensagem=mensagem))
+        if not status:
+            return render(request=request, template_name='luzfcb_djdocuments/erros/erro_403.html',
+                          context={'mensagem': mensagem})
+        return response
+
+
+    def get_form_action(self):
+        return reverse('documentos:finalizar_assinatura',
+                       kwargs={
+                           'slug': self.document_object.pk_uuid
+                       }
+                       )
+
+    # http_method_names = ['post']
+    def get_form_class(self):
+        return create_form_class_finalizar(self.document_object)
+
+    @method_decorator(never_cache)
+    def dispatch(self, request, *args, **kwargs):
+        return super(DocumentoExcluirView, self).dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(DocumentoExcluirView, self).get_context_data(**kwargs)
+        # context['next'] = self.request.GET.get('next')
+        return context
+
+    # def get_form_kwargs(self):
+    #     kwargs = super(FinalizarDocumentoFormView, self).get_form_kwargs()
+    #     kwargs['current_logged_user'] = self.request.user
+    #     return kwargs
+
+    def get_form_kwargs(self):
+        kwargs = super(DocumentoExcluirView, self).get_form_kwargs()
+        current_logged_user = self.request.user
+        kwargs['current_logged_user'] = current_logged_user
+        group_id = self.document_object.grupo_dono.pk
+        group_queryset = self.djdocuments_backend.get_grupo_model().objects.filter(pk=group_id)
+        # kwargs['grupo_escolhido'] = None
+        if group_id:
+            kwargs['grupo_escolhido_queryset'] = group_queryset
+            kwargs['grupo_escolhido'] = self.document_object.grupo_dono
+        return kwargs
+
+    def form_valid(self, form):
+
+        # form.cleaned_data[]
+        if self.document_object.pronto_para_finalizar:
+            self.document_object.finalizar_documento(self.request.user)
+        else:
+            # raise PermissionDenied()
+            return HttpResponseForbidden()
+
+        return super(DocumentoExcluirView, self).form_valid(form)
 
     # def get_success_url(self):
     #
