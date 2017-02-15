@@ -441,7 +441,7 @@ class AjaxFormPostMixin(object):
     def form_valid(self, form):
         response = super(AjaxFormPostMixin, self).form_valid(form)
         if self.request.is_ajax():
-            obj = self.get_object()
+            obj = self.object if hasattr(self, 'object') and self.object else self.get_object()
             data = {}
             for field in self.document_json_fields:
                 data[field] = getattr(obj, field)
@@ -453,7 +453,7 @@ class AjaxFormPostMixin(object):
     def form_invalid(self, form):
         response = super(AjaxFormPostMixin, self).form_invalid(form)
         if self.request.is_ajax():
-            obj = self.get_object()
+            obj = self.object if hasattr(self, 'object') and self.object else self.get_object()
             data = {}
             for field in self.document_json_fields:
                 data[field] = getattr(obj, field)

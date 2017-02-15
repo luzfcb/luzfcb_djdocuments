@@ -548,30 +548,3 @@ class TipoDocumentoForm(BootstrapFormInputMixin, forms.ModelForm):
         model = TipoDocumento
         fields = '__all__'
 
-
-class ExcluirDocumentoForm(BootstrapFormInputMixin, DjDocumentsBackendMixin, forms.Form):
-    def __init__(self, *args, **kwargs):
-        self.current_logged_user = kwargs.pop('current_logged_user')
-        super(ExcluirDocumentoForm, self).__init__(*args, **kwargs)
-
-    excluido_por = UserModelChoiceField(
-        label="Usuário",
-        help_text="Selecione o usuário que irá excluir o documento",
-        # queryset=get_real_user_model_class().objects.all().order_by('username'),
-        queryset=USER_MODEL.objects.all().order_by('username'),
-        widget=ModelSelect2ForwardExtras(url='documentos:user-by-group-autocomplete', ),
-
-    )
-    password = forms.CharField(label="Senha",
-                               help_text="Digite a senha do usuário atual",
-                               widget=forms.PasswordInput())
-
-    def clean_password(self):
-        valid = False
-        password = self.cleaned_data.get('password')
-        if self.excluido_por:
-            valid = check_password(password, self.excluido_por.password)
-        if not valid:
-            raise forms.ValidationError('Invalid password')
-
-        return password

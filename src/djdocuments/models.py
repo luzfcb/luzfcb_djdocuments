@@ -428,8 +428,8 @@ class Documento(SoftDeletableModel):
         return bool(not self.assinaturas.filter(ativo=True, esta_assinado=False).exists() and
                     self.assinaturas.filter(ativo=True, esta_assinado=True).exists())
 
-    def pode_exluir_documento(self, usuario_atual):
-        return DjDocumentsBackend.pode_exluir_documento(document=self, usuario=usuario_atual)
+    def pode_excluir_documento(self, usuario_atual):
+        return DjDocumentsBackend.pode_excluir_documento(document=self, usuario=usuario_atual)
 
     @cached_property
     def pronto_para_finalizar(self):
