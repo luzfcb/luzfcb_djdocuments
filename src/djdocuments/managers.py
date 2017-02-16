@@ -3,6 +3,7 @@ from django.db.models import Case, IntegerField, Q, Sum, Value, When
 
 
 class DocumentoQuerySet(models.QuerySet):
+
     def ativos(self):
         return self.filter(esta_ativo=True)
 
@@ -62,7 +63,6 @@ class DocumentoManager(models.Manager):
                                    hints=self._hints).ativos().documentos_dos_grupos(grupos_ids=grupos_ids)
 
 
-
 class DocumentoAdminManager(models.Manager):
     queryset_class = DocumentoQuerySet
 
@@ -84,6 +84,7 @@ class DocumentoAdminManager(models.Manager):
 
 
 class AssinaturaQuerySet(models.QuerySet):
+
     def assinaturas_realizadas(self, grupos_ids=None):
         q = Q()
         q &= Q(documento__eh_modelo=False)

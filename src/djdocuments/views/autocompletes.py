@@ -5,9 +5,9 @@ from dal import autocomplete
 from django import http
 from django.core.exceptions import ImproperlyConfigured
 from django.db.models.query_utils import Q
+from django.utils import six
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
-from django.utils import six
 
 from .. import models
 from ..backends import DjDocumentsBackendMixin
@@ -189,6 +189,7 @@ class UserAutocomplete(DjDocumentsBackendMixin, autocomplete.Select2QuerySetView
 
 
 class DocumentoCriarAutocomplete(autocomplete.Select2QuerySetView):
+
     @method_decorator(never_cache)
     def dispatch(self, request, *args, **kwargs):
         return super(DocumentoCriarAutocomplete, self).dispatch(request, *args, **kwargs)
@@ -242,6 +243,7 @@ class DocumentoCriarAutocomplete(autocomplete.Select2QuerySetView):
 
 
 class TipoDocumentoAutocomplete(autocomplete.Select2QuerySetView):
+
     @method_decorator(never_cache)
     def dispatch(self, request, *args, **kwargs):
         return super(TipoDocumentoAutocomplete, self).dispatch(request, *args, **kwargs)

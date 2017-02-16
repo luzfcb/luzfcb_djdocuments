@@ -10,12 +10,10 @@ from django.contrib.auth.hashers import SHA1PasswordHasher, check_password
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import models
-from django.db.models import Max
-from django.db.models import Q
+from django.db.models import Max, Q
 from django.utils import timezone
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.functional import cached_property
-
 from simple_history.models import HistoricalRecords
 from simple_history.views import MissingHistoryRecordsField
 
@@ -62,6 +60,7 @@ class TipoDocumento(models.Model):
 
 @python_2_unicode_compatible
 class Assinatura(models.Model):
+
     def __str__(self):
         nome = self.assinado_por.get_full_name() if self.assinado_por else False
         return 'pk: {}, grupo_assinante: {}, nome_assinante: {}'.format(self.pk, self.grupo_assinante.pk, nome)
@@ -256,7 +255,6 @@ class Documento(models.Model):
     page_margin_left = models.FloatField(help_text='Margem esquerda em relação a pagina', default=1.0, blank=True, null=True)
     page_margin_right = models.FloatField(help_text='Margem direita em relação a pagina', default=4.0, blank=True, null=True)
 
-
     versoes = HistoricalRecords()
     objects = managers.DocumentoManager()
     admin_objects = managers.DocumentoAdminManager()
@@ -404,8 +402,6 @@ class Documento(models.Model):
         else:
             raise NaoPodeAssinarException('Usuario não pode assinar esse documento')
 
-
-
     @cached_property
     def possui_assinatura_pendente(self):
         """
@@ -507,4 +503,3 @@ class Documento(models.Model):
         if not self.esta_assinado:
             self.assinatura_hash = None
         super(Documento, self).save(*args, **kwargs)
-

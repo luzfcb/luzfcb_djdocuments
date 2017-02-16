@@ -3,13 +3,13 @@ from __future__ import absolute_import, print_function, unicode_literals
 
 from captcha.fields import CaptchaField
 from dal import autocomplete
+from dj_waff.choice_with_other import ChoiceWithOtherField
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import check_password
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.utils.translation import ugettext_lazy as _
 from django_addanother.widgets import AddAnotherWidgetWrapper
-from dj_waff.choice_with_other import ChoiceWithOtherField
 
 from .backends import DjDocumentsBackendMixin
 from .form_mixins import BootstrapFormInputMixin, ReadOnlyFieldsMixin
@@ -67,11 +67,13 @@ class DocumentoEditarWithReadOnlyFieldsForm(ReadOnlyFieldsMixin, DocumentoEditar
 
 
 class TipoDocumentoTemplateModelChoiceField(forms.ModelChoiceField):
+
     def label_from_instance(self, obj):
         return obj.titulo
 
 
 class ModeloDocumentoTemplateModelChoiceField(forms.ModelChoiceField):
+
     def label_from_instance(self, obj):
         if obj.eh_modelo:
             ret = remover_tags_html(obj.modelo_descricao or 'Descricao modelo: {}'.format(obj.pk))
@@ -81,11 +83,13 @@ class ModeloDocumentoTemplateModelChoiceField(forms.ModelChoiceField):
 
 
 class GrupoModelChoiceField(DjDocumentsBackendMixin, forms.ModelChoiceField):
+
     def label_from_instance(self, obj):
         return self.djdocuments_backend.get_grupo_name(obj)
 
 
 class GrupoModelMultipleChoiceField(DjDocumentsBackendMixin, forms.ModelMultipleChoiceField):
+
     def label_from_instance(self, obj):
         return self.djdocuments_backend.get_grupo_name(obj)
 
@@ -97,6 +101,7 @@ CRIAR_DOCUMENTO_CHOICES = [
 
 # BootstrapFormInputMixin
 class CriarDocumentoForm(DjDocumentsBackendMixin, forms.Form):
+
     def __init__(self, *args, **kwargs):
         self.current_user = kwargs.pop('user')
         super(CriarDocumentoForm, self).__init__(*args, **kwargs)
@@ -156,6 +161,7 @@ class CriarDocumentoForm(DjDocumentsBackendMixin, forms.Form):
 
 
 class CriarDocumentoParaGrupoForm(CriarDocumentoForm):
+
     def __init__(self, *args, **kwargs):
         grupo_escolhido_queryset = kwargs.get('grupo_escolhido_queryset')
         self.grupo_escolhido = kwargs.get('grupo_escolhido')
@@ -205,6 +211,7 @@ class CriarDocumentoParaGrupoForm(CriarDocumentoForm):
 #         widget=forms.Textarea
 #     )
 class CriarModeloDocumentoForm(DjDocumentsBackendMixin, forms.Form):
+
     def __init__(self, *args, **kwargs):
         self.current_user = kwargs.pop('user')
         super(CriarModeloDocumentoForm, self).__init__(*args, **kwargs)
@@ -276,11 +283,13 @@ class CriarModeloDocumentoApartirDoDocumentoForm(CriarModeloDocumentoForm):
 
 
 class UserModelChoiceField(forms.ModelChoiceField):
+
     def label_from_instance(self, obj):
         return '{} ({})'.format(obj.get_full_name().title(), getattr(obj, obj.USERNAME_FIELD))
 
 
 class UserModelMultipleChoiceField(forms.ModelMultipleChoiceField):
+
     def label_from_instance(self, obj):
         return '{} ({})'.format(obj.get_full_name().title(), getattr(obj, obj.USERNAME_FIELD))
 
@@ -290,6 +299,7 @@ def create_form_class_adicionar_assinantes(document_object):
                                kwargs={'slug': document_object.pk_uuid})
 
     class AdicionarAssinantesForm(BootstrapFormInputMixin, forms.Form):
+
         def __init__(self, *args, **kwargs):
             grupo_para_adicionar_queryset = kwargs.pop('grupo_para_adicionar_queryset')
             super(AdicionarAssinantesForm, self).__init__(*args, **kwargs)
@@ -342,6 +352,7 @@ class DocumetoValidarForm(BootstrapFormInputMixin, forms.Form):
 
 
 class FinalizarDocumentoForm(BootstrapFormInputMixin, DjDocumentsBackendMixin, forms.Form):
+
     def __init__(self, *args, **kwargs):
         self.current_logged_user = kwargs.pop('current_logged_user')
         super(FinalizarDocumentoForm, self).__init__(*args, **kwargs)
@@ -542,6 +553,7 @@ def create_form_class_finalizar(document_object):
 
 
 class TipoDocumentoForm(BootstrapFormInputMixin, forms.ModelForm):
+
     class Meta:
         model = TipoDocumento
         fields = '__all__'

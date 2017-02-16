@@ -10,11 +10,12 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db.models import Q
-from django.forms import widgets, MultiWidget, MultiValueField, Select, TextInput, ChoiceField, CharField
+from django.forms import CharField, ChoiceField, MultiValueField, MultiWidget, Select, TextInput, widgets
 from django.utils.encoding import force_unicode
 from django.utils.translation import ugettext
 
 from djdocuments.templatetags.luzfcb_djdocuments_tags import remover_tags_html
+
 from .models import Documento
 from .utils.split_utils import gsplit
 
@@ -26,6 +27,7 @@ validate_ascii_e_numeros = RegexValidator(ascii_e_numeros_re,
 
 
 class SplitWidget(widgets.MultiWidget):
+
     def __init__(self, attrs=None, split_into=4, value_size=None, value=None, fields_max_length=None):
         assert isinstance(split_into, int) and split_into > 0, '"split_into" parameter expect a positive integer'
         self.split_into = split_into
@@ -134,6 +136,7 @@ class SplitedHashField2(forms.MultiValueField):
 
 
 class SplitWidget2(widgets.MultiWidget):
+
     def __init__(self, attrs=None, split_guide=None, merge_last=True, value=None):
         assert isinstance(split_guide, collections.Iterable) and all(
             isinstance(x, int) and x > 0 for x in
@@ -230,6 +233,7 @@ class SplitedHashField3(forms.MultiValueField):
 
 
 class ForwardExtrasMixin(object):
+
     def __init__(self, url=None, forward=None, clear_on_change=None, *args, **kwargs):
         self.clear_on_change = clear_on_change
         super(ForwardExtrasMixin, self).__init__(url, forward, *args, **kwargs)
@@ -253,6 +257,7 @@ class ForwardExtrasMixin(object):
 
 
 class ModelSelect2ForwardExtras(ForwardExtrasMixin, autocomplete.ModelSelect2):
+
     def __init__(self, url=None, forward=None, clear_on_change=None, to_field_name='pk', *args, **kwargs):
         self.to_field_name = to_field_name
         super(ModelSelect2ForwardExtras, self).__init__(url, forward, clear_on_change, *args, **kwargs)
@@ -270,6 +275,7 @@ class ModelSelect2MultipleForwardExtras(ForwardExtrasMixin, autocomplete.ModelSe
 
 
 class CkeditorTextAreadWidget(forms.Textarea):
+
     def __init__(self, attrs=None):
         default_attrs = {'data-djckeditor': 'true'}
         if attrs:
