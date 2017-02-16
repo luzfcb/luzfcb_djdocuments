@@ -31,6 +31,14 @@ class DocumentoQuerySet(models.QuerySet):
         qs = self.filter(q)
         return qs
 
+    def documentos_dos_grupos(self, grupos_ids=None):
+        q = Q()
+        q &= Q(eh_modelo=False)
+        if grupos_ids and isinstance(grupos_ids, (list, tuple)):
+            q &= Q(grupo_dono__in=grupos_ids)
+        qs = self.filter(q)
+        return qs
+
 
 class DocumentoManager(models.Manager):
     queryset_class = DocumentoQuerySet
@@ -48,6 +56,12 @@ class DocumentoManager(models.Manager):
                                    using=self._db,
                                    hints=self._hints).ativos().modelos(grupos_ids=grupos_ids)
 
+    def documentos_dos_grupos(self, grupos_ids=None):
+        return self.queryset_class(model=self.model,
+                                   using=self._db,
+                                   hints=self._hints).ativos().documentos_dos_grupos(grupos_ids=grupos_ids)
+
+
 
 class DocumentoAdminManager(models.Manager):
     queryset_class = DocumentoQuerySet
@@ -62,6 +76,11 @@ class DocumentoAdminManager(models.Manager):
         return self.queryset_class(model=self.model,
                                    using=self._db,
                                    hints=self._hints).ativos().modelos(grupos_ids=grupos_ids)
+
+    def documentos_dos_grupos(self, grupos_ids=None):
+        return self.queryset_class(model=self.model,
+                                   using=self._db,
+                                   hints=self._hints).ativos().documentos_dos_grupos(grupos_ids=grupos_ids)
 
 
 class AssinaturaQuerySet(models.QuerySet):
