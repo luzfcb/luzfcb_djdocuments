@@ -560,3 +560,12 @@ class NextPageURLMixin(SuccessURLAllowedHostsMixin):
         if not self.get_next_page() == self.request.path:
             return next_page
         return super(NextPageURLMixin, self).get_success_url()
+
+
+class MenuMixin(object):
+    menu_atual = None
+
+    def get_context_data(self, **kwargs):
+        context = super(MenuMixin, self).get_context_data(**kwargs)
+        context['menu_atual'] = self.menu_atual
+        return context
