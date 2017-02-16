@@ -8,12 +8,14 @@ from collections import Iterable
 from django.conf import settings
 from django.contrib.auth.hashers import SHA1PasswordHasher, check_password
 from django.core.exceptions import ValidationError
+from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models import Max
 from django.db.models import Q
 from django.utils import timezone
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.functional import cached_property
+
 from simple_history.models import HistoricalRecords
 from simple_history.views import MissingHistoryRecordsField
 
@@ -467,6 +469,13 @@ class Documento(models.Model):
         if self.assinatura_hash:
             return self.assinatura_hash.upper().split('$')[-1]
         return None
+
+    def get_absolute_url(self):
+        if self.eh_modelo:
+            url = reverse('documentos:validar-detail-modelo', kwargs={'slug': self.pk_uuid})
+        else:
+            url = reverse('documentos:validar-detail', kwargs={'slug': self.pk_uuid})
+        return url
 
     _desabilitar_temporiariamente_versao_numero = False
 
