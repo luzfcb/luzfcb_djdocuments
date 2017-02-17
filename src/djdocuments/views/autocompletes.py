@@ -188,7 +188,7 @@ class UserAutocomplete(DjDocumentsBackendMixin, autocomplete.Select2QuerySetView
 #         return result.get_full_name().title()
 
 
-class DocumentoCriarAutocomplete(autocomplete.Select2QuerySetView):
+class DocumentoCriarAutocomplete(DjDocumentsBackendMixin, autocomplete.Select2QuerySetView):
 
     @method_decorator(never_cache)
     def dispatch(self, request, *args, **kwargs):
@@ -200,8 +200,8 @@ class DocumentoCriarAutocomplete(autocomplete.Select2QuerySetView):
             return models.Documento.admin_objects.none()
 
         tipo_documento = self.forwarded.get('tipo_documento', None)
-
-        qs = models.Documento.admin_objects.modelos().exclude(eh_modelo_padrao=True)
+        grupos_ids = self.djdocuments_backend.get_grupos_usuario(self.request.user).values_list('id', flat=True)
+        qs = models.Documento.admin_objects.modelos(grupos_ids).exclude(eh_modelo_padrao=True)
 
         if tipo_documento:
             qs = qs.filter(tipo_documento_id=tipo_documento)
