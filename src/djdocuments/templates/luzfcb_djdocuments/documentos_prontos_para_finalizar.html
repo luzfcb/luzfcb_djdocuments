@@ -29,9 +29,9 @@
                 <tr>
                     <td>
                         <a href="{{ documento_nao_finalizado.url_para_visualizar }}"
-                           class="btn-link">{{ documento_nao_finalizado.documento.identificador_versao }}</a>
+                           class="btn-link djpopup djfullscreen">{{ documento_nao_finalizado.documento.identificador_versao }}</a>
                     </td>
-                    <td><a href="{{ documento_nao_finalizado.url_para_visualizar }}" class="btn-link">{{ documento_nao_finalizado.documento.assunto }}</a></td>
+                    <td><a href="{{ documento_nao_finalizado.url_para_visualizar }}" class="btn-link djpopup djfullscreen">{{ documento_nao_finalizado.documento.assunto }}</a></td>
                     <td>
                         {% for assinado_nome, grupo_assinante_nome in documento_nao_finalizado.documento.assinates_nomes %}
                             <ul>
@@ -44,9 +44,9 @@
                     <td class="text-center">
                         <div class="btn-group">
                             <a href="{{ documento_nao_finalizado.url_para_finalizar }}"
-                               class="btn btn-sm btn-primary">Finalizar</a>
+                               class="btn btn-sm btn-primary djpopup djfullscreen">Finalizar</a>
                             <a href="{{ documento_nao_finalizado.url_lista_assinaturas }}"
-                               class="btn btn-sm">Detalhes</a>
+                               class="btn btn-sm djpopup djfullscreen">Detalhes</a>
                         </div>
                     </td>
 

@@ -10,7 +10,7 @@ class DocumentoTable(django_tables2.Table):
     documento = django_tables2.LinkColumn(verbose_name='Documento',
                                           text=lambda record: record.identificador_versao,
                                           attrs={
-                                              'a': {'class': 'btn-link'}
+                                              'a': {'class': 'btn-link djpopup djfullscreen'}
                                           }
                                           )
 

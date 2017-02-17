@@ -32,9 +32,9 @@
                 <tr>
                     <td>
                         <a href="{{ dados.url_para_visualizar }}"
-                           class="btn-link">{{ dados.assinatura.documento.identificador_versao }}</a>
+                           class="btn-link djpopup djfullscreen">{{ dados.assinatura.documento.identificador_versao }}</a>
                     </td>
-                    <td><a href="{{ dados.url_para_visualizar }}" class="btn-link">{{ dados.assunto }}</a></td>
+                    <td><a href="{{ dados.url_para_visualizar }}" class="btn-link djpopup djfullscreen">{{ dados.assunto }}</a></td>
                     <td>{{ dados.grupo_assinante_nome }}</td>
                     <td>{{ dados.assinatura.nome_cadastrado_por }}</td>
                     <td>{% if dados.esta_assinado %}{{ dados.assinatura.assinado_nome }}{% else %}-{% endif %}</td>
@@ -42,7 +42,7 @@
                     <td class="text-center">
                         <div class="btn-group">
                             <a href="{{ dados.url_lista_assinaturas }}"
-                               class="btn btn-sm">Detalhes</a>
+                               class="btn btn-sm djpopup djfullscreen">Detalhes</a>
                         </div>
                     </td>
                 </tr>
