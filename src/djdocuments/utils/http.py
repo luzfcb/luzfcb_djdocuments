@@ -1,11 +1,9 @@
+import unicodedata
 import warnings
 
-import unicodedata
 from django.utils import six
 from django.utils.encoding import force_text
-from django.utils.six.moves.urllib.parse import (
-    urlparse
-)
+from django.utils.six.moves.urllib.parse import urlparse
 
 
 class RemovedInDjango21Warning(PendingDeprecationWarning):

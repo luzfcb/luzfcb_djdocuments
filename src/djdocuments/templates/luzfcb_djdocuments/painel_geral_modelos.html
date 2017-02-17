@@ -51,7 +51,7 @@
                                     <tr>
                                         <td>
                                             <a href="{{ dado.url_para_visualizar }}"
-                                               class="btn-link">{{ dado.documento.identificador_versao }}</a>
+                                               class="btn-link djpopup djfullscreen">{{ dado.documento.identificador_versao }}</a>
                                         </td>
                                         <td>
                                             {{ dado.documento.tipo_documento }}
@@ -69,9 +69,9 @@
                                             <div class="btn-group">
                                                    {% spurl base=dado.url_para_visualizar add_query="no_nav=1" as url_para_visualizar_com_query %}
                                                 <a href="{{ url_para_visualizar_com_query }}"
-                                                   class="btn btn-sm btn-primary djpopup">Visualizar</a>
+                                                   class="btn btn-sm btn-primary  djpopup djfullscreen">Visualizar</a>
                                                 <a href="{{ dado.url_para_editar }}"
-                                                   class="btn btn-sm btn-primary djpopup">Editar</a>
+                                                   class="btn btn-sm btn-primary  djpopup djfullscreen">Editar</a>
                                             </div>
                                         </td>
 
@@ -80,8 +80,8 @@
                                 {% endfor %}
                             {% else %}
                                 <tr>
-                                    <td colspan="4" class="center-block">
-                                        <h4>Todos os documentos estão finalizados</h4>
+                                    <td colspan="6" class="center-block">
+                                        <h4></h4>
                                     </td>
                                 </tr>
 

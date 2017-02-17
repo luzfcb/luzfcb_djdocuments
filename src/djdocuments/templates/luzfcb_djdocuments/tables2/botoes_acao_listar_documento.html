@@ -1,0 +1,21 @@
+{% load luzfcb_djdocuments_tags %}
+{% load spurl %}
+
+    <div class="btn-group">
+
+        {% if value.eh_modelo %}
+            {% url 'documentos:validar-detail-modelo' slug=record.pk_uuid as url_para_visualizar %}
+            {% url 'documentos:editar-modelo' slug=record.pk_uuid as url_para_editar %}
+        {% else %}
+            {% url 'documentos:validar-detail' slug=record.pk_uuid as url_para_visualizar %}
+            {% url 'documentos:editar' slug=record.pk_uuid as url_para_editar %}
+        {% endif %}
+
+        {% spurl base=url_para_visualizar add_query="no_nav=1" as url_para_visualizar_com_query %}
+
+        <a href="{{ url_para_visualizar_com_query }}"
+           class="btn btn-sm btn-primary djpopup djfullscreen">Visualizar</a>
+        <a href="{{ url_para_editar }}"
+           class="btn btn-sm btn-primary djpopup djfullscreen">Editar</a>
+    </div>
+

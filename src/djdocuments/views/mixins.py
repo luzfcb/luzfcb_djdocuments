@@ -16,6 +16,7 @@ from django.utils.translation import ugettext as _
 from urlobject import URLObject
 
 from djdocuments.utils.http import is_safe_url
+
 from ..models import Documento
 from ..templatetags.luzfcb_djdocuments_tags import absolute_uri
 from ..utils.base64utils import png_as_base64_str
@@ -42,6 +43,7 @@ class FormActionViewMixin(object):
 
 
 class QRCodeValidacaoMixin(object):
+
     def get_context_data(self, **kwargs):
         # http://stackoverflow.com/a/7389616/2975300
         context = super(QRCodeValidacaoMixin, self).get_context_data(**kwargs)
@@ -366,6 +368,7 @@ class SingleGroupObjectMixin(object):
 
 
 class AuditavelViewMixin(object):
+
     def form_valid(self, form):
         if hasattr(self.request, 'user') and not isinstance(self.request.user, AnonymousUser):
             if not form.instance.criado_por:
@@ -375,6 +378,7 @@ class AuditavelViewMixin(object):
 
 
 class DjDocumentPopupMixin(object):
+
     def get_initial(self):
         initial = super(DjDocumentPopupMixin, self).get_initial()
         initial.update({'is_popup': self.get_is_popup()})
@@ -398,6 +402,7 @@ class DjDocumentPopupMixin(object):
 
 
 class CopyDocumentContentMixin(object):
+
     def get_initial(self):
         initial = super(CopyDocumentContentMixin, self).get_initial()
         documento_instance = self.get_documento_instance()
@@ -424,6 +429,7 @@ class CopyDocumentContentMixin(object):
 
 
 class DocumentoAssinadoRedirectMixin(object):
+
     def get(self, request, *args, **kwargs):
         ret = super(DocumentoAssinadoRedirectMixin, self).get(request, *args, **kwargs)
 
@@ -539,7 +545,7 @@ class NextPageURLMixin(SuccessURLAllowedHostsMixin):
                 next_page = self.next_page_url
 
         if (next_page_redirect_field_name in self.request.POST or
-                    next_page_redirect_field_name in self.request.GET):
+                next_page_redirect_field_name in self.request.GET):
             next_page = self.request.POST.get(
                 next_page_redirect_field_name,
                 self.request.GET.get(next_page_redirect_field_name)
@@ -560,3 +566,12 @@ class NextPageURLMixin(SuccessURLAllowedHostsMixin):
         if not self.get_next_page() == self.request.path:
             return next_page
         return super(NextPageURLMixin, self).get_success_url()
+
+
+class MenuMixin(object):
+    menu_atual = None
+
+    def get_context_data(self, **kwargs):
+        context = super(MenuMixin, self).get_context_data(**kwargs)
+        context['menu_atual'] = self.menu_atual
+        return context

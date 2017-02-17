@@ -4,6 +4,7 @@ from __future__ import absolute_import, print_function, unicode_literals
 import json
 import logging
 
+import django_tables2
 from captcha.helpers import captcha_image_url
 from captcha.models import CaptchaStore
 from django.contrib.auth import get_user_model
@@ -13,13 +14,13 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.db import transaction
 from django.db.models import Q
-from django.utils.encoding import force_text
 from django.db.utils import IntegrityError
 from django.http import HttpResponseNotFound
 from django.http.response import HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import six
 from django.utils.decorators import method_decorator
+from django.utils.encoding import force_text
 from django.utils.functional import cached_property
 from django.views import generic
 from django.views.decorators.cache import never_cache
@@ -32,38 +33,44 @@ from ..backends import DjDocumentsBackendMixin
 from ..forms import (
     CriarDocumentoForm,
     CriarDocumentoParaGrupoForm,
+    CriarModeloDocumentoApartirDoDocumentoForm,
     CriarModeloDocumentoForm,
     DocumentoEditarForm,
     DocumentoEditarWithReadOnlyFieldsForm,
     DocumetoValidarForm,
     FinalizarDocumentoForm,
+    TipoDocumentoForm,
     create_form_class_adicionar_assinantes,
     create_form_class_assinar,
-    TipoDocumentoForm, create_form_class_finalizar, CriarModeloDocumentoApartirDoDocumentoForm)
+    create_form_class_finalizar
+)
 from ..models import Assinatura, Documento, TipoDocumento
-from .mixins import (
+from ..tables import DocumentoTable
+from .mixins import (  # NextURLMixin,
     AjaxFormPostMixin,
     AuditavelViewMixin,
+    DjDocumentPopupMixin,
     DocumentoAssinadoRedirectMixin,
     FormActionViewMixin,
-    # NextURLMixin,
-    DjDocumentPopupMixin,
+    MenuMixin,
+    NextPageURLMixin,
     QRCodeValidacaoMixin,
     SingleDocumentObjectMixin,
     SingleGroupObjectMixin,
-    VinculateMixin,
-    NextPageURLMixin)
+    VinculateMixin
+)
 
 logger = logging.getLogger('djdocuments')
 
 USER_MODEL = get_user_model()
 
 
-class DocumentoModeloPainelGeralView(DjDocumentsBackendMixin, generic.ListView):
+class DocumentoModeloPainelGeralView(DjDocumentsBackendMixin, MenuMixin, generic.ListView):
     model = Documento
     template_name = 'luzfcb_djdocuments/painel_geral_modelos.html'
     mostrar_ultimas = 10
     paginate_by = 20
+    menu_atual = 'dashboard_modelos'
 
     @method_decorator(never_cache)
     def dispatch(self, request, *args, **kwargs):
@@ -83,7 +90,8 @@ class DocumentoModeloPainelGeralView(DjDocumentsBackendMixin, generic.ListView):
         return dados_processados
 
     def get_queryset(self):
-        queryset = self.model.objects.modelos().select_related('tipo_documento')
+        grupos_ids = self.djdocuments_backend.get_grupos_usuario(self.request.user).values_list('id', flat=True)
+        queryset = self.model.objects.modelos(grupos_ids).select_related('tipo_documento')
         ordering = self.get_ordering()
         if ordering:
             if isinstance(ordering, six.string_types):
@@ -97,10 +105,11 @@ class DocumentoModeloPainelGeralView(DjDocumentsBackendMixin, generic.ListView):
         return context
 
 
-class DocumentoPainelGeralView(DjDocumentsBackendMixin, generic.TemplateView):
+class DocumentoPainelGeralView(DjDocumentsBackendMixin, MenuMixin, generic.TemplateView):
     template_name = 'luzfcb_djdocuments/painel_geral.html'
     mostrar_ultimas = 10
     next_success_url = None
+    menu_atual = 'dashboard'
 
     @method_decorator(never_cache)
     def dispatch(self, request, *args, **kwargs):
@@ -211,13 +220,15 @@ class DocumentoPainelGeralView(DjDocumentsBackendMixin, generic.TemplateView):
 
 
 class DocumentoPainelGeralPorGrupoView(DocumentoPainelGeralView):
+    menu_atual = 'dashboard-por-grupo'
+
     @cached_property
     def get_ids_grupos_do_usuario(self):
         return tuple(self.djdocuments_backend.get_grupos_usuario(self.request.user).values_list('id', flat=True))
 
     def get_ultimos_documentos_nao_finalizados_queryset(self):
         return Documento.objects.prontos_para_finalizar(grupos_ids=self.get_ids_grupos_do_usuario)[
-               :self.mostrar_ultimas]
+            :self.mostrar_ultimas]
 
     def get_ultimas_assinaturas_pendentes_queryset(self):
         return Assinatura.objects.assinaturas_pendentes(grupos_ids=self.get_ids_grupos_do_usuario).order_by(
@@ -231,25 +242,31 @@ class DocumentoPainelGeralPorGrupoView(DocumentoPainelGeralView):
         return reverse('documentos:dashboard-por-grupo')
 
 
-class DocumentoListView(generic.ListView):
+class DocumentoListView(DjDocumentsBackendMixin, MenuMixin, django_tables2.SingleTableMixin, generic.ListView):
     template_name = 'luzfcb_djdocuments/documento_list.html'
     model = Documento
-    paginate_by = 5
+    table_class = DocumentoTable
+    paginate_by = 3
+    mostrar_ultimas = 10
+    menu_atual = 'list'
 
     @method_decorator(never_cache)
     def dispatch(self, request, *args, **kwargs):
         return super(DocumentoListView, self).dispatch(request, *args, **kwargs)
 
-    def render_to_response(self, context, **response_kwargs):
-        rend = super(DocumentoListView, self).render_to_response(context, **response_kwargs)
-        return rend
-
     def get_queryset(self):
-        qs = super(DocumentoListView, self).get_queryset()
-        return qs
+        grupos_ids = self.djdocuments_backend.get_grupos_usuario(self.request.user).values_list('id', flat=True)
+        queryset = self.model.objects.documentos_dos_grupos(grupos_ids).select_related('tipo_documento')
+        ordering = self.get_ordering()
+        if ordering:
+            if isinstance(ordering, six.string_types):
+                ordering = (ordering,)
+            queryset = queryset.order_by(*ordering)
+        return queryset
 
 
 class AAAA(object):
+
     def get_adicional_dict(self):
         d = {
             'pk': self.get_instance_object().pk,
@@ -283,6 +300,7 @@ class AAAA(object):
         else:
             context['popup_response_data'] = False
         return context
+
 
 class DocumentoEditor(AAAA, CreatePopupMixin,
                       AjaxFormPostMixin,
@@ -445,7 +463,7 @@ def create_document_template_from_document(current_user, grupo, documento_modelo
     return documento_novo
 
 
-class DocumentoCriar( CreatePopupMixin, VinculateMixin, FormActionViewMixin, DjDocumentsBackendMixin, generic.FormView):
+class DocumentoCriar(CreatePopupMixin, VinculateMixin, FormActionViewMixin, DjDocumentsBackendMixin, generic.FormView):
     template_name = 'luzfcb_djdocuments/documento_create2.html'
     form_class = CriarDocumentoForm
     default_selected_document_template_pk = None
@@ -720,9 +738,10 @@ class FinalizarDocumentoFormView(FormActionViewMixin, SingleDocumentObjectMixin,
         return reverse('documentos:assinaturas', kwargs={'slug': self.document_object.pk_uuid})
 
 
-class AssinaturasPendentesGrupo(DjDocumentsBackendMixin, generic.ListView):
+class AssinaturasPendentesGrupo(DjDocumentsBackendMixin, MenuMixin, generic.ListView):
     model = Assinatura
     template_name = 'luzfcb_djdocuments/assinaturas_pendentes_por_grupo.html'
+    menu_atual = 'pendentes'
 
     @method_decorator(never_cache)
     def dispatch(self, request, *args, **kwargs):
@@ -769,9 +788,10 @@ class AssinaturasPendentesGrupo(DjDocumentsBackendMixin, generic.ListView):
         return context
 
 
-class DocumentosProntosParaFinalizarGrupo(DjDocumentsBackendMixin, generic.ListView):
+class DocumentosProntosParaFinalizarGrupo(DjDocumentsBackendMixin, MenuMixin, generic.ListView):
     model = Documento
     template_name = 'luzfcb_djdocuments/documentos_prontos_para_finalizar.html'
+    menu_atual = 'documentos_prontos_para_finalizar'
 
     @method_decorator(never_cache)
     def dispatch(self, request, *args, **kwargs):
@@ -811,9 +831,10 @@ class DocumentosProntosParaFinalizarGrupo(DjDocumentsBackendMixin, generic.ListV
         return context
 
 
-class AssinaturasRealizadasPorGrupo(DjDocumentsBackendMixin, generic.ListView):
+class AssinaturasRealizadasPorGrupo(DjDocumentsBackendMixin, MenuMixin, generic.ListView):
     model = Assinatura
     template_name = 'luzfcb_djdocuments/documentos_assinados_por_grupo.html'
+    menu_atual = 'assinados'
 
     @method_decorator(never_cache)
     def dispatch(self, request, *args, **kwargs):
@@ -1203,7 +1224,8 @@ class PrintPDFDocumentoDetailValidarView(PrintPDFConfiguracaoMixin, PDFRenderMix
     pass
 
 
-class PrintPDFDocumentoModeloDetailValidarView(PrintPDFConfiguracaoMixin, PDFRenderMixin, DocumentoModeloDetailValidarView):
+class PrintPDFDocumentoModeloDetailValidarView(PrintPDFConfiguracaoMixin, PDFRenderMixin,
+                                               DocumentoModeloDetailValidarView):
     pass
 
 

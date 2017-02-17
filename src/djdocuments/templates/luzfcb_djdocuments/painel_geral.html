@@ -51,10 +51,10 @@
                                 <tr>
                                     <td>
                                         <a href="{{ dado.url_para_visualizar }}"
-                                           class="btn-link">{{ dado.assinatura.documento.identificador_versao }}</a>
+                                           class="btn-link djpopup djfullscreen">{{ dado.assinatura.documento.identificador_versao }}</a>
                                     </td>
                                     <td><a href="{{ dado.url_para_visualizar }}"
-                                           class="btn-link">{{ dado.assunto }}</a></td>
+                                           class="btn-link djpopup djfullscreen">{{ dado.assunto }}</a></td>
                                     <td>{{ dado.grupo_assinante_nome }}</td>
                                     <td>{{ dado.assinatura.nome_cadastrado_por }}</td>
                                     <td>{% if dado.esta_assinado %}-{% else %}
@@ -66,10 +66,10 @@
                                             {% if not dado.esta_assinado %}
                                                 {% spurl base=dado.url_para_assinar query='next={{ next_success_url }}' as url_para_assinar_com_next %}
                                                 {% if dado.pode_assinar %}<a href="{{ url_para_assinar_com_next }}"
-                                                                             class="btn btn-sm btn-primary">Assinar</a>
+                                                                             class="btn btn-sm djpopup djfullscreen btn-primary">Assinar</a>
                                                 {% else %}
 
-                                                    <button class="btn btn-sm btn-primary" disabled="disabled"
+                                                    <button class="btn btn-sm djpopup djfullscreen btn-primary" disabled="disabled"
                                                             readonly="true">
                                                         Assinar
                                                     </button>
@@ -78,9 +78,9 @@
                                                 <span class="label label-success">Assinado</span>
                                             {% endif %}
                                             <a href="{{ dado.url_para_visualizar }}"
-                                               class="btn btn-sm">Visualizar</a>
+                                               class="btn btn-sm djpopup djfullscreen">Visualizar</a>
                                             <a href="{{ dado.url_lista_assinaturas }}"
-                                               class="btn btn-sm">Detalhes</a>
+                                               class="btn btn-sm djpopup djfullscreen">Detalhes</a>
                                         </div>
                                     </td>
                                 </tr>
@@ -135,10 +135,10 @@
                                 <tr>
                                     <td>
                                         <a href="{{ dado.url_para_visualizar }}"
-                                           class="btn-link">{{ dado.assinatura.documento.identificador_versao }}</a>
+                                           class="btn-link djpopup djfullscreen">{{ dado.assinatura.documento.identificador_versao }}</a>
                                     </td>
                                     <td><a href="{{ dado.url_para_visualizar }}"
-                                           class="btn-link">{{ dado.assunto }}</a></td>
+                                           class="btn-link djpopup djfullscreen">{{ dado.assunto }}</a></td>
                                     <td>{{ dado.grupo_assinante_nome }}</td>
                                     <td>{{ dado.assinatura.nome_cadastrado_por }}</td>
                                     <td>{% if dado.esta_assinado %}{{ dado.assinatura.assinado_nome }}{% else %}
@@ -149,7 +149,7 @@
                                     <td class="text-center">
                                         <div class="btn-group">
                                             <a href="{{ dado.url_lista_assinaturas }}"
-                                               class="btn btn-sm">Detalhes</a>
+                                               class="btn btn-sm djpopup djfullscreen">Detalhes</a>
                                         </div>
                                     </td>
                                 </tr>
@@ -203,9 +203,9 @@
                                 <tr>
                                     <td>
                                         <a href="{{ dado.url_para_visualizar }}"
-                                           class="btn-link">{{ dado.documento.identificador_versao }}</a>
+                                           class="btn-link djpopup djfullscreen">{{ dado.documento.identificador_versao }}</a>
                                     </td>
-                                    <td><a href="{{ dado.url_para_visualizar }}" class="btn-link">{{ dado.assunto }}</a>
+                                    <td><a href="{{ dado.url_para_visualizar }}" class="btn-link djpopup djfullscreen">{{ dado.assunto }}</a>
                                     </td>
                                     <td>
                                         {% for assinado_nome, grupo_assinante_nome in dado.documento.assinates_nomes %}
@@ -219,10 +219,10 @@
                                     <td class="text-center">
                                         <div class="btn-group">
                                             <a href="{{ dado.url_lista_assinaturas }}"
-                                               class="btn btn-sm">Detalhes</a>
+                                               class="btn btn-sm djpopup djfullscreen">Detalhes</a>
                                             {% spurl base=dado.url_para_finalizar query='next={{ next_success_url }}' as url_para_finalizar_com_next %}
                                             <a href="{{ url_para_finalizar_com_next }}"
-                                               class="btn btn-sm btn-primary">Finalizar</a>
+                                               class="btn btn-sm djpopup djfullscreen btn-primary">Finalizar</a>
                                         </div>
                                     </td>
 
