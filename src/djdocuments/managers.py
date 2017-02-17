@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models import Case, IntegerField, Q, Sum, Value, When
+from django.db.models.query import ValuesListQuerySet
 
 
 class DocumentoQuerySet(models.QuerySet):
@@ -14,10 +15,16 @@ class DocumentoQuerySet(models.QuerySet):
         return self.filter(esta_assinado=True, esta_ativo=True)
 
     def prontos_para_finalizar(self, grupos_ids=None):
+
         q = Q()
         q &= Q(esta_assinado=False)
         q &= Q(eh_modelo=False)
-        if grupos_ids and isinstance(grupos_ids, (list, tuple)):
+        if grupos_ids and not isinstance(grupos_ids, (list, tuple, ValuesListQuerySet)):
+            raise ValueError(
+                "on %s: Expect list, tuple or ValuesListQuerySet"
+                % self.__class__.__name__
+            )
+        if grupos_ids and isinstance(grupos_ids, (list, tuple, ValuesListQuerySet)):
             q &= Q(grupo_dono__in=grupos_ids)
         qs = self.filter(q).annotate(
             assinaturas_pendentes=Sum(Case(When(assinaturas__esta_assinado=False, then=Value(1)), default=0,
@@ -27,7 +34,12 @@ class DocumentoQuerySet(models.QuerySet):
     def modelos(self, grupos_ids=None):
         q = Q()
         q &= Q(eh_modelo=True)
-        if grupos_ids and isinstance(grupos_ids, (list, tuple)):
+        if grupos_ids and not isinstance(grupos_ids, (list, tuple, ValuesListQuerySet)):
+            raise ValueError(
+                "on %s: Expect list, tuple or ValuesListQuerySet"
+                % self.__class__.__name__
+            )
+        if grupos_ids and isinstance(grupos_ids, (list, tuple, ValuesListQuerySet)):
             q &= Q(grupo_dono__in=grupos_ids)
         qs = self.filter(q)
         return qs
@@ -35,7 +47,12 @@ class DocumentoQuerySet(models.QuerySet):
     def documentos_dos_grupos(self, grupos_ids=None):
         q = Q()
         q &= Q(eh_modelo=False)
-        if grupos_ids and isinstance(grupos_ids, (list, tuple)):
+        if grupos_ids and not isinstance(grupos_ids, (list, tuple, ValuesListQuerySet)):
+            raise ValueError(
+                "on %s: Expect list, tuple or ValuesListQuerySet"
+                % self.__class__.__name__
+            )
+        if grupos_ids and isinstance(grupos_ids, (list, tuple, ValuesListQuerySet)):
             q &= Q(grupo_dono__in=grupos_ids)
         qs = self.filter(q)
         return qs
@@ -90,7 +107,12 @@ class AssinaturaQuerySet(models.QuerySet):
         q &= Q(documento__eh_modelo=False)
         q &= ~Q(assinado_por=None)
         q &= Q(ativo=True)
-        if grupos_ids and isinstance(grupos_ids, (list, tuple)):
+        if grupos_ids and not isinstance(grupos_ids, (list, tuple, ValuesListQuerySet)):
+            raise ValueError(
+                "on %s: Expect list, tuple or ValuesListQuerySet"
+                % self.__class__.__name__
+            )
+        if grupos_ids and isinstance(grupos_ids, (list, tuple, ValuesListQuerySet)):
             q &= Q(grupo_assinante_id__in=grupos_ids)
 
         qs = self.select_related('grupo_assinante').filter(q)
@@ -101,7 +123,12 @@ class AssinaturaQuerySet(models.QuerySet):
         q &= Q(documento__eh_modelo=False)
         q &= Q(assinado_por=None)
         q &= Q(ativo=True)
-        if grupos_ids and isinstance(grupos_ids, (list, tuple)):
+        if grupos_ids and not isinstance(grupos_ids, (list, tuple, ValuesListQuerySet)):
+            raise ValueError(
+                "on %s: Expect list, tuple or ValuesListQuerySet"
+                % self.__class__.__name__
+            )
+        if grupos_ids and isinstance(grupos_ids, (list, tuple, ValuesListQuerySet)):
             q &= Q(grupo_assinante_id__in=grupos_ids)
         qs = self.select_related('grupo_assinante').filter(q)
         return qs

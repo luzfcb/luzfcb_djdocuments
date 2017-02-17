@@ -90,7 +90,8 @@ class DocumentoModeloPainelGeralView(DjDocumentsBackendMixin, MenuMixin, generic
         return dados_processados
 
     def get_queryset(self):
-        queryset = self.model.objects.modelos().select_related('tipo_documento')
+        grupos_ids = self.djdocuments_backend.get_grupos_usuario(self.request.user).values_list('id', flat=True)
+        queryset = self.model.objects.modelos(grupos_ids).select_related('tipo_documento')
         ordering = self.get_ordering()
         if ordering:
             if isinstance(ordering, six.string_types):
@@ -255,7 +256,6 @@ class DocumentoListView(DjDocumentsBackendMixin, MenuMixin, django_tables2.Singl
 
     def get_queryset(self):
         grupos_ids = self.djdocuments_backend.get_grupos_usuario(self.request.user).values_list('id', flat=True)
-        print('grupos_ids: ', grupos_ids)
         queryset = self.model.objects.documentos_dos_grupos(grupos_ids).select_related('tipo_documento')
         ordering = self.get_ordering()
         if ordering:
