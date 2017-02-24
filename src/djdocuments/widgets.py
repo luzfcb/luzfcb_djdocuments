@@ -64,8 +64,6 @@ class SplitWidget(widgets.MultiWidget):
         return [None for __ in range(0, self.value_size, self.split_into)]
 
     def value_from_datadict(self, data, files, name):
-        print('value_from_datadict:')
-        pprint(locals())
         return super(SplitWidget, self).value_from_datadict(data, files, name)
 
 
@@ -94,7 +92,6 @@ class SplitedHashField2(forms.MultiValueField):
         self.widget = SplitWidget(split_into=self.split_into, value_size=self.value_size, value=value,
                                   fields_max_length=fields_max_length)
         super(SplitedHashField2, self).__init__(fields, *args, **kwargs)
-        print('')
 
         # if self.max_length is not None:
         #     self.validators.append(validators.MinLengthValidator(int(self.max_length)))
@@ -105,7 +102,6 @@ class SplitedHashField2(forms.MultiValueField):
 
     def clean(self, value):
         pre_clean = super(SplitedHashField2, self).clean(value)
-        print('clean', value)
         # if pre_clean:
         #     for data in pre_clean:
         #         if data and len(data) < self.split_into:
@@ -115,14 +111,11 @@ class SplitedHashField2(forms.MultiValueField):
         return ''.join(pre_clean)
 
     def to_python(self, value):
-        print('pre_to_python:', value)
         # value = ''.join(value)
         ret = super(SplitedHashField2, self).to_python(value)
-        print('to_python:', value)
         return ret
 
     def validate(self, value):
-        print('validate:', value)
         # if value:
         #     for data in value:
         #         if data and len(data) < self.split_into:
@@ -184,7 +177,6 @@ class SplitedHashField3(forms.MultiValueField):
         kwargs.pop('widget', None)  # descarta qualquer widget
         value = kwargs.get('initial', None) or 'A' * self.split_len
         self.value_size = len(value)
-        print('SplitedHashField3:', value)
         regexes = {}
         fields = []
         for max_length in self.split_guide:
@@ -195,11 +187,9 @@ class SplitedHashField3(forms.MultiValueField):
 
         self.widget = SplitWidget2(split_guide=self.split_guide, merge_last=False, attrs={'class': 'auto_next'})
         super(SplitedHashField3, self).__init__(fields, *args, **kwargs)
-        print('')
 
     def clean(self, value):
         pre_clean = super(SplitedHashField3, self).clean(value)
-        print('SplitedHashField3:', 'clean', value)
         # if pre_clean:
         #     for data in pre_clean:
         #         if data and len(data) < self.split_into:
@@ -209,17 +199,14 @@ class SplitedHashField3(forms.MultiValueField):
         return ''.join(pre_clean)
 
     def to_python(self, value):
-        print('pre_to_python:', value)
         # value = ''.join(value)
         ret = super(SplitedHashField3, self).to_python(value)
-        print('to_python:', value)
         return ret
 
     def prepare_value(self, value):
         return super(SplitedHashField3, self).prepare_value(value)
 
     def validate(self, value):
-        print('SplitedHashField3', 'validate:', value)
         # if value:
         #     for data in value:
         #         if data and len(data) < self.split_into:
