@@ -15,12 +15,12 @@
                 <li class="active"><a data-toggle="tab"
                                       href="#ultimas_assinaturas_pendentes">Ultimas {{ mostrar_ultimas }} assinaturas
                     pendentes</a></li>
-                <li class=""><a data-toggle="tab" href="#ultimas_assinaturas_realizadas">Ultimas {{ mostrar_ultimas }}
-                    assinaturas
-                    realizadas</a></li>
                 <li class=""><a data-toggle="tab"
                                 href="#ultimos_documentos_nao_finalizados">Ultimos {{ mostrar_ultimas }} documentos não
                     finalizados</a></li>
+                <li class=""><a data-toggle="tab" href="#ultimas_assinaturas_realizadas">Ultimas {{ mostrar_ultimas }}
+                    assinaturas
+                    realizadas</a></li>
             </ul>
         </div>
         <div class="box-body">
@@ -110,76 +110,6 @@
 
 
                 </div>
-                <div class="tab-pane fade" id="ultimas_assinaturas_realizadas">
-                    <div class="pull-right actions-m18">
-                        <a href="{% url 'documentos:assinados' %}"
-                           class="btn btn-sm btn-success">Ver todas as Assinaturas Realizadas</a>
-                    </div>
-                    <table class="table table-bordered table-striped table-hover table-condensed">
-                        <thead>
-                        <tr>
-                            <th>Documento</th>
-                            <th>Assunto</th>
-                            <th>Defensoria assinantes</th>
-                            <th>Solicitante</th>
-                            <th>Assinante</th>
-                            <th>Data/Hora assinatura</th>
-                            <th>Ações</th>
-                        </tr>
-                        </thead>
-
-
-                        <tbody>
-                        {% if ultimas_assinaturas_realizadas %}
-                            {% for dado in ultimas_assinaturas_realizadas %}
-                                <tr>
-                                    <td>
-                                        <a href="{{ dado.url_para_visualizar }}"
-                                           class="btn-link djpopup djfullscreen">{{ dado.assinatura.documento.identificador_versao }}</a>
-                                    </td>
-                                    <td><a href="{{ dado.url_para_visualizar }}"
-                                           class="btn-link djpopup djfullscreen">{{ dado.assunto }}</a></td>
-                                    <td>{{ dado.grupo_assinante_nome }}</td>
-                                    <td>{{ dado.assinatura.nome_cadastrado_por }}</td>
-                                    <td>{% if dado.esta_assinado %}{{ dado.assinatura.assinado_nome }}{% else %}
-                                        -{% endif %}</td>
-                                    <td>{% if dado.esta_assinado %}{{ dado.assinatura.assinado_em }}{% else %}
-                                        -{% endif %}</td>
-
-                                    <td class="text-center">
-                                        <div class="btn-group">
-                                            <a href="{{ dado.url_lista_assinaturas }}"
-                                               class="btn btn-sm djpopup djfullscreen">Detalhes</a>
-                                        </div>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        {% else %}
-                            <tr>
-                                <td colspan="7" class="center-block">
-                                    <h4>Nenhum documento foi assinado até o momento</h4>
-                                </td>
-                            </tr>
-
-                        {% endif %}
-                        </tbody>
-
-
-                        <tfoot>
-                        <tr>
-                            <th>Documento</th>
-                            <th>Assunto</th>
-                            <th>Defensoria assinantes</th>
-                            <th>Solicitante</th>
-                            <th>Assinante</th>
-                            <th>Data/Hora assinatura</th>
-                            <th>Ações</th>
-                        </tr>
-                        </tfoot>
-                    </table>
-
-
-                </div>
                 <div class="tab-pane fade" id="ultimos_documentos_nao_finalizados">
                     <div class="pull-right actions-m18">
                         <a href="{% url 'documentos:documentos_prontos_para_finalizar' %}"
@@ -249,6 +179,76 @@
                         </tr>
                         </tfoot>
                     </table>
+
+                </div>
+                <div class="tab-pane fade" id="ultimas_assinaturas_realizadas">
+                    <div class="pull-right actions-m18">
+                        <a href="{% url 'documentos:assinados' %}"
+                           class="btn btn-sm btn-success">Ver todas as Assinaturas Realizadas</a>
+                    </div>
+                    <table class="table table-bordered table-striped table-hover table-condensed">
+                        <thead>
+                        <tr>
+                            <th>Documento</th>
+                            <th>Assunto</th>
+                            <th>Defensoria assinantes</th>
+                            <th>Solicitante</th>
+                            <th>Assinante</th>
+                            <th>Data/Hora assinatura</th>
+                            <th>Ações</th>
+                        </tr>
+                        </thead>
+
+
+                        <tbody>
+                        {% if ultimas_assinaturas_realizadas %}
+                            {% for dado in ultimas_assinaturas_realizadas %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ dado.url_para_visualizar }}"
+                                           class="btn-link djpopup djfullscreen">{{ dado.assinatura.documento.identificador_versao }}</a>
+                                    </td>
+                                    <td><a href="{{ dado.url_para_visualizar }}"
+                                           class="btn-link djpopup djfullscreen">{{ dado.assunto }}</a></td>
+                                    <td>{{ dado.grupo_assinante_nome }}</td>
+                                    <td>{{ dado.assinatura.nome_cadastrado_por }}</td>
+                                    <td>{% if dado.esta_assinado %}{{ dado.assinatura.assinado_nome }}{% else %}
+                                        -{% endif %}</td>
+                                    <td>{% if dado.esta_assinado %}{{ dado.assinatura.assinado_em }}{% else %}
+                                        -{% endif %}</td>
+
+                                    <td class="text-center">
+                                        <div class="btn-group">
+                                            <a href="{{ dado.url_lista_assinaturas }}"
+                                               class="btn btn-sm djpopup djfullscreen">Detalhes</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="center-block">
+                                    <h4>Nenhum documento foi assinado até o momento</h4>
+                                </td>
+                            </tr>
+
+                        {% endif %}
+                        </tbody>
+
+
+                        <tfoot>
+                        <tr>
+                            <th>Documento</th>
+                            <th>Assunto</th>
+                            <th>Defensoria assinantes</th>
+                            <th>Solicitante</th>
+                            <th>Assinante</th>
+                            <th>Data/Hora assinatura</th>
+                            <th>Ações</th>
+                        </tr>
+                        </tfoot>
+                    </table>
+
 
                 </div>
 
