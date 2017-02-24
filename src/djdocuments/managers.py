@@ -4,6 +4,7 @@ from django.db.models.query import ValuesListQuerySet
 
 
 class DocumentoQuerySet(models.QuerySet):
+
     def ativos(self):
         return self.filter(esta_ativo=True)
 
@@ -119,6 +120,7 @@ class DocumentoAdminManager(models.Manager):
 
 
 class AssinaturaQuerySet(models.QuerySet):
+
     def assinaturas_realizadas(self):
         q = Q()
         q &= Q(documento__eh_modelo=False)
