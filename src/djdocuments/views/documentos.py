@@ -227,15 +227,15 @@ class DocumentoPainelGeralPorGrupoView(DocumentoPainelGeralView):
         return tuple(self.djdocuments_backend.get_grupos_usuario(self.request.user).values_list('id', flat=True))
 
     def get_ultimos_documentos_nao_finalizados_queryset(self):
-        return Documento.objects.prontos_para_finalizar(grupos_ids=self.get_ids_grupos_do_usuario)[
+        return Documento.objects.prontos_para_finalizar().from_groups(grupos_ids=self.get_ids_grupos_do_usuario)[
             :self.mostrar_ultimas]
 
     def get_ultimas_assinaturas_pendentes_queryset(self):
-        return Assinatura.objects.assinaturas_pendentes(grupos_ids=self.get_ids_grupos_do_usuario).order_by(
+        return Assinatura.objects.assinaturas_pendentes().from_groups(grupos_ids=self.get_ids_grupos_do_usuario).order_by(
             '-cadastrado_em')[:self.mostrar_ultimas]
 
     def get_ultimas_assinaturas_realizadas_queryset(self):
-        return Assinatura.objects.assinaturas_realizadas(grupos_ids=self.get_ids_grupos_do_usuario).order_by(
+        return Assinatura.objects.assinaturas_realizadas().from_groups(grupos_ids=self.get_ids_grupos_do_usuario).order_by(
             '-cadastrado_em')[:self.mostrar_ultimas]
 
     def get_next_success_url(self):
@@ -753,7 +753,7 @@ class AssinaturasPendentesGrupo(DjDocumentsBackendMixin, MenuMixin, generic.List
 
     def get_queryset(self):
         queryset = super(AssinaturasPendentesGrupo, self).get_queryset()
-        return queryset.assinaturas_pendentes(grupos_ids=self.get_ids_grupos_do_usuario).order_by('-cadastrado_em')
+        return queryset.assinaturas_pendentes().from_groups(grupos_ids=self.get_ids_grupos_do_usuario).order_by('-cadastrado_em')
 
     def get_context_data(self, **kwargs):
         context = super(AssinaturasPendentesGrupo, self).get_context_data(**kwargs)
@@ -803,7 +803,7 @@ class DocumentosProntosParaFinalizarGrupo(DjDocumentsBackendMixin, MenuMixin, ge
         grupos_id_list = tuple(
             self.djdocuments_backend.get_grupos_usuario(self.request.user).values_list('pk', flat=True))
 
-        queryset = queryset.prontos_para_finalizar(grupos_ids=grupos_id_list)
+        queryset = queryset.prontos_para_finalizar().from_groups(grupos_ids=grupos_id_list)
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -843,10 +843,11 @@ class AssinaturasRealizadasPorGrupo(DjDocumentsBackendMixin, MenuMixin, generic.
     def get_queryset(self):
         queryset = super(AssinaturasRealizadasPorGrupo, self).get_queryset()
 
-        grupos = tuple(self.djdocuments_backend.get_grupos_usuario(self.request.user).values_list('id', flat=True))
+        grupos_ids = tuple(self.djdocuments_backend.get_grupos_usuario(self.request.user).values_list('id', flat=True))
         queryset = queryset.select_related('documento', 'grupo_assinante')
 
-        queryset = queryset.filter(Q(grupo_assinante_id__in=grupos), ~Q(assinado_por=None), Q(ativo=True))
+        queryset = queryset.assinaturas_realizadas().from_groups(grupos_ids=grupos_ids)
+        print(queryset.query)
         return queryset
 
     def get_context_data(self, **kwargs):
