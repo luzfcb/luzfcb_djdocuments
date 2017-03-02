@@ -7,6 +7,7 @@ from collections import Iterable
 
 from django.conf import settings
 from django.contrib.auth.hashers import SHA1PasswordHasher, check_password
+from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import models
@@ -16,6 +17,7 @@ from django.utils.encoding import python_2_unicode_compatible
 from django.utils.functional import cached_property
 from simple_history.models import HistoricalRecords
 from simple_history.views import MissingHistoryRecordsField
+from model_utils.models import SoftDeletableModel
 
 from djdocuments.utils import identificador
 
@@ -194,8 +196,7 @@ class Assinatura(models.Model):
         # post save
 
 
-# Create your models here.
-class Documento(models.Model):
+class Documento(SoftDeletableModel):
     pk_uuid = models.UUIDField(editable=False, unique=True, null=True, db_index=True, default=uuid.uuid4)
 
     def __unicode__(self):
@@ -246,6 +247,13 @@ class Documento(models.Model):
     modificado_em = models.DateTimeField(auto_now=True, blank=True, null=True, editable=False)
 
     modificado_por_nome = models.CharField(max_length=255, blank=True)
+
+    excluido_por = models.ForeignKey(to=settings.AUTH_USER_MODEL, null=True,
+                                     related_name="%(app_label)s_%(class)s_excluido_por",
+                                     blank=True, on_delete=models.SET_NULL, editable=False)
+    excluido_em = models.DateTimeField(null=True, editable=False)
+
+    excluido_por_nome = models.CharField(max_length=255, blank=True)
 
     esta_ativo = models.NullBooleanField(default=True, editable=False)
 
@@ -317,6 +325,10 @@ class Documento(models.Model):
         # TODO: Verificar ManyToManyField de Defensoria para Documento, com related donos
         return DjDocumentsBackend.pode_editar(document=self,
                                               usuario=usuario_atual)
+
+    def pode_excluir_documento(self, usuario_atual):
+        return DjDocumentsBackend.pode_excluir_documento(document=self,
+                                                         usuario=usuario_atual)
 
     def pode_visualizar(self, usuario_atual):
         if self.pode_editar(usuario_atual):
@@ -503,3 +515,12 @@ class Documento(models.Model):
         if not self.esta_assinado:
             self.assinatura_hash = None
         super(Documento, self).save(*args, **kwargs)
+
+    def delete(self, using=None, soft=True, current_user=None, *args, **kwargs):
+        self.excluido_em = timezone.now()
+        if current_user and not isinstance(current_user, AnonymousUser):
+            self.excluido_por = current_user
+            self.excluido_por_nome = self.excluido_por.get_full_name()
+        self._desabilitar_temporiariamente_versao_numero = True
+        super(Documento, self).delete(using, soft, *args, **kwargs)
+        self._desabilitar_temporiariamente_versao_numero = False

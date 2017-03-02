@@ -228,14 +228,16 @@ class DocumentoPainelGeralPorGrupoView(DocumentoPainelGeralView):
 
     def get_ultimos_documentos_nao_finalizados_queryset(self):
         return Documento.objects.prontos_para_finalizar().from_groups(grupos_ids=self.get_ids_grupos_do_usuario)[
-            :self.mostrar_ultimas]
+               :self.mostrar_ultimas]
 
     def get_ultimas_assinaturas_pendentes_queryset(self):
-        return Assinatura.objects.assinaturas_pendentes().from_groups(grupos_ids=self.get_ids_grupos_do_usuario).order_by(
+        return Assinatura.objects.assinaturas_pendentes().from_groups(
+            grupos_ids=self.get_ids_grupos_do_usuario).order_by(
             '-cadastrado_em')[:self.mostrar_ultimas]
 
     def get_ultimas_assinaturas_realizadas_queryset(self):
-        return Assinatura.objects.assinaturas_realizadas().from_groups(grupos_ids=self.get_ids_grupos_do_usuario).order_by(
+        return Assinatura.objects.assinaturas_realizadas().from_groups(
+            grupos_ids=self.get_ids_grupos_do_usuario).order_by(
             '-cadastrado_em')[:self.mostrar_ultimas]
 
     def get_next_success_url(self):
@@ -266,7 +268,6 @@ class DocumentoListView(DjDocumentsBackendMixin, MenuMixin, django_tables2.Singl
 
 
 class AAAA(object):
-
     def get_adicional_dict(self):
         d = {
             'pk': self.get_instance_object().pk,
@@ -753,7 +754,8 @@ class AssinaturasPendentesGrupo(DjDocumentsBackendMixin, MenuMixin, generic.List
 
     def get_queryset(self):
         queryset = super(AssinaturasPendentesGrupo, self).get_queryset()
-        return queryset.assinaturas_pendentes().from_groups(grupos_ids=self.get_ids_grupos_do_usuario).order_by('-cadastrado_em')
+        return queryset.assinaturas_pendentes().from_groups(grupos_ids=self.get_ids_grupos_do_usuario).order_by(
+            '-cadastrado_em')
 
     def get_context_data(self, **kwargs):
         context = super(AssinaturasPendentesGrupo, self).get_context_data(**kwargs)
@@ -1275,3 +1277,59 @@ class DocumentoValidacaoView(generic.FormView):
     def form_valid(self, form):
         self.documento_instance = form.documento
         return super(DocumentoValidacaoView, self).form_valid(form)
+
+
+class DocumentoExcluirView(AjaxFormPostMixin, generic.DeleteView):
+    model = Documento
+    slug_field = 'pk_uuid'
+    template_name = 'luzfcb_djdocuments/documento_confirm_delete.html'
+
+    @method_decorator(never_cache)
+    def dispatch(self, request, *args, **kwargs):
+        return super(DocumentoExcluirView, self).dispatch(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        response = super(DocumentoExcluirView, self).get(request, *args, **kwargs)
+        status, mensagem = self.object.pode_excluir_documento(self.request.user)
+        logger.info('{klass}:{mensagem}'.format(klass=self.__class__.__name__, mensagem=mensagem))
+        if not status:
+            response = render(request=request, template_name='luzfcb_djdocuments/erros/erro_403.html',
+                              context={'mensagem': mensagem})
+        return response
+
+    def get_success_url(self):
+        status, mensagem = self.object.pode_excluir_documento(self.request.user)
+        logger.info('{klass}:{mensagem}'.format(klass=self.__class__.__name__, mensagem=mensagem))
+        if not status:
+            return render(request=self.request, template_name='luzfcb_djdocuments/erros/erro_403.html',
+                          context={'mensagem': mensagem})
+        return reverse('documentos:assinaturas', kwargs={'slug': self.object.pk_uuid})
+
+    def delete(self, request, *args, **kwargs):
+        """
+        Calls the delete() method on the fetched object and then
+        redirects to the success URL.
+        """
+        self.object = self.get_object()
+        success_url = self.get_success_url()
+        #####
+        status, mensagem = self.object.pode_excluir_documento(self.request.user)
+        logger.info('{klass}:{mensagem}'.format(klass=self.__class__.__name__, mensagem=mensagem))
+        if status:
+            self.object.delete(current_user=self.request.user)
+            return HttpResponseRedirect(success_url)
+        else:
+            ret = render(request=self.request, template_name='luzfcb_djdocuments/erros/erro_403.html',
+                          context={'mensagem': mensagem})
+        return ret
+
+    # Add support for browsers which only accept GET and POST for now.
+    def post(self, request, *args, **kwargs):
+        return self.delete(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(DocumentoExcluirView, self).get_context_data(**kwargs)
+        context['form_action'] = reverse_lazy('documentos:excluir',
+                                              kwargs={'slug': self.object.pk_uuid})
+        context['document_object'] = self.object
+        return context

@@ -1,10 +1,10 @@
 from django.db import models
 from django.db.models import Case, IntegerField, Q, Sum, Value, When
 from django.db.models.query import ValuesListQuerySet
+from model_utils.managers import SoftDeletableManager, SoftDeletableQuerySet
 
 
-class DocumentoQuerySet(models.QuerySet):
-
+class DocumentoQuerySet(SoftDeletableQuerySet):
     def ativos(self):
         return self.filter(esta_ativo=True)
 
@@ -71,7 +71,7 @@ class DocumentoQuerySet(models.QuerySet):
         return qs
 
 
-class DocumentoManager(models.Manager):
+class DocumentoManager(SoftDeletableManager):
     _queryset_class = DocumentoQuerySet
 
     def get_queryset(self):
@@ -96,7 +96,7 @@ class DocumentoManager(models.Manager):
                                     hints=self._hints).ativos().documentos_dos_grupos(grupos_ids=grupos_ids)
 
 
-class DocumentoAdminManager(models.Manager):
+class DocumentoAdminManager(SoftDeletableManager):
     _queryset_class = DocumentoQuerySet
 
     def get_queryset(self):
@@ -119,8 +119,7 @@ class DocumentoAdminManager(models.Manager):
                                     hints=self._hints).ativos().documentos_dos_grupos(grupos_ids=grupos_ids)
 
 
-class AssinaturaQuerySet(models.QuerySet):
-
+class AssinaturaQuerySet(SoftDeletableQuerySet):
     def assinaturas_realizadas(self):
         q = Q()
         q &= Q(documento__eh_modelo=False)
@@ -151,7 +150,7 @@ class AssinaturaQuerySet(models.QuerySet):
         return qs
 
 
-class AssinaturaManager(models.Manager):
+class AssinaturaManager(SoftDeletableManager):
     _queryset_class = AssinaturaQuerySet
 
     def get_queryset(self):

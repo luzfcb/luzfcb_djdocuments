@@ -22,6 +22,9 @@ class DjDocumentsBaseBackend(object):
     def pode_criar_documento_para_grupo(self, usuario, grupo):
         raise NotImplemented()
 
+    def pode_excluir_documento(self, document, usuario, **kwargs):
+            raise NotImplemented()
+
     def pode_remover_assinatura(self, document, assinatura, usuario_atual, **kwargs):
         raise NotImplemented()
 
