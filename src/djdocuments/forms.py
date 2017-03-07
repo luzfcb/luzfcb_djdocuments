@@ -13,7 +13,7 @@ from django_addanother.widgets import AddAnotherWidgetWrapper
 
 from .backends import DjDocumentsBackendMixin
 from .form_mixins import BootstrapFormInputMixin, ReadOnlyFieldsMixin
-from .models import Documento, TipoDocumento
+from .models import Assinatura, Documento, TipoDocumento
 from .templatetags.luzfcb_djdocuments_tags import remover_tags_html
 from .utils import get_djdocuments_backend, get_grupo_assinante_model_class
 from .widgets import CkeditorTextAreadWidget, ModelSelect2ForwardExtras, SplitedHashField3
@@ -378,7 +378,7 @@ class FinalizarDocumentoForm(BootstrapFormInputMixin, DjDocumentsBackendMixin, f
         return password
 
 
-def create_form_class_assinar(document_object):
+def create_form_class_assinar(document_object, usuario=None):
     url_autocomplete = reverse('documentos:grupos_assinantes_do_documento_autocomplete',
                                kwargs={'slug': document_object.pk_uuid})
     djdocuments_backend = get_djdocuments_backend()
@@ -386,9 +386,11 @@ def create_form_class_assinar(document_object):
                                                                                    flat=True)
     grupos = document_object.grupos_assinates.filter(id__in=grupos_ids)
 
-    class AssinarDocumentoForm(BootstrapFormInputMixin, DjDocumentsBackendMixin, forms.Form):
+    usuario = usuario
+
+    class AssinarDocumentoForm(BootstrapFormInputMixin, DjDocumentsBackendMixin, forms.ModelForm):
         # titulo = forms.CharField(max_length=500)]
-        grupo = forms.ChoiceField(
+        grupo_assinante = forms.ChoiceField(
             label=djdocuments_backend.get_group_label(),
             help_text="Selecione o {}".format(djdocuments_backend.get_group_label()),
             # queryset=get_grupo_assinante_model_class().objects.all(),
@@ -415,9 +417,13 @@ def create_form_class_assinar(document_object):
                                "Note that both fields may be case-sensitive."),
             'inactive': _("This account is inactive."),
         }
+        class Meta:
+            model = Assinatura
+            fields = ('grupo_assinante', 'assinado_por', 'password')
 
         def __init__(self, *args, **kwargs):
             self.current_logged_user = kwargs.pop('current_logged_user')
+            self.usuario_assinante_escolhido = usuario
             grupo_escolhido_queryset = kwargs.get('grupo_escolhido_queryset')
             grupo_escolhido = kwargs.get('grupo_escolhido')
             if grupo_escolhido_queryset:
@@ -432,7 +438,7 @@ def create_form_class_assinar(document_object):
                 if not grupo_escolhido_queryset:
                     pass
                     # raise backend.get_grupo_model.
-                self.fields['grupo'] = GrupoModelChoiceField(
+                self.fields['grupo_assinante'] = GrupoModelChoiceField(
                     label=self.djdocuments_backend.get_group_label(),
                     help_text="Selecione o {}".format(self.djdocuments_backend.get_group_label()),
                     queryset=grupo_escolhido_queryset,
@@ -443,13 +449,28 @@ def create_form_class_assinar(document_object):
                 )
                 self.fields['assinado_por'].queryset = self.djdocuments_backend.get_usuarios_grupo(
                     self.grupo_escolhido)
+                if usuario:
+                    self.fields['assinado_por'] = UserModelChoiceField(
+                        label="Assinante",
+                        help_text="Selecione o usuário que irá assinar o documento",
+                        # queryset=get_real_user_model_class().objects.all().order_by('username'),
+                        queryset=USER_MODEL.objects.all().order_by('username'),
+                        required=False,
+                        empty_label=None,
+                        initial=usuario,
+                        widget=forms.Select(attrs={'class': 'form-control', 'readonly': True, 'disabled': 'disabled'})
 
-        def clean_grupo(self):
+                    )
+                    self.fields['assinado_por'].initial = usuario
+
+        def clean_grupo_assinante(self):
             if self.grupo_escolhido:
                 return self.grupo_escolhido
-            return self.cleaned_data['grupo']
+            return self.cleaned_data['grupo_assinante']
 
         def clean_assinado_por(self):
+            if self.usuario_assinante_escolhido:
+                return self.usuario_assinante_escolhido
             assinado_por = self.cleaned_data.get('assinado_por')
             return assinado_por
 

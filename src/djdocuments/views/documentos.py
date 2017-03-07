@@ -136,9 +136,7 @@ class DocumentoPainelGeralView(DjDocumentsBackendMixin, MenuMixin, generic.Templ
                                                                  usuario=self.request.user,
                                                                  grupo_assinante=assinatura.grupo_assinante)
 
-            url_para_assinar = reverse_lazy('documentos:assinar_por_grupo',
-                                            kwargs={'slug': assinatura.documento.pk_uuid,
-                                                    'group_id': assinatura.grupo_assinante.pk})
+            url_para_assinar = assinatura.get_absolute_url()
 
             dados = {
                 'identificador_documento': assinatura.documento.identificador_documento,
@@ -166,6 +164,7 @@ class DocumentoPainelGeralView(DjDocumentsBackendMixin, MenuMixin, generic.Templ
             pode_assinar = self.djdocuments_backend.pode_assinar(document=assinatura.documento,
                                                                  usuario=self.request.user,
                                                                  grupo_assinante=assinatura.grupo_assinante)
+            url_para_assinar = assinatura.get_absolute_url()
             dados = {
                 'identificador_documento': assinatura.documento.identificador_documento,
                 'assunto': assinatura.documento.assunto,
@@ -173,9 +172,7 @@ class DocumentoPainelGeralView(DjDocumentsBackendMixin, MenuMixin, generic.Templ
                 'esta_assinado': assinatura.esta_assinado,
                 'pode_assinar': pode_assinar,
                 'grupo_assinante_nome': self.djdocuments_backend.get_grupo_name(assinatura.grupo_assinante),
-                'url_para_assinar': reverse_lazy('documentos:assinar_por_grupo',
-                                                 kwargs={'slug': assinatura.documento.pk_uuid,
-                                                         'group_id': assinatura.grupo_assinante.pk}),
+                'url_para_assinar': url_para_assinar,
                 'url_remover_assinatura': reverse_lazy('documentos:remover_assinatura',
                                                        kwargs={'document_slug': assinatura.documento.pk_uuid,
                                                                'pk': assinatura.pk}),
@@ -909,14 +906,15 @@ class DocumentoAssinaturasListView(SingleDocumentObjectMixin, DjDocumentsBackend
             pode_assinar = self.djdocuments_backend.pode_assinar(document=self.document_object,
                                                                  usuario=self.request.user,
                                                                  grupo_assinante=assinatura.grupo_assinante)
+            url_para_assinar = reverse_lazy('documentos:assinar_por_grupo',
+                                             kwargs={'slug': self.document_object.pk_uuid,
+                                                     'group_id': assinatura.grupo_assinante.pk})
             dados = {
                 'assinatura': assinatura,
                 'esta_assinado': assinatura.esta_assinado,
                 'pode_assinar': pode_assinar,
                 'grupo_assinante_nome': self.djdocuments_backend.get_grupo_name(assinatura.grupo_assinante),
-                'url_para_assinar': reverse_lazy('documentos:assinar_por_grupo',
-                                                 kwargs={'slug': self.document_object.pk_uuid,
-                                                         'group_id': assinatura.grupo_assinante.pk}),
+                'url_para_assinar': url_para_assinar,
                 'url_remover_assinatura': reverse_lazy('documentos:remover_assinatura',
                                                        kwargs={'document_slug': self.document_object.pk_uuid,
                                                                'pk': assinatura.pk})
@@ -986,21 +984,46 @@ class AssinarDocumentoView(DocumentoAssinadoRedirectMixin,
                            SingleDocumentObjectMixin,
                            DjDocumentsBackendMixin,
                            NextPageURLMixin,
-                           generic.FormView):
+                           FormActionViewMixin,
+                           generic.UpdateView):
     template_name = 'luzfcb_djdocuments/documento_assinar.html'
     # form_class = AssinarDocumentoForm
-    model = Documento
+    model = Assinatura
     slug_field = 'pk_uuid'
     group_pk_url_kwarg = 'group_id'
     group_object = None
+    user_pk_url_kwarg = 'user_id'
+    user_object = None
+
+    def get_form_action(self):
+        return self.object.get_absolute_url()
+
+    def get_object(self, queryset=None):
+        group_id = self.kwargs.get(self.group_pk_url_kwarg, None)
+        user_id = self.kwargs.get(self.user_pk_url_kwarg, None)
+        if group_id:
+            print('group_id', group_id)
+            print('user_id', user_id)
+            from django.shortcuts import get_object_or_404
+
+            assinatura = get_object_or_404(self.document_object.assinaturas, grupo_assinante=group_id, assinado_por=user_id, esta_assinado=False)
+            print(type(assinatura), assinatura)
+        else:
+            assinatura = self.document_object.assinaturas.filter(esta_assinado=False).first()
+        return assinatura
 
     def get(self, request, *args, **kwargs):
         group_id = self.kwargs.get(self.group_pk_url_kwarg, None)
+        user_id = self.kwargs.get(self.user_pk_url_kwarg, None)
         if group_id:
             self.group_object = self.djdocuments_backend.get_grupo_model().objects.get(pk=group_id)
+        if user_id:
+            self.user_object = USER_MODEL.objects.get(pk=user_id)
         ret = super(AssinarDocumentoView, self).get(request, *args, **kwargs)
-        if self.group_object and self.djdocuments_backend.grupo_ja_assinou(self.document_object, self.request.user,
+        user = self.user_object if self.user_object else self.request.user
+        if self.group_object and self.djdocuments_backend.grupo_ja_assinou(self.document_object, user,
                                                                            grupo_assinante=self.group_object):
+
             logger.error(msg='Grupo ja assinou, redirecionando')
             return HttpResponseRedirect(
                 reverse('documentos:assinaturas', kwargs={'slug': self.document_object.pk_uuid}))
@@ -1014,7 +1037,7 @@ class AssinarDocumentoView(DocumentoAssinadoRedirectMixin,
         return super(AssinarDocumentoView, self).dispatch(request, *args, **kwargs)
 
     def get_form_class(self):
-        return create_form_class_assinar(self.document_object)
+        return create_form_class_assinar(self.document_object, self.user_object)
 
     # def get_initial(self):
     #     initial = super(AssinarDocumentoView, self).get_initial()
@@ -1029,7 +1052,7 @@ class AssinarDocumentoView(DocumentoAssinadoRedirectMixin,
 
     def get_form_kwargs(self):
         kwargs = super(AssinarDocumentoView, self).get_form_kwargs()
-        current_logged_user = self.request.user
+        current_logged_user = self.user_object if self.user_object else self.request.user
         kwargs['current_logged_user'] = current_logged_user
         group_id = self.kwargs.get(self.group_pk_url_kwarg, None)
         # kwargs['grupo_escolhido'] = None
@@ -1039,6 +1062,7 @@ class AssinarDocumentoView(DocumentoAssinadoRedirectMixin,
             #     logger.info("grupo id '{}' nao existe".format(group_id))
             #     return HttpResponseNotFound('Grupo nao existe')
             kwargs['grupo_escolhido_queryset'] = grupo_escolhido_queryset
+            kwargs['grupo_escolhido'] = self.document_object.grupos_assinates.filter(id=group_id).first()
             kwargs['grupo_escolhido'] = self.document_object.grupos_assinates.filter(id=group_id).first()
 
         return kwargs
@@ -1050,7 +1074,7 @@ class AssinarDocumentoView(DocumentoAssinadoRedirectMixin,
 
     def form_valid(self, form):
         ret = super(AssinarDocumentoView, self).form_valid(form)
-        grupo_selecionado = form.cleaned_data['grupo']
+        grupo_selecionado = form.cleaned_data['grupo_assinante']
         assinado_por = form.cleaned_data['assinado_por']
         senha = form.cleaned_data['password']
         self.document_object.assinar(grupo_assinante=grupo_selecionado, usuario_assinante=assinado_por, senha=senha)
@@ -1104,9 +1128,7 @@ class DocumentoDetailView(NextPageURLMixin, DjDocumentsBackendMixin, DjDocumentP
                     context['menu_assinaturas'] = True
                     assinatura = assinaturas.filter(grupo_assinante_id=self.object.grupo_dono.pk).first()
                     if assinatura and assinatura.ativo and not assinatura.esta_assinado:
-                        context['url_para_assinar'] = reverse_lazy('documentos:assinar_por_grupo',
-                                                                   kwargs={'slug': self.object.pk_uuid,
-                                                                           'group_id': assinatura.grupo_assinante.pk})
+                        context['url_para_assinar'] = assinatura.get_absolute_url()
                     if self.object.pronto_para_finalizar:
                         context['url_para_finalizar'] = reverse_lazy('documentos:finalizar_assinatura',
                                                                      kwargs={'slug': self.object.pk_uuid,

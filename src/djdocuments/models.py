@@ -107,6 +107,20 @@ class Assinatura(models.Model):
 
     objects = managers.AssinaturaManager()
 
+    def get_absolute_url(self):
+        url = None
+        if not self.esta_assinado:
+            if self.assinado_por:
+                url = reverse('documentos:assinar_por_grupo_por_usuario',
+                                            kwargs={'slug': self.documento.pk_uuid,
+                                                    'user_id': self.assinado_por_id,
+                                                    'group_id': self.grupo_assinante_id})
+            else:
+                url = reverse('documentos:assinar_por_grupo',
+                                            kwargs={'slug': self.documento.pk_uuid,
+                                                    'group_id': self.grupo_assinante_id})
+        return url
+
     def pode_assinar(self, grupo_assinante, usuario_assinante, agora):
         return DjDocumentsBackend.pode_assinar(
             document=self.documento,
