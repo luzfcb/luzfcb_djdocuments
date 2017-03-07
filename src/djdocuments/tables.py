@@ -17,12 +17,15 @@ class DocumentoTable(django_tables2.Table):
     acoes = django_tables2.TemplateColumn(verbose_name='Ações',
                                           template_name='luzfcb_djdocuments/tables2/botoes_acao_listar_documento.html',
                                           attrs={
-                                              'td': {'class': 'text-center'}
-                                          }
+                                              'td': {'class': 'text-center'},
+                                          },
+                                          orderable=False
                                           )
+
+    tipo_documento = django_tables2.Column(verbose_name='Tipo')
 
     class Meta:
 
         template = 'luzfcb_djdocuments/tables2/bootstrap.html'
         model = models.Documento
-        fields = ('documento', 'tipo_documento', 'grupo_dono', 'assunto', 'criado_em', 'modificado_em', 'acoes')
+        fields = ('documento', 'assunto', 'tipo_documento', 'grupo_dono', 'criado_em', 'modificado_em', 'acoes')
