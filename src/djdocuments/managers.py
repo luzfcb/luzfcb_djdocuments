@@ -123,7 +123,8 @@ class AssinaturaQuerySet(SoftDeletableQuerySet):
     def assinaturas_realizadas(self):
         q = Q()
         q &= Q(documento__eh_modelo=False)
-        q &= ~Q(assinado_por=None)
+        q &= ~Q(hash_assinatura=None)
+        q &= Q(esta_assinado=True)
         q &= Q(ativo=True)
         qs = self.select_related('grupo_assinante').filter(q)
         return qs
@@ -131,7 +132,7 @@ class AssinaturaQuerySet(SoftDeletableQuerySet):
     def assinaturas_pendentes(self):
         q = Q()
         q &= Q(documento__eh_modelo=False)
-        q &= Q(assinado_por=None)
+        q &= Q(esta_assinado=False)
         q &= Q(ativo=True)
         qs = self.select_related('grupo_assinante').filter(q)
         return qs
