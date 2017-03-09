@@ -378,33 +378,34 @@ class FinalizarDocumentoForm(BootstrapFormInputMixin, DjDocumentsBackendMixin, f
         return password
 
 
-def create_form_class_assinar(document_object, usuario=None):
+def create_form_class_assinar(assinatura, usuario_atualmente_logado=None):
+    document_object = assinatura.documento
+    usuario_atualmente_logado = None
     url_autocomplete = reverse('documentos:grupos_assinantes_do_documento_autocomplete',
                                kwargs={'slug': document_object.pk_uuid})
     djdocuments_backend = get_djdocuments_backend()
-    grupos_ids = document_object.assinaturas.filter(assinado_por=None).values_list('grupo_assinante_id',
-                                                                                   flat=True)
-    grupos = document_object.grupos_assinates.filter(id__in=grupos_ids)
-
-    usuario = usuario
+    grupos_ids = document_object.assinaturas.filter(esta_assinado=False).distinct('grupo_assinante').values_list(
+        'grupo_assinante_id',
+        flat=True)
+    grupos = document_object.grupos_assinates.filter(id__in=grupos_ids).distinct()
+    usuarios_grupo = djdocuments_backend.get_usuarios_grupo(assinatura.grupo_assinante)
 
     class AssinarDocumentoForm(BootstrapFormInputMixin, DjDocumentsBackendMixin, forms.ModelForm):
         # titulo = forms.CharField(max_length=500)]
-        grupo_assinante = forms.ChoiceField(
+        grupo_assinante = GrupoModelChoiceField(
             label=djdocuments_backend.get_group_label(),
             help_text="Selecione o {}".format(djdocuments_backend.get_group_label()),
-            # queryset=get_grupo_assinante_model_class().objects.all(),
-            choices=grupos,
-            widget=autocomplete.ModelSelect2(url=url_autocomplete, forward=('grupo',)),
+            queryset=grupos,
+            widget=autocomplete.ModelSelect2(url=url_autocomplete, forward=('grupo_assinante',)),
         )
 
         assinado_por = UserModelChoiceField(
             label="Assinante",
             help_text="Selecione o usuário que irá assinar o documento",
             # queryset=get_real_user_model_class().objects.all().order_by('username'),
-            queryset=USER_MODEL.objects.all().order_by('username'),
+            queryset=usuarios_grupo.order_by('username'),
             widget=ModelSelect2ForwardExtras(url='documentos:user-by-group-autocomplete',
-                                             forward=('grupo',), clear_on_change=('grupo',)),
+                                             forward=('grupo_assinante',), clear_on_change=('grupo_assinante',)),
 
         )
 
@@ -417,71 +418,73 @@ def create_form_class_assinar(document_object, usuario=None):
                                "Note that both fields may be case-sensitive."),
             'inactive': _("This account is inactive."),
         }
+
         class Meta:
             model = Assinatura
             fields = ('grupo_assinante', 'assinado_por', 'password')
 
-        def __init__(self, *args, **kwargs):
-            self.current_logged_user = kwargs.pop('current_logged_user')
-            self.usuario_assinante_escolhido = usuario
-            grupo_escolhido_queryset = kwargs.get('grupo_escolhido_queryset')
-            grupo_escolhido = kwargs.get('grupo_escolhido')
-            if grupo_escolhido_queryset:
-                kwargs.pop('grupo_escolhido_queryset')
-                kwargs.pop('grupo_escolhido')
-            self.grupo_escolhido = grupo_escolhido
-            super(AssinarDocumentoForm, self).__init__(*args, **kwargs)
-
-            if grupo_escolhido_queryset:
-                self.initial['assinado_por'] = self.current_logged_user
-
-                if not grupo_escolhido_queryset:
-                    pass
-                    # raise backend.get_grupo_model.
-                self.fields['grupo_assinante'] = GrupoModelChoiceField(
-                    label=self.djdocuments_backend.get_group_label(),
-                    help_text="Selecione o {}".format(self.djdocuments_backend.get_group_label()),
-                    queryset=grupo_escolhido_queryset,
-                    required=False,
-                    empty_label=None,
-                    initial=self.grupo_escolhido,
-                    widget=forms.Select(attrs={'class': 'form-control', 'readonly': True, 'disabled': 'disabled'})
-                )
-                self.fields['assinado_por'].queryset = self.djdocuments_backend.get_usuarios_grupo(
-                    self.grupo_escolhido)
-                if usuario:
-                    self.fields['assinado_por'] = UserModelChoiceField(
-                        label="Assinante",
-                        help_text="Selecione o usuário que irá assinar o documento",
-                        # queryset=get_real_user_model_class().objects.all().order_by('username'),
-                        queryset=USER_MODEL.objects.all().order_by('username'),
-                        required=False,
-                        empty_label=None,
-                        initial=usuario,
-                        widget=forms.Select(attrs={'class': 'form-control', 'readonly': True, 'disabled': 'disabled'})
-
-                    )
-                    self.fields['assinado_por'].initial = usuario
-
         def clean_grupo_assinante(self):
-            if self.grupo_escolhido:
-                return self.grupo_escolhido
+            if self.instance.grupo_assinante:
+                return self.instance.grupo_assinante
             return self.cleaned_data['grupo_assinante']
 
         def clean_assinado_por(self):
-            if self.usuario_assinante_escolhido:
-                return self.usuario_assinante_escolhido
+            if self.instance.assinado_por:
+                return self.instance.assinado_por
             assinado_por = self.cleaned_data.get('assinado_por')
             return assinado_por
 
         def clean_password(self):
             password = self.cleaned_data.get('password')
-            user = self.cleaned_data.get('assinado_por')
-            valid = check_password(password, user.password)
-            if not valid:
-                raise forms.ValidationError('Invalid password')
+            if self.instance.assinado_por:
+                user = self.instance.assinado_por
+            else:
+                user = self.cleaned_data.get('assinado_por')
 
+            if user:
+                valid = check_password(password, user.password)
+
+                if not valid:
+                    self.add_error('password', forms.ValidationError('Senha inválida para o assinante selecionado'))
             return password
+
+        def __init__(self, *args, **kwargs):
+            super(AssinarDocumentoForm, self).__init__(*args, **kwargs)
+            self.fields['assinado_por'].initial = usuario_atualmente_logado
+            if self.instance.grupo_assinante:
+                users = self.djdocuments_backend.get_usuarios_grupo(self.instance.grupo_assinante)
+                self.fields['grupo_assinante'] = GrupoModelChoiceField(
+                    label=djdocuments_backend.get_group_label(),
+                    help_text="Selecione o {}".format(djdocuments_backend.get_group_label()),
+                    queryset=grupos,
+                    initial=self.instance.grupo_assinante,
+                )
+                self.fields['grupo_assinante'].required = False
+                self.fields['grupo_assinante'].widget.attrs.update(
+                    {
+                        'class': 'form-control disabled',
+                        'readonly': True,
+                        'disabled': 'disabled'
+                    }
+                )
+                if self.instance.assinado_por:
+                    print('entrou aqui')
+                    self.fields['assinado_por'] = UserModelChoiceField(
+                        label="Assinante",
+                        help_text="Selecione o usuário que irá assinar o documento",
+                        queryset=users.filter(username=self.instance.assinado_por.username),
+                        initial=self.instance.assinado_por
+
+                    )
+                    self.fields['assinado_por'].required = False
+                    # self.fields['assinado_por'].initial = self.instance.assinado_por
+                    self.fields['assinado_por'].widget.attrs.update(
+                        {
+                            'class': 'form-control disabled',
+                            'readonly': True,
+                            'disabled': 'disabled'
+                        }
+                    )
 
     return AssinarDocumentoForm
 

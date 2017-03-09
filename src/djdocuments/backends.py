@@ -23,7 +23,7 @@ class DjDocumentsBaseBackend(object):
         raise NotImplemented()
 
     def pode_excluir_documento(self, document, usuario, **kwargs):
-            raise NotImplemented()
+        raise NotImplemented()
 
     def pode_remover_assinatura(self, document, assinatura, usuario_atual, **kwargs):
         raise NotImplemented()
