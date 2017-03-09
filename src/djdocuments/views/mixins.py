@@ -4,6 +4,7 @@ from __future__ import absolute_import, print_function, unicode_literals
 import pyqrcode
 import status
 from django.contrib import messages
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse
@@ -20,6 +21,8 @@ from djdocuments.utils.http import is_safe_url
 from ..models import Documento
 from ..templatetags.luzfcb_djdocuments_tags import absolute_uri
 from ..utils.base64utils import png_as_base64_str
+
+USER_MODEL = get_user_model()
 
 
 class FormActionViewMixin(object):
@@ -156,20 +159,23 @@ class SingleDocumentObjectMixin(object):
     document_slug_url_kwarg = 'slug'
     document_pk_url_kwarg = 'document_pk'
     document_query_pk_and_slug = False
+    document_disable_if_url_kwarg_not_is_available = False
 
     def get(self, request, *args, **kwargs):
-        self.document_object = self.get_document_object()
+        if not self.document_disable_if_url_kwarg_not_is_available or (self.kwargs.get(self.document_pk_url_kwarg, None) or self.kwargs.get(self.document_slug_url_kwarg, None)):
+            self.document_object = self.get_document_object()
         return super(SingleDocumentObjectMixin, self).get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        self.document_object = self.get_document_object()
+        if not self.document_disable_if_url_kwarg_not_is_available or (self.kwargs.get(self.document_pk_url_kwarg, None) or self.kwargs.get(self.document_slug_url_kwarg, None)):
+            self.document_object = self.get_document_object()
         return super(SingleDocumentObjectMixin, self).post(request, *args, **kwargs)
 
     def get_document_object(self, queryset=None):
         """
         Returns the object the view is displaying.
 
-        By default this requires `self.queryset` and a `pk` or `slug` argument
+        By default this requires `self.document_queryset` and a `pk` or `slug` argument
         in the URLconf, but subclasses can override this to return any object.
         """
         # Use a custom queryset if provided; this is required for subclasses
@@ -207,7 +213,7 @@ class SingleDocumentObjectMixin(object):
         Return the `QuerySet` that will be used to look up the object.
 
         Note that this method is called by the default implementation of
-        `get_object` and may not be called if `get_object` is overridden.
+        `get_document_object` and may not be called if `get_document_object` is overridden.
         """
         if self.document_queryset is None:
             if self.document_model:
@@ -215,8 +221,8 @@ class SingleDocumentObjectMixin(object):
             else:
                 raise ImproperlyConfigured(
                     "%(cls)s is missing a QuerySet. Define "
-                    "%(cls)s.model, %(cls)s.queryset, or override "
-                    "%(cls)s.get_queryset()." % {
+                    "%(cls)s.document_model, %(cls)s.document_queryset, or override "
+                    "%(cls)s.get_document_queryset()." % {
                         'cls': self.__class__.__name__
                     }
                 )
@@ -265,6 +271,7 @@ class SingleGroupObjectMixin(object):
     group_slug_url_kwarg = 'group_slug'
     group_pk_url_kwarg = 'group_pk'
     group_query_pk_and_slug = False
+    group_disable_if_url_kwarg_not_is_available = False
 
     def __init__(self):
         from ..utils import get_grupo_assinante_model_class
@@ -272,18 +279,20 @@ class SingleGroupObjectMixin(object):
         super(SingleGroupObjectMixin, self).__init__()
 
     def get(self, request, *args, **kwargs):
-        self.group_object = self.get_group_object()
+        if not self.group_disable_if_url_kwarg_not_is_available or (self.kwargs.get(self.group_pk_url_kwarg, None) or self.kwargs.get(self.group_slug_url_kwarg, None)):
+            self.group_object = self.get_group_object()
         return super(SingleGroupObjectMixin, self).get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        self.group_object = self.get_group_object()
+        if not self.group_disable_if_url_kwarg_not_is_available or (self.kwargs.get(self.group_pk_url_kwarg, None) or self.kwargs.get(self.group_slug_url_kwarg, None)):
+            self.group_object = self.get_group_object()
         return super(SingleGroupObjectMixin, self).post(request, *args, **kwargs)
 
     def get_group_object(self, queryset=None):
         """
         Returns the object the view is displaying.
 
-        By default this requires `self.queryset` and a `pk` or `slug` argument
+        By default this requires `self.group_queryset` and a `pk` or `slug` argument
         in the URLconf, but subclasses can override this to return any object.
         """
         # Use a custom queryset if provided; this is required for subclasses
@@ -329,8 +338,8 @@ class SingleGroupObjectMixin(object):
             else:
                 raise ImproperlyConfigured(
                     "%(cls)s is missing a QuerySet. Define "
-                    "%(cls)s.model, %(cls)s.queryset, or override "
-                    "%(cls)s.get_queryset()." % {
+                    "%(cls)s.group_model, %(cls)s.group_queryset, or override "
+                    "%(cls)s.get_group_queryset()." % {
                         'cls': self.__class__.__name__
                     }
                 )
@@ -363,6 +372,122 @@ class SingleGroupObjectMixin(object):
             context_object_name = self.get_group_context_object_name(self.group_object)
             if context_object_name:
                 context[context_object_name] = self.group_object
+        context.update(kwargs)
+        return context
+
+
+class SingleUserObjectMixin(object):
+    """
+    Provides the ability to retrieve a single 'User' object for further manipulation.
+    """
+    user_object = None
+    user_model = None
+    user_queryset = None
+    user_slug_field = 'username'
+    user_context_object_name = 'user_object'
+    user_slug_url_kwarg = 'user_slug'
+    user_pk_url_kwarg = 'user_pk'
+    user_query_pk_and_slug = False
+    user_disable_if_url_kwarg_not_is_available = False
+
+    def __init__(self):
+        self.user_model = USER_MODEL
+        super(SingleUserObjectMixin, self).__init__()
+
+    def get(self, request, *args, **kwargs):
+        if not self.user_disable_if_url_kwarg_not_is_available or (self.kwargs.get(self.user_pk_url_kwarg, None) or self.kwargs.get(self.user_slug_url_kwarg, None)):
+            self.user_object = self.get_user_object()
+        return super(SingleUserObjectMixin, self).get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        if not self.user_disable_if_url_kwarg_not_is_available or (self.kwargs.get(self.user_pk_url_kwarg, None) or self.kwargs.get(self.user_slug_url_kwarg, None)):
+            self.user_object = self.get_user_object()
+        return super(SingleUserObjectMixin, self).post(request, *args, **kwargs)
+
+    def get_user_object(self, queryset=None):
+        """
+        Returns the object the view is displaying.
+
+        By default this requires `self.user_queryset` and a `pk` or `slug` argument
+        in the URLconf, but subclasses can override this to return any object.
+        """
+        # Use a custom queryset if provided; this is required for subclasses
+        # like DateDetailView
+        if queryset is None:
+            queryset = self.get_user_queryset()
+
+        # Next, try looking up by primary key.
+        pk = self.kwargs.get(self.user_pk_url_kwarg, None)
+        slug = self.kwargs.get(self.user_slug_url_kwarg, None)
+        if pk is not None:
+            queryset = queryset.filter(pk=pk)
+
+        # Next, try looking up by slug.
+        if slug is not None and (pk is None or self.user_query_pk_and_slug):
+            slug_field = self.get_user_slug_field()
+            queryset = queryset.filter(**{slug_field: slug})
+
+        # If none of those are defined, it's an error.
+        if pk is None and slug is None:
+            raise AttributeError("Generic detail view %s must be called with "
+                                 "either an object pk or a slug."
+                                 % self.__class__.__name__)
+
+        try:
+            # Get the single item from the filtered queryset
+            obj = queryset.get()
+        except queryset.model.DoesNotExist:
+            raise Http404(_("No %(verbose_name)s found matching the query") %
+                          {'verbose_name': queryset.model._meta.verbose_name})
+        return obj
+
+    def get_user_queryset(self):
+        """
+        Return the `QuerySet` that will be used to look up the object.
+
+        Note that this method is called by the default implementation of
+        `get_user_object` and may not be called if `get_user_object` is overridden.
+        """
+        if self.user_queryset is None:
+            if self.user_model:
+                return self.user_model._default_manager.all()
+            else:
+                raise ImproperlyConfigured(
+                    "%(cls)s is missing a QuerySet. Define "
+                    "%(cls)s.user_model, %(cls)s.user_queryset, or override "
+                    "%(cls)s.get_user_queryset()." % {
+                        'cls': self.__class__.__name__
+                    }
+                )
+        return self.user_queryset.all()
+
+    def get_user_slug_field(self):
+        """
+        Get the name of a slug field to be used to look up by slug.
+        """
+        return self.user_slug_field
+
+    def get_user_context_object_name(self, obj):
+        """
+        Get the name to use for the object.
+        """
+        if self.user_context_object_name:
+            return self.user_context_object_name
+        elif isinstance(obj, models.Model):
+            return obj._meta.model_name
+        else:
+            return None
+
+    def get_context_data(self, **kwargs):
+        """
+        Insert the single object into the context dict.
+        """
+        context = super(SingleUserObjectMixin, self).get_context_data(**kwargs)
+        if self.user_object:
+            context['user_object'] = self.user_object
+            context_object_name = self.get_user_context_object_name(self.user_object)
+            if context_object_name:
+                context[context_object_name] = self.user_object
         context.update(kwargs)
         return context
 
