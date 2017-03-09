@@ -45,6 +45,7 @@
 <body>
 
 {% block navbar_pricipal %}
+{% if not is_pdf %}
 
 
 <!-- Fixed navbar -->
@@ -78,6 +79,7 @@
         </div><!--/.nav-collapse -->
     </div>
 </nav>
+{% endif %}
 {% endblock navbar_pricipal %}
 
 <div class="container">
