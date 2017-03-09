@@ -31,7 +31,7 @@ class DocumentoAdmin(SimpleHistoryAdmin):
         # 'criado_em', 'criado_por', 'versao_numero', 'visualizar_versao'
 
         'identificador_documento', 'versao_numero', 'identificador_versao', 'pk', 'pk_uuid', 'assunto',
-        'visualizar_versao', 'eh_modelo', 'eh_modelo_padrao', 'modelo_descricao',
+        'visualizar_versao', 'esta_assinado', 'eh_modelo', 'eh_modelo_padrao', 'modelo_descricao',
         #'grupo_dono',
         'editar_documento',
         'visualizar_documento', 'gerar_e_visualizar_pdf',
