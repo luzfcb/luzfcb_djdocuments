@@ -63,9 +63,9 @@ class GruposAssinantesDoDocumentoAutoComplete(SingleDocumentObjectMixin,
         # if not self.request.user.is_authenticated():
         #     return USER_MODEL.objects.none()
 
-        assinaturas = self.document_object.assinaturas.filter(assinado_por=None).values_list('grupo_assinante_id',
-                                                                                             flat=True)
-        qs = self.document_object.grupos_assinates.filter(id__in=assinaturas)
+        assinaturas = self.document_object.assinaturas.filter(esta_assinado=False).distinct('grupo_assinante').values_list('grupo_assinante_id',
+                                                                                                                           flat=True)
+        qs = self.document_object.grupos_assinates.filter(id__in=assinaturas).distinct()
 
         if self.q:
             paran_dict = {'{}__icontains'.format(self.djdocuments_backend.group_name_atrib): self.q}
@@ -116,7 +116,7 @@ class UsersByGroupAutocomplete(DjDocumentsBackendMixin, autocomplete.Select2Quer
         # if not self.request.user.is_authenticated():
         #     return USER_MODEL.objects.none()
 
-        grupo = self.forwarded.get('grupo', None)
+        grupo = self.forwarded.get('grupo_assinante', None) or self.forwarded.get('grupo', None)
         if grupo:
             qs = self.djdocuments_backend.get_usuarios_grupo(grupo).order_by('first_name', 'last_name')
         else:
@@ -146,7 +146,7 @@ class UserAutocomplete(DjDocumentsBackendMixin, autocomplete.Select2QuerySetView
         # if not self.request.user.is_authenticated():
         #     return USER_MODEL.objects.none()
         # assinado_por = self.forwarded.get('assinado_por', None)
-        grupo = self.forwarded.get('grupo', 'teste')
+        grupo = self.forwarded.get('grupo_assinante', None) or self.forwarded.get('grupo', None)
         if grupo:
             if grupo == 'null':
                 qs = USER_MODEL.objects.none()

@@ -5,6 +5,7 @@ from model_utils.managers import SoftDeletableManager, SoftDeletableQuerySet
 
 
 class DocumentoQuerySet(SoftDeletableQuerySet):
+
     def ativos(self):
         return self.filter(esta_ativo=True)
 
@@ -120,6 +121,7 @@ class DocumentoAdminManager(SoftDeletableManager):
 
 
 class AssinaturaQuerySet(SoftDeletableQuerySet):
+
     def assinaturas_realizadas(self):
         q = Q()
         q &= Q(documento__eh_modelo=False)

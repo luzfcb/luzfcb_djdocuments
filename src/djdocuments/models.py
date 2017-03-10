@@ -17,12 +17,12 @@ from django.utils.encoding import python_2_unicode_compatible
 from django.utils.functional import cached_property
 from simple_history.models import HistoricalRecords
 from simple_history.views import MissingHistoryRecordsField
+from model_utils import FieldTracker
 from model_utils.models import SoftDeletableModel
 
-from djdocuments.utils import identificador
 
 from . import managers
-from .utils import get_djdocuments_backend, get_grupo_assinante_model_str
+from .utils import identificador, get_djdocuments_backend, get_grupo_assinante_model_str
 
 logger = logging.getLogger()
 
@@ -65,7 +65,7 @@ class Assinatura(models.Model):
 
     def __str__(self):
         nome = self.assinado_por.get_full_name() if self.assinado_por else False
-        return 'pk: {}, grupo_assinante: {}, nome_assinante: {}'.format(self.pk, self.grupo_assinante.pk, nome)
+        return 'pk: {}, grupo_assinante: {}, nome_assinante: (pk:{}) {}, esta_assinado: {}'.format(self.pk, self.grupo_assinante_id, self.assinado_por_id, nome, self.esta_assinado)
 
     # documento
     documento = models.ForeignKey('Documento', related_name='assinaturas')
@@ -106,6 +106,21 @@ class Assinatura(models.Model):
     data_exclusao = models.DateTimeField(null=True, blank=True)
 
     objects = managers.AssinaturaManager()
+    tracker = FieldTracker()
+
+    def get_absolute_url(self):
+        url = None
+        if not self.esta_assinado:
+            if self.assinado_por:
+                url = reverse('documentos:assinar_por_grupo_por_usuario',
+                              kwargs={'slug': self.documento.pk_uuid,
+                                      'user_id': self.assinado_por_id,
+                                      'group_id': self.grupo_assinante_id})
+            else:
+                url = reverse('documentos:assinar_por_grupo',
+                              kwargs={'slug': self.documento.pk_uuid,
+                                      'group_id': self.grupo_assinante_id})
+        return url
 
     def pode_assinar(self, grupo_assinante, usuario_assinante, agora):
         return DjDocumentsBackend.pode_assinar(
@@ -282,12 +297,10 @@ class Documento(SoftDeletableModel):
 
     @property
     def assinates_nomes(self):
-        z = self.assinaturas.filter(~models.Q(assinado_por=None)).order_by('grupo_assinante_nome').values_list(
+        assinantes = self.assinaturas.filter(~models.Q(assinado_por=None)).order_by('grupo_assinante_nome').values_list(
             'assinado_nome', 'grupo_assinante_nome',
         )
-
-        print(z)
-        return z
+        return assinantes
 
     @property
     def _history_user(self):
