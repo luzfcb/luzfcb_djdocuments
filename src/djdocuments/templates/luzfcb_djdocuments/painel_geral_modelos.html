@@ -1,131 +1,138 @@
 {% extends "luzfcb_djdocuments/painel_geral_modelos_base.html" %}
+{% load staticfiles %}
+{% load humanize %}
 {% load luzfcb_djdocuments_tags %}
 {% load spurl %}
-{% load humanize %}
-{% load staticfiles %}
+{% load django_tables2 %}
 
 
 {% block conteudo_app %}
-    {{ block.super }}
 
-    <div class="box-tab corner-all">
-        <div class="box-header corner-top">
-            <ul class="nav nav-pills">
-                <!--tab menus-->
-                <li class="active">
-                    <a data-toggle="tab"
-                       href="#modelos_de_documento">Modelos de documentos
+    {% block cabecalho_pag %}
+        <div class="page-title">
+            <h3 class="pull-left">
+                <i class="helper-font-24 icofont-copy color-yellow"></i>
+                Modelos de documentos
+                <small>
+                    <a href="#" rel="popover" data-trigger="hover" data-html="true" data-placement="top"
+                       data-content="<b>Modelo de Documentos:</b> Documentos de modelo que foram e podem ser criados para uma das defensorias que seu usuário ({{ user.username }}) está vinculado, e são utilizados para gerar outros documentos."
+                       data-original-title="Modelo de Documentos">
+                        <i class="elusive-question-sign color-blue"></i>
                     </a>
-                </li>
-                {#                <li class=""><a data-toggle="tab"#}
-                {#                                href="#ultimos_documentos_nao_finalizados">Ultimos {{ mostrar_ultimas }} documentos não#}
-                {#                    finalizados</a>#}
-                {#                </li>#}
-            </ul>
+                </small>
+            </h3>
+            <h3 class="pull-right">
+                <small>
+                    <a href="#" rel="popover" data-trigger="hover" data-html="true" data-placement="top"
+                       data-content="<b>Novo Modelo:</b> Opção para criar modelos personalizados para uma das defensorias que seu usuário ({{ user.username }}) está vinculado"
+                       data-original-title="Novo Modelo de documento">
+                        <i class="elusive-question-sign color-blue"></i>
+                    </a>
+                </small>
+                <span>
+                    <a href="{% url 'documentos:criar_modelo' %}"
+                       class="btn btn-primary djpopup djfullscreen">
+                        <i class="icon-plus-sign icon-white"></i> Novo Modelo
+                    </a>
+{#                     <a href="{% url 'documentos:criar_tipo_documento' %}"#}
+{#                       class="btn btn-primary djpopup djfullscreen" rel="tooltip" data-placement="bottom"#}
+{#                       title="" data-original-title="Novo Tipo de Documento">#}
+{#                        <i class="icon-plus-sign icon-white"></i> Novo Tipo#}
+{#                    </a>#}
+                </span>
+            </h3>
         </div>
-        <div class="box-body">
-            <!-- widgets-tab-body -->
-            <div class="tab-content">
-                <div class="tab-pane fade active in" id="modelos_de_documento">
-                    <div class="pull-right actions-m18">
-{#                        <a href="{% url 'documentos:pendentes' %}"#}
-{#                           class="btn btn-sm btn-success">Ver todas as Assinaturas Pendentes</a>#}
-                    </div>
-                    <div id="tb_modelos">
-                        <table class="table table-bordered table-striped table-hover table-condensed">
-                            <thead>
-                            <tr>
-                                <th>Documento</th>
-                                <th>Tipo</th>
-                                <th>Descrição</th>
-                                <th>Criado em</th>
-                                <th>Modificado em</th>
-                                <th>Ações</th>
-                            </tr>
-                            </thead>
+    {% endblock %}
+    {#    {% paginate object_list %}#}
+    {% block conteudo_pag %}
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th class="span1">N° Documento</th>
+                <th class="span3">Descrição</th>
+                <th class="span3">Tipo</th>
+                <th class="span3">Defensoria</th>
+                <th class="span1">Data edição</th>
+                <th class="span1">Ações</th>
+            </tr>
+            </thead>
+            <tbody id="tbody-more" class="endless_page_template">
+            <!-- tbody content -->
+
+            {% for dado in object_list %}
+                <tr>
+                    <td>
+                        {% spurl base=dado.get_preview_url add_query="no_nav=1" as url_para_visualizar_com_query %}
+                        <i class="icofont-copy  color-yellow"></i>
+                        <a href="{{ url_para_visualizar_com_query }}" class="btn-link">
+                            {{ dado.identificador_versao }}
+                        </a>
+                    </td>
+                    <td>
+                        <small>
+                            {{ dado.modelo_descricao }}
+                        </small>
+                    </td>
+                    <td>
+                        <small>
+                            {{ dado.tipo_documento }}
+                        </small>
+                    </td>
+                    <td>
+                        <small rel="tooltip" data-original-title="{{ dado.grupo_dono }}">
+                            {{ dado.grupo_dono|truncatechars:36 }}
+                        </small>
+                    </td>
+                    <td>
+                        <small>
+                            {{ dado.modificado_em }}
+                        </small>
+                    </td>
+                    <td>
+                        <div>
+                            {% spurl base=dado.get_preview_url query='next={{ next_success_url }}' as url_para_visualizar_com_query %}
+                            <a href="{{ url_para_visualizar_com_query }}" class="btn-link">
+                                <i class="icofont-search"></i> Visualizar
+                            </a> |
+                            <a href="{{ dado.get_edit_url }}" class="btn-link">
+                                <i class="elusive-file-edit"></i> Editar
+                            </a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="4">
+                        <div class="alert alert-info text-center">
+                            <b>Nenhum modelo cadastrado</b>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+            <!-- end tbody content -->
 
 
-                            <tbody>
-                            {% if dados_processados %}
-                                {% for dado in dados_processados %}
-                                    <tr>
-                                        <td>
-                                            <a href="{{ dado.url_para_visualizar }}"
-                                               class="btn-link djpopup djfullscreen">{{ dado.documento.identificador_versao }}</a>
-                                        </td>
-                                        <td>
-                                            {{ dado.documento.tipo_documento }}
-                                        </td>
-                                        <td>
-                                            {{ dado.documento.modelo_descricao }}
-                                        </td>
-                                        <td>
-                                            {{ dado.documento.criado_em }}
-                                        </td>
-                                        <td>
-                                            {{ dado.documento.modificado_em }}
-                                        </td>
-                                        <td class="text-center">
-                                            <div class="btn-group">
-                                                   {% spurl base=dado.url_para_visualizar add_query="no_nav=1" as url_para_visualizar_com_query %}
-                                                <a href="{{ url_para_visualizar_com_query }}"
-                                                   class="btn btn-sm btn-primary  djpopup djfullscreen">Visualizar</a>
-                                                <a href="{{ dado.url_para_editar }}"
-                                                   class="btn btn-sm btn-primary  djpopup djfullscreen">Editar</a>
-                                            </div>
-                                        </td>
-
-
-                                    </tr>
-                                {% endfor %}
-                            {% else %}
-                                <tr>
-                                    <td colspan="6" class="center-block">
-                                        <h4></h4>
-                                    </td>
-                                </tr>
-
-                            {% endif %}
-                            </tbody>
-
-
-                            <tfoot>
-                            <tr>
-                                <th>Documento</th>
-                                <th>Tipo</th>
-                                <th>Descrição</th>
-                                <th>Criado em</th>
-                                <th>Modificado em</th>
-                                <th>Ações</th>
-                            </tr>
-                            </tfoot>
-                        </table>
-
-                    </div>
-
-                </div>
-                {#                <div class="tab-pane fade" id="ultimas_assinaturas_realizadas">#}
-                {#                    <div class="pull-right actions-m18">#}
-                {#                        <a href="{% url 'documentos:assinados' %}"#}
-                {#                           class="btn btn-sm btn-success">Ver todas as Assinaturas Realizadas</a>#}
-                {#                    </div>#}
-                {##}
-                {##}
-                {#                </div>#}
-
-
-            </div><!--/widgets-tab-body-->
+            </tbody>
+            <tfoot>
+            <tr>
+                <th class="span1">N° Documento</th>
+                <th class="span3">Descrição</th>
+                <th class="span3">Tipo</th>
+                <th class="span3">Defensoria</th>
+                <th class="span1">Data edição</th>
+                <th class="span1">Ações</th>
+            </tr>
+            </tfoot>
+        </table>
+        <div class="pagination pagination-right">
+            {% include 'luzfcb_djdocuments/_pagination2.html' %}
         </div>
-    </div>
 
 
 
+        <div class="col-md-8 col-md-offset-2">
+            {% block form_section %}{% endblock %}
+        </div>
+    {% endblock %}
 
+{% endblock %}
 
-
-{% endblock conteudo_app %}
-
-{% block js_app %}
-    {{ block.super }}
-    <script type="text/javascript" src="{% static "luzfcb_djdocuments/js/luzfcb_djdocuments.js" %}"></script>
-{% endblock js_app %}

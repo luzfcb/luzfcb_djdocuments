@@ -1,135 +1,140 @@
 {% extends "luzfcb_djdocuments/documento_list_base.html" %}
-{% load django_tables2 %}
+{% load staticfiles %}
+{% load humanize %}
 {% load luzfcb_djdocuments_tags %}
 {% load spurl %}
-{% load humanize %}
-{% load staticfiles %}
+{% load django_tables2 %}
 
 
 {% block conteudo_app %}
-    {{ block.super }}
 
-    <div class="box-tab corner-all">
-        <div class="box-header corner-top">
-            <ul class="nav nav-pills">
-                <!--tab menus-->
-                <li class="active">
-                    <a data-toggle="tab"
-                       href="#modelos_de_documento">Documentos
+    {% block cabecalho_pag %}
+        <div class="page-title">
+            <h3 class="pull-left">
+                <i class="helper-font-24 icofont-paste color-purple-dark"></i>
+                Documentos
+                <small>
+                    <a href="#" rel="popover" data-trigger="hover" data-html="true" data-placement="top"
+                       data-content="<b>Modelo de Documentos:</b> Documentos de modelo que foram e podem ser criados para uma das defensorias que seu usuário ({{ user.username }}) está vinculado, e são utilizados para gerar outros documentos."
+                       data-original-title="Modelo de Documentos">
+                        <i class="elusive-question-sign color-blue"></i>
                     </a>
-                </li>
-                {#                <li class=""><a data-toggle="tab"#}
-                {#                                href="#ultimos_documentos_nao_finalizados">Ultimos {{ mostrar_ultimas }} documentos não#}
-                {#                    finalizados</a>#}
-                {#                </li>#}
-            </ul>
+                </small>
+            </h3>
+            <form action="{{ search_url }}" method="get" id="search_field">
+                <div class="controls pull-right" style="margin-top:10px;">
+                    <div class="input-icon-append">
+                        <span class="bold">Buscar: </span>
+                        <span class="icon"><i class="icofont-search"></i></span>
+                        <input name="q" class="grd-white" maxlength="30" type="text"
+                               placeholder="Número do Documento...">
+                    </div>
+                </div>
+            </form>
         </div>
-        <div class="box-body">
-            <div id="tables2test">
-                {% render_table table %}
-            </div>
+    {% endblock %}
+    {% block conteudo_pag %}
+        <table class="table table-striped table-hover table-condensed">
+            <thead>
+            <tr>
+                <th class="span1">N° Documento</th>
+                <th class="span3">Assunto</th>
+                <th class="span3">Tipo</th>
+                <th class="span3">Defensoria</th>
+                <th class="span1">Data última edição</th>
+                <th class="span1">Ações</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for dado in  object_list %}
+                <tr>
+                    <td>
+                        <i class="icofont-paste color-purple-dark"></i>
+                        {#                                    {% spurl base=dado.get_preview_url add_query="no_nav=1" as url_para_visualizar_com_query %}#}
+                        {#                                    <a href="{{ url_para_visualizar_com_query }}" class="btn-link">#}
+                        <a href="{{ dado.get_preview_url }}" class="btn-link">
+                            {{ dado.identificador_versao }}
+                        </a>
+                    </td>
+                    <td>
+                        <small>
+                            {{ dado.assunto }}
+                        </small>
+                    </td>
+                    <td>
+                        <small>
+                            {{ dado.tipo_documento }}
+                        </small>
+                    </td>
+                    <td>
+                        <small rel="tooltip" data-original-title="{{ dado.grupo_dono }}">
+                            {{ dado.grupo_dono|truncatechars:36 }}
+                        </small>
+                    </td>
+                    <td>
+                        <small>
+                            {{ dado.modificado_em }}
+                        </small>
+                    </td>
+                    <td>
+                        {% spurl base=dado.get_preview_url query='next={{ next_success_url }}' as url_para_visualizar_com_query %}
+                        <a href="{{ url_para_visualizar_com_query }}" class="btn-link">
+                            <i class="icofont-search"></i> Visualizar
+                        </a>
+                        {% if not dado.esta_assinado %}
+                            |
+                            <a href="{{ dado.get_edit_url }}" class="btn-link">
+                                <i class="elusive-file-edit"></i> Editar
+                            </a>
 
-            <!-- widgets-tab-body -->
-{#            <div class="tab-content">#}
-{#                <div class="tab-pane fade active in" id="modelos_de_documento">#}
-{#                    <div class="pull-right actions-m18">#}
-{#                        <a href="{% url 'documentos:pendentes' %}"#}
-{#                           class="btn btn-sm btn-success">Ver todas as Assinaturas Pendentes</a>#}
-{#                    </div>#}
-{#                    <div id="tb_modelos">#}
-{#                        <table class="table table-bordered table-striped table-hover table-condensed">#}
-{#                            <thead>#}
-{#                            <tr>#}
-{#                                <th>Documento</th>#}
-{#                                <th>Tipo</th>#}
-{#                                <th>Grupo</th>#}
-{#                                <th>Assunto</th>#}
-{#                                <th>Criado em</th>#}
-{#                                <th>Modificado em</th>#}
-{#                                <th>Ações</th>#}
-{#                            </tr>#}
-{#                            </thead>#}
-{##}
-{##}
-{#                            <tbody>#}
-{#                            {% if dados_processados %}#}
-{#                                {% for dado in dados_processados %}#}
-{#                                    <tr>#}
-{#                                        <td>#}
-{#                                            <a href="{{ dado.url_para_visualizar }}"#}
-{#                                               class="btn-link">{{ dado.documento.identificador_versao }}</a>#}
-{#                                        </td>#}
-{#                                        <td>#}
-{#                                            {{ dado.documento.tipo_documento }}#}
-{#                                        </td>#}
-{#                                        <td>#}
-{#                                            {{ dado.documento.grupo_dono }}#}
-{#                                        </td>#}
-{#                                        <td>#}
-{#                                            {{ dado.documento.assunto }}#}
-{#                                        </td>#}
-{#                                        <td>#}
-{#                                            {{ dado.documento.criado_em }}#}
-{#                                        </td>#}
-{#                                        <td>#}
-{#                                            {{ dado.documento.modificado_em }}#}
-{#                                        </td>#}
-{#                                        <td class="text-center">#}
-{#                                            <div class="btn-group">#}
-{#                                                   {% spurl base=dado.url_para_visualizar add_query="no_nav=1" as url_para_visualizar_com_query %}#}
-{#                                                <a href="{{ url_para_visualizar_com_query }}"#}
-{#                                                   class="btn btn-sm btn-primary djpopup">Visualizar</a>#}
-{#                                                <a href="{{ dado.url_para_editar }}"#}
-{#                                                   class="btn btn-sm btn-primary djpopup">Editar</a>#}
-{#                                            </div>#}
-{#                                        </td>#}
-{##}
-{##}
-{#                                    </tr>#}
-{#                                {% endfor %}#}
-{#                            {% else %}#}
-{#                                <tr>#}
-{#                                    <td colspan="4" class="center-block">#}
-{#                                        <h4>Todos os documentos estão finalizados</h4>#}
-{#                                    </td>#}
-{#                                </tr>#}
-{##}
-{#                            {% endif %}#}
-{#                            </tbody>#}
-{##}
-{##}
-{#                            <tfoot>#}
-{#                            <tr>#}
-{#                                <th>Documento</th>#}
-{#                                <th>Tipo</th>#}
-{#                                <th>Grupo</th>#}
-{#                                <th>Assunto</th>#}
-{#                                <th>Criado em</th>#}
-{#                                <th>Modificado em</th>#}
-{#                                <th>Ações</th>#}
-{#                            </tr>#}
-{#                            </tfoot>#}
-{#                        </table>#}
-{##}
-{#                    </div>#}
-{##}
-{#                </div>#}
-                {#                <div class="tab-pane fade" id="ultimas_assinaturas_realizadas">#}
-                {#                    <div class="pull-right actions-m18">#}
-                {#                        <a href="{% url 'documentos:assinados' %}"#}
-                {#                           class="btn btn-sm btn-success">Ver todas as Assinaturas Realizadas</a>#}
-                {#                    </div>#}
-                {##}
-                {##}
-                {#                </div>#}
-{##}
-{##}
-{#            </div>#}
-            <!--/widgets-tab-body-->
+                        {% endif %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="6">
+                        <div class="alert alert-info text-center">
+                            {% if is_query %}
+                                <b>Nenhum item encontrado com os termos: {{ is_query|safe }}</b>
+                            {% else %}
+                                <b>Nenhum documento assinado</b>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+            {% if is_query %}
+                <tfoot>
+                <tr>
+                    <td colspan="6">
+                        <div class="text-center">
+                            <form action="{{ search_url }}" method="get" id="search_field">
+                                <input name="q" class="grd-white" type="hidden">
+                                <input type="submit" class="btn btn-warning" value="Limpar pesquisa">
+
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tfoot>
+            {% endif %}
+        </table>
+
+        <div class="pagination pagination-right">
+            {% include 'luzfcb_djdocuments/_pagination2.html' %}
         </div>
-    </div>
 
-{% endblock conteudo_app %}
+
+
+        <div class="col-md-8 col-md-offset-2">
+            {% block form_section %}{% endblock %}
+        </div>
+    {% endblock %}
+
+{% endblock %}
+
+
 
 {% block js_app %}
     {{ block.super }}

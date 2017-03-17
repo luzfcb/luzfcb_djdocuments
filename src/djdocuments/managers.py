@@ -136,7 +136,8 @@ class AssinaturaQuerySet(SoftDeletableQuerySet):
         q &= Q(documento__eh_modelo=False)
         q &= Q(esta_assinado=False)
         q &= Q(ativo=True)
-        qs = self.select_related('grupo_assinante').filter(q)
+        # qs = self.select_related('grupo_assinante').filter(q)
+        qs = self.filter(q)
         return qs
 
     def from_groups(self, grupos_ids):
@@ -157,7 +158,7 @@ class AssinaturaManager(SoftDeletableManager):
     _queryset_class = AssinaturaQuerySet
 
     def get_queryset(self):
-        return self._queryset_class(model=self.model, using=self._db, hints=self._hints).select_related('documento')
+        return self._queryset_class(model=self.model, using=self._db, hints=self._hints)
 
     def assinaturas_realizadas(self):
         return self.get_queryset().assinaturas_realizadas()

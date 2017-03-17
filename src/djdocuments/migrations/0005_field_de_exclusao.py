@@ -22,7 +22,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='documento',
             name='excluido_por',
-            field=models.ForeignKey(related_name='djdocuments_documento_excluido_por', on_delete=django.db.models.deletion.SET_NULL, blank=True, editable=False, to=settings.AUTH_USER_MODEL, null=True),
+            field=models.ForeignKey(related_name='djdocuments_documento_excluido_por', on_delete=django.db.models.deletion.SET_NULL,
+                                    blank=True, editable=False, to=settings.AUTH_USER_MODEL, null=True),
         ),
         migrations.AddField(
             model_name='documento',
@@ -42,7 +43,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='historicaldocumento',
             name='excluido_por',
-            field=models.ForeignKey(related_name='+', on_delete=django.db.models.deletion.DO_NOTHING, db_constraint=False, blank=True, to=settings.AUTH_USER_MODEL, null=True),
+            field=models.ForeignKey(related_name='+', on_delete=django.db.models.deletion.DO_NOTHING,
+                                    db_constraint=False, blank=True, to=settings.AUTH_USER_MODEL, null=True),
         ),
         migrations.AddField(
             model_name='historicaldocumento',

@@ -1,86 +1,121 @@
 {% extends "luzfcb_djdocuments/documentos_assinados_base.html" %}
-{% load luzfcb_djdocuments_tags %}
-{% load spurl %}
-{% load humanize %}
 {% load staticfiles %}
-{% block titulo %}
-    Assinaturas Pendentes
-{% endblock titulo %}
-
-
+{% load humanize %}
 
 {% block conteudo_app %}
-    {{ block.super }}
 
-    <table class="table table-bordered table-striped table-hover table-condensed">
-        <thead>
-        <tr>
-            <th>Documento</th>
-            <th>Assunto</th>
-            <th>Defensoria assinantes</th>
-            <th>Solicitante</th>
-            <th>Assinante</th>
-            <th>Data/Hora assinatura</th>
-            <th>Ações</th>
-        </tr>
-        </thead>
+    {% block cabecalho_pag %}
+        <div class="page-title">
+            <h3 class="pull-left">
+                <i class="helper-font-24 elusive-file-edit color-green"></i>
+                Assinaturas Realizadas
+                <small>
+                    <a href="#" rel="popover" data-trigger="hover" data-html="true" data-placement="top"
+                       data-content="<b>Documentos assinados:</b> Documentos que foram assinados por uma das defensorias que seu usuário ({{ user.username }}) está vinculado"
+                       data-original-title="Documentos assinados">
+                        <i class="elusive-question-sign color-blue"></i>
+                    </a>
+                </small>
+            </h3>
+            <form action="{{ search_url }}" method="get" id="search_field">
+                <div class="controls pull-right" style="margin-top:10px;">
+                    <div class="input-icon-append">
+                        <span class="bold">Buscar: </span>
+                        <span class="icon"><i class="icofont-search"></i></span>
+                        <input name="q" class="grd-white" maxlength="30" type="text"
+                               placeholder="Número do Documento...">
+                    </div>
+                </div>
+            </form>
 
+        </div>
+    {% endblock %}
 
-        <tbody>
-        {% if object_list %}
-            {% for dados in dados_processados %}
+    {% block conteudo_pag %}
+
+        <table class="table table-striped table-hover table-condensed">
+            <thead>
+            <tr>
+                <th class="span2">N° Documento</th>
+                <th class="span3">Defensoria assinante</th>
+                <th class="span3">Assinado por</th>
+                <th class="span1">Ações</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for dado in  object_list %}
                 <tr>
                     <td>
-                        <a href="{{ dados.url_para_visualizar }}"
-                           class="btn-link djpopup djfullscreen">{{ dados.assinatura.documento.identificador_versao }}</a>
+                        <i class="elusive-file-edit color-green"></i>
+                        <a href="{{ dado.get_preview_url }}" class="btn-link" rel="popover" data-trigger="hover"
+                           data-placement="top" data-content="{{ dado.documento_assunto }}"
+                           data-original-title="Doc. {{ dado.documento_identificador_versao }}">
+                            {{ dado.documento_identificador_versao }}
+                        </a>
                     </td>
-                    <td><a href="{{ dados.url_para_visualizar }}" class="btn-link djpopup djfullscreen">{{ dados.assunto }}</a></td>
-                    <td>{{ dados.grupo_assinante_nome }}</td>
-                    <td>{{ dados.assinatura.nome_cadastrado_por }}</td>
-                    <td>{% if dados.esta_assinado %}{{ dados.assinatura.assinado_nome }}{% else %}-{% endif %}</td>
-                    <td>{% if dados.esta_assinado %}{{ dados.assinatura.assinado_em }}{% else %}-{% endif %}</td>
-                    <td class="text-center">
-                        <div class="btn-group">
-                            <a href="{{ dados.url_lista_assinaturas }}"
-                               class="btn btn-sm djpopup djfullscreen">Detalhes</a>
+                    <td>
+                        <small rel="tooltip"
+                               data-original-title="{{ dado.grupo_assinante_nome }}">
+                            {{ dado.grupo_assinante_nome|truncatechars:36 }}
+                        </small>
+                    </td>
+                    <td>
+                        <small rel="tooltip"
+                               data-original-title="Assinado por {{ dado.assinado_nome }} em {{ dado.assinado_em }}">
+                            {{ dado.assinado_nome }}
+                        </small>
+                    </td>
+                    <td>
+                        <a href="{{ dado.get_preview_url }}" class="btn-link">
+                            <i class="icofont-search"></i> Visualizar
+                        </a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="4">
+                        <div class="alert alert-info text-center">
+                            {% if is_query %}
+                                <b>Nenhum item encontrado com o(s) termo(s): {{ is_query|safe }}</b>
+                            {% else %}
+                            <b>Nenhum documento assinado</b>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>
             {% endfor %}
-        {% else %}
-            <tr>
-                <td colspan="7" class="center-block">
-                    <h4>Não há documentos assinados</h4>
-                </td>
-            </tr>
+            </tbody>
+            {% if is_query %}
+                <tfoot>
+                <tr>
+                    <td colspan="6">
+                        <div class="text-center">
+                            <form action="{{ search_url }}" method="get" id="search_field">
+                                <input name="q" class="grd-white" type="hidden">
+                                <input type="submit" class="btn btn-warning" value="Limpar pesquisa">
 
-        {% endif %}
-        </tbody>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tfoot>
+            {% endif %}
+        </table>
 
+        <div class="pagination pagination-right">
+            {% include 'luzfcb_djdocuments/_pagination2.html' %}
+        </div>
 
-        <tfoot>
-        <tr>
-            <th>Documento</th>
-            <th>Assunto</th>
-            <th>Defensoria assinantes</th>
-            <th>Solicitante</th>
-            <th>Assinante</th>
-            <th>Data/Hora assinatura</th>
-            <th>Ações</th>
-        </tr>
-        </tfoot>
-    </table>
+        <div class="col-md-8 col-md-offset-2">
+            {% block form_section %}{% endblock %}
+        </div>
+    {% endblock %}
 
-{% endblock conteudo_app %}
+{% endblock %}
 
-
-
-
-{% block js_app %}
+{% block js_pag %}
     {{ block.super }}
+    <script>
 
-    {% if form %}
-        {{ form.media }}
-    {% endif %}
-
-{% endblock js_app %}
+    </script>
+{% endblock js_pag %}

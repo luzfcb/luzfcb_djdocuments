@@ -19,8 +19,6 @@ from simple_history.models import HistoricalRecords
 from simple_history.views import MissingHistoryRecordsField
 from model_utils import FieldTracker
 from model_utils.models import SoftDeletableModel
-
-
 from . import managers
 from .utils import identificador, get_djdocuments_backend, get_grupo_assinante_model_str
 
@@ -65,10 +63,18 @@ class Assinatura(models.Model):
 
     def __str__(self):
         nome = self.assinado_por.get_full_name() if self.assinado_por else False
-        return 'pk: {}, grupo_assinante: {}, nome_assinante: (pk:{}) {}, esta_assinado: {}'.format(self.pk, self.grupo_assinante_id, self.assinado_por_id, nome, self.esta_assinado)
+        return 'pk: {}, grupo_assinante: {}, nome_assinante: (pk:{}) {}, esta_assinado: {}'.format(self.pk,
+                                                                                                   self.grupo_assinante_id,
+                                                                                                   self.assinado_por_id,
+                                                                                                   nome,
+                                                                                                   self.esta_assinado)
 
     # documento
     documento = models.ForeignKey('Documento', related_name='assinaturas')
+    documento_pk_uuid = models.UUIDField(editable=False, null=True, db_index=True)
+    documento_identificador_versao = models.CharField(editable=False, max_length=25, blank=True)
+    documento_assunto = models.CharField(editable=False, max_length=255, blank=True)
+
     versao_documento = models.PositiveIntegerField(null=True)
 
     # Defensoria
@@ -109,25 +115,40 @@ class Assinatura(models.Model):
     tracker = FieldTracker()
 
     def get_absolute_url(self):
+        return self.get_url_para_assinar
+
+    @property
+    def get_preview_url(self):
+        return reverse('documentos:validar-detail', kwargs={'slug': self.documento_pk_uuid})
+
+    @property
+    def get_url_para_assinar(self):
         url = None
         if not self.esta_assinado:
             if self.assinado_por:
                 url = reverse('documentos:assinar_por_grupo_por_usuario',
-                              kwargs={'slug': self.documento.pk_uuid,
+                              kwargs={'slug': self.documento_pk_uuid,
                                       'user_id': self.assinado_por_id,
                                       'group_id': self.grupo_assinante_id})
             else:
                 url = reverse('documentos:assinar_por_grupo',
-                              kwargs={'slug': self.documento.pk_uuid,
+                              kwargs={'slug': self.documento_pk_uuid,
                                       'group_id': self.grupo_assinante_id})
         return url
 
-    def pode_assinar(self, grupo_assinante, usuario_assinante, agora):
+    @property
+    def get_assunto(self):
+        return self.documento_assunto
+
+    @property
+    def identificador_versao(self):
+        return self.documento_identificador_versao
+
+    def pode_assinar(self, grupo_assinante, usuario_assinante):
         return DjDocumentsBackend.pode_assinar(
             document=self.documento,
             grupo_assinante=grupo_assinante,
             usuario=usuario_assinante,
-            now_datetime=agora
         )
 
     def pode_remover_assinatura(self, usuario_atual):
@@ -158,8 +179,7 @@ class Assinatura(models.Model):
         #
         # se o usuario realmente estiver vinculado a esta defensoria, entao ele pode assinar
         if not self.pode_assinar(grupo_assinante=self.grupo_assinante,
-                                 usuario_assinante=usuario_assinante,
-                                 agora=agora):
+                                 usuario_assinante=usuario_assinante):
             raise NaoPodeAssinarException('Usuario não pode assinar esse documento')
         if self.assinado_por:
             if not self.assinado_por == usuario_assinante:
@@ -204,10 +224,15 @@ class Assinatura(models.Model):
             if not self.pk:
                 self.cadastrado_em = timezone.now()
                 self.nome_cadastrado_por = self.cadastrado_por.get_full_name()
-        if not self.assinado_nome:
-            if self.assinado_por:
-                self.assinado_nome = self.assinado_por.get_full_name()
-        super(Assinatura, self).save(args, kwargs)
+        if not self.assinado_nome and self.assinado_por:
+            self.assinado_nome = self.assinado_por.get_full_name()
+        if not self.documento_pk_uuid and self.documento:
+            self.documento_pk_uuid = self.documento.pk_uuid
+        if not self.documento_assunto and self.documento:
+            self.documento_assunto = self.documento.assunto
+        if not self.documento_identificador_versao and self.documento:
+            self.documento_identificador_versao = self.documento.identificador_versao
+        super(Assinatura, self).save(*args, **kwargs)
         # post save
 
 
@@ -246,6 +271,8 @@ class Documento(SoftDeletableModel):
                                    null=True,
                                    blank=True,
                                    )
+    # grupo_dono_nome = models.CharField(max_length=500, blank=True, editable=False)
+
     versao_numero = models.PositiveIntegerField(default=1, auto_created=True, editable=False)
     tipo_documento = models.ForeignKey(TipoDocumento, null=True, on_delete=models.SET_NULL,
                                        verbose_name='Tipo do Documento')
@@ -273,12 +300,17 @@ class Documento(SoftDeletableModel):
     esta_ativo = models.NullBooleanField(default=True, editable=False)
 
     # pdf
-    page_margin_top = models.FloatField(help_text='Margem superior em relação a pagina', default=41.5, blank=True, null=True)
-    page_margin_bottom = models.FloatField(help_text='Margem inferior em relação a pagina', default=35.5, blank=True, null=True)
-    page_margin_left = models.FloatField(help_text='Margem esquerda em relação a pagina', default=1.0, blank=True, null=True)
-    page_margin_right = models.FloatField(help_text='Margem direita em relação a pagina', default=4.0, blank=True, null=True)
+    page_margin_top = models.FloatField(help_text='Margem superior em relação a pagina', default=41.5, blank=True,
+                                        null=True)
+    page_margin_bottom = models.FloatField(help_text='Margem inferior em relação a pagina', default=35.5, blank=True,
+                                           null=True)
+    page_margin_left = models.FloatField(help_text='Margem esquerda em relação a pagina', default=1.0, blank=True,
+                                         null=True)
+    page_margin_right = models.FloatField(help_text='Margem direita em relação a pagina', default=4.0, blank=True,
+                                          null=True)
 
     versoes = HistoricalRecords()
+    tracker = FieldTracker()
     objects = managers.DocumentoManager()
     admin_objects = managers.DocumentoAdminManager()
 
@@ -295,12 +327,13 @@ class Documento(SoftDeletableModel):
 
         return msg
 
-    @property
+    @cached_property
     def assinates_nomes(self):
         assinantes = self.assinaturas.filter(~models.Q(assinado_por=None)).order_by('grupo_assinante_nome').values_list(
             'assinado_nome', 'grupo_assinante_nome',
         )
-        return assinantes
+        a = assinantes
+        return a
 
     @property
     def _history_user(self):
@@ -318,6 +351,11 @@ class Documento(SoftDeletableModel):
 
     @property
     def identificador_versao(self):
+        """
+        Retorna pk + versao incluindo zeros, no formato 00000000v000. Ex:
+
+        :return:  
+        """
         if not self.pk:
             return None
         return identificador.document(self.pk, self.versao_numero)
@@ -455,7 +493,7 @@ class Documento(SoftDeletableModel):
 
     @property
     def esta_assinado_e_finalizado(self):
-        if self.esta_assinado and self.assinatura_hash and not self.possui_assinatura_assinada():
+        if self.esta_assinado and self.assinatura_hash and not self.possui_assinatura_assinada:
             return True
         return False
 
@@ -498,6 +536,29 @@ class Documento(SoftDeletableModel):
             url = reverse('documentos:validar-detail', kwargs={'slug': self.pk_uuid})
         return url
 
+    @property
+    def get_preview_url(self):
+        if self.eh_modelo:
+            url = reverse('documentos:validar-detail-modelo', kwargs={'slug': self.pk_uuid})
+        else:
+            url = reverse('documentos:validar-detail', kwargs={'slug': self.pk_uuid})
+        return url
+
+    @property
+    def get_edit_url(self):
+        if self.eh_modelo:
+            url = reverse('documentos:editar-modelo', kwargs={'slug': self.pk_uuid})
+        else:
+            url = reverse('documentos:editar', kwargs={'slug': self.pk_uuid})
+        return url
+
+    @property
+    def get_finalizar_url(self):
+        url = '#'
+        if not self.eh_modelo:
+            url = reverse('documentos:finalizar_assinatura', kwargs={'slug': self.pk_uuid})
+        return url
+
     _desabilitar_temporiariamente_versao_numero = False
 
     def save(self, *args, **kwargs):
@@ -522,12 +583,27 @@ class Documento(SoftDeletableModel):
                         'app_label': self._meta.app_label,
                         'cls': self.__class__.__name__
                     })
-        if not self.criado_por_nome:
-            if self.criado_por:
-                self.criado_por_nome = self.criado_por.get_full_name()
+        if not self.criado_por_nome and self.criado_por:
+            self.criado_por_nome = self.criado_por.get_full_name()
+
         if not self.esta_assinado:
             self.assinatura_hash = None
-        super(Documento, self).save(*args, **kwargs)
+
+        assinatura_update_dict = {}
+        # atualiza assunto das assinaturas vinculadas a este documento
+        if self.tracker.has_changed('assunto'):
+            assinatura_update_dict['documento_assunto'] = self.assunto
+
+        if self.tracker.has_changed('versao_numero'):
+            assinatura_update_dict['documento_identificador_versao'] = self.identificador_versao
+
+        update_fields = kwargs.pop('update_fields', [])
+        update_fields.extend(list(self.tracker.changed().keys()))
+        update_fields = list(set(update_fields))
+
+        super(Documento, self).save(update_fields=update_fields, *args, **kwargs)
+        if assinatura_update_dict:
+            self.assinaturas.update(**assinatura_update_dict)
 
     def delete(self, using=None, soft=True, current_user=None, *args, **kwargs):
         self.excluido_em = timezone.now()

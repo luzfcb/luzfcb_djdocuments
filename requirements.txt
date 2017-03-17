@@ -10,6 +10,7 @@ bleach==1.4.3
 django-addanother==2.0
 pypng
 django-model-utils==2.6.1
+django-extra-views==0.9.0
 
 
 -e git+https://github.com/luzfcb/django-simple-history.git@wip-generic-views2#egg=django-simple-history
