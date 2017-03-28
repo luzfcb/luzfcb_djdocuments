@@ -836,12 +836,23 @@ class DocumentoAssinaturasListView(SingleDocumentObjectMixin, DjDocumentsBackend
         return create_form_class_finalizar(self.document_object)
 
 
-class AdicionarAssinantes(SingleDocumentObjectMixin, DjDocumentsBackendMixin, generic.FormView):
+class AdicionarAssinantes(FormActionViewMixin, SingleDocumentObjectMixin, DjDocumentsBackendMixin, generic.FormView):
     template_name = 'luzfcb_djdocuments/assinar_adicionar_assinantes.html'
+    template_name_ajax = 'luzfcb_djdocuments/assinar_adicionar_assinantes_ajax.html'
+
+    def get_form_action(self):
+        return reverse('documentos:adicionar_assinantes', kwargs={'slug': self.document_object.pk_uuid})
 
     @method_decorator(never_cache)
     def dispatch(self, request, *args, **kwargs):
         return super(AdicionarAssinantes, self).dispatch(request, *args, **kwargs)
+
+    def get_template_names(self):
+        templates = super(AdicionarAssinantes, self).get_template_names()
+        if self.request.is_ajax():
+            print('passou aqui')
+            templates = [self.template_name_ajax]
+        return templates
 
     def get_form_class(self):
         return create_form_class_adicionar_assinantes(self.document_object)
@@ -872,16 +883,25 @@ class AssinarDocumentoView(DocumentoAssinadoRedirectMixin,
                            SingleUserObjectMixin,
                            NextPageURLMixin,
                            FormActionViewMixin,
+                           AjaxFormPostMixin,
                            generic.UpdateView):
     template_name = 'luzfcb_djdocuments/documento_assinar.html'
+    template_name_ajax = 'luzfcb_djdocuments/documento_assinar_ajax.html'
     # form_class = AssinarDocumentoForm
     model = Assinatura
+    document_json_fields = ('pk',)
     slug_field = 'pk_uuid'
     group_pk_url_kwarg = 'group_id'
     # group_object = None
     user_pk_url_kwarg = 'user_id'
     user_object = None
     user_disable_if_url_kwarg_not_is_available = True
+
+    def get_template_names(self):
+        templates = super(AssinarDocumentoView, self).get_template_names()
+        if self.request.is_ajax():
+            templates = [self.template_name_ajax]
+        return templates
 
     def get_form_action(self):
         if self.user_object:
@@ -940,6 +960,7 @@ class AssinarDocumentoView(DocumentoAssinadoRedirectMixin,
     def get_context_data(self, **kwargs):
         context = super(AssinarDocumentoView, self).get_context_data(**kwargs)
         context['group_object'] = self.group_object
+        context['is_ajax'] = self.request.is_ajax
         return context
 
     def form_valid(self, form):
@@ -968,6 +989,10 @@ class DocumentoDetailView(NextPageURLMixin, DjDocumentsBackendMixin, DjDocumentP
     def dispatch(self, request, *args, **kwargs):
         return super(DocumentoDetailView, self).dispatch(request, *args, **kwargs)
 
+    @cached_property
+    def get_ids_grupos_do_usuario(self):
+        return tuple(self.djdocuments_backend.get_grupos_usuario(self.request.user).values_list('id', flat=True))
+
     def get_queryset(self):
         qs = super(DocumentoDetailView, self).get_queryset()
 
@@ -975,13 +1000,21 @@ class DocumentoDetailView(NextPageURLMixin, DjDocumentsBackendMixin, DjDocumentP
 
     def get_context_data(self, **kwargs):
         context = super(DocumentoDetailView, self).get_context_data(**kwargs)
+        form_assinar = create_form_class_assinar(self.object.assinaturas.filter(ativo=True).first(), self.request.user)
+        context['form_assinar'] = form_assinar
+        grupos_usuario_ids = ''
         context['url_imprimir_pdf'] = None
         if self.object.esta_assinado:
             context['url_imprimir_pdf'] = reverse('documentos:validar_detail_pdf',
                                                   kwargs={'slug': self.object.pk_uuid})
         # context['assinaturas'] = self.object.assinaturas.select_related('assinado_por').all()
-        assinaturas = self.object.assinaturas.all()
+        assinaturas = self.object.assinaturas.filter(ativo=True)
+
+        context['assinaturas_dos_meus_grupos'] = assinaturas.filter(ativo=True, grupo_assinante__in=self.get_ids_grupos_do_usuario)
+        context['assinaturas_outros'] = assinaturas.filter(~Q(grupo_assinante__in=self.get_ids_grupos_do_usuario), ativo=True)
         context['assinaturas'] = assinaturas
+
+
         context['no_nav'] = True if self.request.GET.get('no_nav') else False
         context['is_pdf'] = False
         context['menu_assinaturas'] = False
@@ -993,9 +1026,7 @@ class DocumentoDetailView(NextPageURLMixin, DjDocumentsBackendMixin, DjDocumentP
                                                             }
                                                             )
         if not self.object.esta_assinado:
-            pks_grupos = [x[0] for x in
-                          self.djdocuments_backend.get_grupos_usuario(self.request.user).values_list('pk')]
-            if self.object.grupo_dono and self.object.grupo_dono.pk in pks_grupos:
+            if self.object.grupo_dono and self.object.grupo_dono.pk in self.get_ids_grupos_do_usuario:
                 if not self.object.eh_modelo:
                     context['menu_assinaturas'] = True
                     assinatura = assinaturas.filter(grupo_assinante_id=self.object.grupo_dono.pk).first()

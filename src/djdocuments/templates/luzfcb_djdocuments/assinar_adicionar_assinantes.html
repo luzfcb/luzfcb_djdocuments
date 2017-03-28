@@ -7,9 +7,9 @@
         <div class="panel panel-info">
             <div class="panel-heading">Escolha um ou mais grupos assinantes, para criar uma nova pendência de assinatura para os mesmos</div>
             <div class="panel-body">
-                {% url 'documentos:adicionar_assinantes' slug=document_object.pk_uuid as adicionar_assinantes_url %}
+{#                {% url 'documentos:adicionar_assinantes' slug=document_object.pk_uuid as adicionar_assinantes_url %}#}
 
-                <form class="form-horizontal" action="{{ adicionar_assinantes_url }}" method="post">
+                <form class="form-horizontal" action="{{ form_action }}" method="post">
                     <fieldset>
                         {#                        <legend>Tem certeza que deseja assinar o documento "{{ object.assunto|remover_tags_html }}"#}
                         {#                            número: {{ object.identificador_versao }} ?</legend>#}

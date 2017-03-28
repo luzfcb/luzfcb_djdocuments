@@ -60,7 +60,6 @@ class TipoDocumento(models.Model):
 
 @python_2_unicode_compatible
 class Assinatura(models.Model):
-
     def __str__(self):
         nome = self.assinado_por.get_full_name() if self.assinado_por else False
         return 'pk: {}, grupo_assinante: {}, nome_assinante: (pk:{}) {}, esta_assinado: {}'.format(self.pk,
@@ -295,7 +294,7 @@ class Documento(SoftDeletableModel):
                                      blank=True, on_delete=models.SET_NULL, editable=False)
     excluido_em = models.DateTimeField(null=True, editable=False)
 
-    excluido_por_nome = models.CharField(max_length=255, blank=True)
+    excluido_por_nome = models.CharField(max_length=255, blank=True, default='')
 
     esta_ativo = models.NullBooleanField(default=True, editable=False)
 
@@ -482,8 +481,7 @@ class Documento(SoftDeletableModel):
 
     @cached_property
     def possui_assinatura_assinada(self):
-        return bool(not self.assinaturas.filter(ativo=True, esta_assinado=False).exists() and
-                    self.assinaturas.filter(ativo=True, esta_assinado=True).exists())
+        return self.assinaturas.filter(ativo=True, esta_assinado=True).exists()
 
     @cached_property
     def pronto_para_finalizar(self):
@@ -493,7 +491,7 @@ class Documento(SoftDeletableModel):
 
     @property
     def esta_assinado_e_finalizado(self):
-        if self.esta_assinado and self.assinatura_hash and not self.possui_assinatura_assinada:
+        if self.esta_assinado and self.assinatura_hash and self.possui_assinatura_assinada and self.possui_assinatura_pendente == -1:
             return True
         return False
 
@@ -550,6 +548,14 @@ class Documento(SoftDeletableModel):
             url = reverse('documentos:editar-modelo', kwargs={'slug': self.pk_uuid})
         else:
             url = reverse('documentos:editar', kwargs={'slug': self.pk_uuid})
+
+        return url
+
+    @property
+    def get_adicionar_assinante_url(self):
+        url = '#'
+        if not self.eh_modelo:
+            url = reverse('documentos:adicionar_assinantes', kwargs={'slug': self.pk_uuid})
         return url
 
     @property
@@ -613,3 +619,17 @@ class Documento(SoftDeletableModel):
         self._desabilitar_temporiariamente_versao_numero = True
         super(Documento, self).delete(using, soft, *args, **kwargs)
         self._desabilitar_temporiariamente_versao_numero = False
+
+
+class PDFDocument(models.Model):
+    file = models.FileField(upload_to='djdocuments')
+    documento = models.OneToOneField('Documento', related_name='pdf')
+    documento_pk_uuid = models.UUIDField(editable=False, null=True, db_index=True)
+    documento_identificador_versao = models.CharField(editable=False, max_length=25, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.documento_pk_uuid and self.documento:
+            self.documento_pk_uuid = self.documento.pk_uuid
+        if not self.documento_identificador_versao and self.documento:
+            self.documento_identificador_versao = self.documento.identificador_versao
+        super(PDFDocument, self).save(*args, **kwargs)

@@ -181,3 +181,9 @@ class AssinaturaDocumentoAdmin(admin.ModelAdmin):
         'nome_excluido_por',
         'documento_eh_modelo',
     )
+
+
+@admin.register(models.PDFDocument)
+class PDFDocumentAdmin(SimpleHistoryAdmin):
+    pass
+

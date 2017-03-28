@@ -1,0 +1,161 @@
+{% load staticfiles %}
+{% load spurl %}
+{% load luzfcb_djdocuments_tags %}
+
+            <!-- Conteudo previsualizacao -->
+
+            <!-- Quando documento for modelo -->
+            {% if object.eh_modelo and not is_pdf %}
+                <div class="text-center">
+                    <h4>
+                        <span class="label label-warning"><span class="glyphicon glyphicon-duplicate"
+                                                                aria-hidden="true"></span> Documento Modelo</span>
+                    </h4>
+                </div>
+            {% endif %}
+            <!-- FimQuando documento for modelo -->
+
+
+            <div class="row center-block conteudo" id="conteudo">
+                <div class="a4-pagina">
+                    {% if not is_pdf %}
+                        <h3 class="msg-browser-print">
+                            Por favor, utilize o botão "Imprimir" acima
+                        </h3>
+                    {% endif %}
+                    <div class="documento">
+                        {% block cabecalho %}
+                            <div class="documento-cabecalho">
+                                <div align="center">
+                                    {{ object.cabecalho|safe }}
+                                </div>
+                                {#                        {{ object.assunto|safe }}#}
+                                <hr class="borda-dupla">
+                            </div>
+                        {% endblock cabecalho %}
+
+
+                        {% block corpo %}
+                            {% if object %}
+                                <div class="documento-conteudo">
+                                    {{ object.conteudo|safe }}
+                                </div>
+                                {% if object.esta_assinado %}
+                                    <div class="documento-assinaturas">
+                                        <hr class="assinantes-borda">
+                                        {% for assinatura in assinaturas %}
+                                            {% if assinatura.esta_assinado %}
+                                                <table>
+                                                    <tbody>
+                                                    <tr>
+                                                        <td>
+                                                            <div style="height:47px;width:75px;">
+                                                                <img src="{% static 'luzfcb_djdocuments/img/assinatura_digital4_inkscape2_LOSSLESS.png' %}"
+                                                                     style="max-height:47px;max-width:75px;display:block;margin:0 auto;">
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <p style="margin:0;text-align: left; font-size:11pt;font-family: Times New Roman;">
+                                                                {% if object.esta_assinado %}
+                                                                    Documento assinado eletronicamente por
+                                                                    <b>{{ assinatura.assinado_nome }}</b>,
+                                                                    em {{ assinatura.assinado_em|date:"d/m/Y H:m:s" }},
+                                                                    conforme
+                                                                    art.
+                                                                    1º,
+                                                                    III,
+                                                                    "b", da Lei 11.419/2006.</p>
+                                                                {% endif %}
+                                                        </td>
+                                                    </tr>
+                                                    </tbody>
+                                                </table>
+                                                <hr class="assinantes-borda">
+                                            {% endif %}
+                                        {% endfor %}
+
+                                    </div>
+                                {% endif %}
+                            {% else %}
+                                Nada para mostrar
+                            {% endif %}
+
+                        {% endblock corpo %}
+
+                        {% block rodape %}
+                            <div class="documento-rodape">
+                                <hr class="borda-dupla">
+                                {% if object.esta_assinado %}
+
+                                    <table>
+                                        <tbody>
+                                        <tr>
+                                            {#                                    <td style="width: 200px; height: 105px">#}
+                                            <td>
+                                                {% if object.esta_assinado %}
+                                                    <a id="url_validacao" class="hidden-print-href"
+                                                       href="{{ validar_url|absolute_uri:request }}">
+                                                        <div id="codigo_qr" class="codigo-qr">
+                                                            {{ qr_code_validation_html_img_tag|safe }}
+                                                        </div>
+                                                        <p class="hidden-print">Verifique a Validade</p>
+                                                    </a>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <p style="margin:4;text-align: left; font-size:11pt;font-family: Times New Roman;">
+                                                    {% if object.esta_assinado %}
+
+
+                                                        A autenticidade do documento pode ser conferida no site
+                                                        {{ validar_url_view|absolute_uri:request|urlize }} informando o
+                                                        código
+                                                        verificador:
+                                                        <div style="text-align: center;">
+                                                            <span><b>{{ object.get_assinatura_hash_upper_limpo|dividir_a_cada:10 }}</b></span>
+                                                        </div>
+                                                    {% endif %}
+                                                </p>
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                {% else %}
+
+                                {% endif %}
+
+                                <hr class="borda-dupla">
+                                <table border="0" cellpadding="2" cellspacing="0" style="width:100%">
+                                    <tbody>
+                                    <tr>
+                                        <td>
+                                            {{ object.identificador_versao }}
+                                        </td>
+                                        <td style="text-align:right">
+                                            {% block numero_pagina %}
+                                            {% endblock numero_pagina %}
+                                    </tr>
+                                    </tbody>
+                                </table>
+
+                            </div>
+                        {% endblock rodape %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quando documento for modelo -->
+            {% if object.eh_modelo and not is_pdf %}
+                <div class="text-center">
+                    <h4>
+                        <span class="label label-warning"><span class="glyphicon glyphicon-duplicate"
+                                                                aria-hidden="true"></span> Documento Modelo</span>
+                    </h4>
+                </div>
+            {% endif %}
+            <!-- FimQuando documento for modelo -->
+
+
+            <!-- Fim Conteudo previsualizacao -->
+
+
