@@ -162,7 +162,7 @@ def render_modais_assinaturas_pendentes(context, context_name):
     adicionar_assinantes_form_action = ''
     template_context = {
         'assinaturas_forms': forms,
-        'assinatura_form_media': form_media,
+        'assinatura_form_media': form_media + adicionar_assinantes_form_instance.media,
         'adicionar_assinantes_form_instance': adicionar_assinantes_form_instance,
         'adicionar_assinantes_form_action': adicionar_assinantes_form_action
     }
