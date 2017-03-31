@@ -849,6 +849,7 @@ class AdicionarAssinantes(FormActionViewMixin, SingleDocumentObjectMixin, DjDocu
 
     def get_template_names(self):
         templates = super(AdicionarAssinantes, self).get_template_names()
+        templates = [self.template_name_ajax]
         if self.request.is_ajax():
             print('passou aqui')
             templates = [self.template_name_ajax]

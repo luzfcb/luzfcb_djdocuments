@@ -3,6 +3,7 @@ from __future__ import absolute_import, print_function, unicode_literals
 
 from django.conf.urls import url
 from django.contrib.auth.decorators import login_required
+from django.views.generic import TemplateView
 
 from .views import documentos as documentos_views
 from .views import autocompletes
@@ -154,5 +155,7 @@ urlpatterns = [
         login_required(autocompletes.TipoDocumentoAutocomplete.as_view()),
         name='tipodocumento-autocomplete'
         ),
-
+    url(r'^teste/$',
+        TemplateView.as_view(template_name='luzfcb_djdocuments/teste_modal.html')
+        ),
 ]
