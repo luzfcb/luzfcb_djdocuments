@@ -102,7 +102,6 @@ def register_assinatura_pendente_to_modal(context, assinatura_object, context_na
     return template_context
 
 
-from django.utils.safestring import mark_safe
 from ..forms import create_form_class_assinar, create_form_class_adicionar_assinantes
 
 
@@ -133,7 +132,8 @@ def render_modais_assinaturas_pendentes(context, context_name):
     try:
         assinaturas_objs = context[ctx_name]
     except KeyError:
-        mgs = ' "{}" is not registered. the registered variables is: {}'.format(context_name, ', '.join(registered_contexts))
+        mgs = ' "{}" is not registered. the registered variables is: {}'.format(context_name,
+                                                                                ', '.join(registered_contexts))
         raise KeyError(mgs)
 
     try:
@@ -151,7 +151,7 @@ def render_modais_assinaturas_pendentes(context, context_name):
 
     kwargs = {}
     djdocuments_backend = get_djdocuments_backend()
-    document_object= context['object']
+    document_object = context['object']
     grupos_ja_adicionados = document_object.grupos_assinates.all()
     grupo_para_adicionar_queryset = djdocuments_backend.get_grupos(
         excludes=grupos_ja_adicionados)
@@ -189,7 +189,8 @@ def render_context(context, context_name, template='luzfcb_djdocuments/templatet
     try:
         assinaturas_objs = context[ctx_name]
     except KeyError:
-        mgs = ' "{}" is not registered. the registered variables is: {}'.format(context_name, ', '.join(registered_contexts))
+        mgs = ' "{}" is not registered. the registered variables is: {}'.format(context_name,
+                                                                                ', '.join(registered_contexts))
         raise KeyError(mgs)
 
     try:
@@ -210,3 +211,16 @@ def render_context(context, context_name, template='luzfcb_djdocuments/templatet
         'assinatura_form_media': form_media
     }
     return render_to_string(template_name=template, context=template_context)
+
+
+@register.filter
+def add_defer(value):
+    new_tags = []
+    tags = value.render().split('\n')
+    for tag in tags:
+        new = tag
+        if 'script' in new and not 'defer' in new:
+            new = new.replace('<script', '<script defer')
+        new_tags.append(new)
+
+    return mark_safe('\n'.join(new_tags))

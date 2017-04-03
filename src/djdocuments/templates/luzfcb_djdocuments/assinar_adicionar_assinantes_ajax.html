@@ -1,3 +1,4 @@
+{% load luzfcb_djdocuments_tags %}
 {% spaceless %}
     <div class="panel panel-info">
             <div class="panel-heading">Escolha um ou mais grupos assinantes, para criar uma nova pendência de assinatura para os mesmos</div>
@@ -25,7 +26,7 @@
         <button type="button" class="btn btn-primary" form="form-adicionar-assinantes">Send message</button>
     </div>
 
-    {{ form.media }}
+    {{ form.media|add_defer }}
 {#    <script type="application/javascript">#}
 {##}
 {##}
