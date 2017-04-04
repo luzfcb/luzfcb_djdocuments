@@ -28,6 +28,7 @@ botao_abrir_modal.on('click', function (event) {
         onClosed: function (modal) {
             // clean the content of modal
             // $(".iziModal-content").html('');
+            $('[data-scriptautoadded]').remove();
         }
     });
     modal_ized.on('opening', function (event) {
@@ -51,14 +52,16 @@ botao_abrir_modal.on('click', function (event) {
         ajax_running = true;
         var request = $.ajax(ajax_request_cfg);
         request.done(function (data) {
-            var response_data = $(data);
-            console.log('ajax get done');
-            var scripts = $(response_data.filter('script'));
-            console.log(response_data);
-            console.log('scripts:');
-            console.log(scripts);
-            window.r = response_data;
-
+            var response_data = $('<div>' + data + '</div>');
+            var scripts = response_data.find('script').clone();
+            var css = response_data.find('link').clone();
+            $('script', response_data).remove();
+            $('link', response_data).remove();
+            response_data = response_data.html();
+            scripts.attr('data-scriptautoadded', 'true');
+            css.attr('data-scriptautoadded', 'true');
+            $('head').append(css);
+            $('body').append(scripts);
             izi_content.html(response_data);
 
 
@@ -75,7 +78,7 @@ botao_abrir_modal.on('click', function (event) {
             that.attr('disabled', false);
 
         });
-
+        return false;
     });
     modal_ized.load(
 

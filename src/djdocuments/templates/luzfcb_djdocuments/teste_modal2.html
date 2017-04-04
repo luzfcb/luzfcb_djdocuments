@@ -2,11 +2,9 @@
 {% load staticfiles %}
 
 {% block extra_head_css %}
-{#    <link rel="stylesheet" href="{% static 'luzfcb_djdocuments/js/vendor/izimodal/1.5.0beta/css/iziModal.css' %}"#}
-{#          class="oba">#}
+    {#    <link rel="stylesheet" href="{% static 'luzfcb_djdocuments/js/vendor/izimodal/1.5.0beta/css/iziModal.css' %}" class="oba">#}
     <link rel="stylesheet" href="{% static 'luzfcb_djdocuments/js/vendor/izimodal/1.4.2/css/iziModal.css' %}"
           class="oba">
-
 {% endblock %}
 
 {% block conteudo_app %}
@@ -15,6 +13,8 @@
         html content was obtained via ajax.
         <br>
         <a href="/docs/d/a12c2382-7352-4988-bffc-50b8ce271e54/adicionar_assinantes/"
+           ic-get-from="/docs/d/a12c2382-7352-4988-bffc-50b8ce271e54/adicionar_assinantes/"
+           ic-target=".minha-modal"
            class="btn btn-primary botao-abrir-modal">Abrir modal</a>
 
 
@@ -24,15 +24,16 @@
 {% endblock %}
 {% block js_app %}
     <!-- Modal -->
-    <div class="minha-modal" id="minhamodalfoda">
+    <div class="minha-modal" style="display: none">
     </div>
 
 
     <!-- end Modal -->
 
 
-    <script src="{% static 'luzfcb_djdocuments/js/vendor/izimodal/1.5.0beta/js/iziModal.js' %}"></script>
-    {#    <script src="{% static 'luzfcb_djdocuments/js/vendor/izimodal/1.4.2/js/iziModal.js' %}"></script>#}
-    <script src="{% static 'luzfcb_djdocuments/js/modal.js' %}"></script>
+    {#    <script src="{% static 'luzfcb_djdocuments/js/vendor/izimodal/1.5.0beta/js/iziModal.js' %}"></script>#}
+    <script src="{% static 'luzfcb_djdocuments/js/vendor/izimodal/1.4.2/js/iziModal.js' %}"></script>
+    <script src="{% static 'luzfcb_djdocuments/js/vendor/intercooler/1.1.1/intercooler-1.1.1.min.js' %}"></script>
+{#    <script src="{% static 'luzfcb_djdocuments/js/modal.js' %}"></script>#}
 
 {% endblock %}

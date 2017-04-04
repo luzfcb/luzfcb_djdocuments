@@ -97,7 +97,8 @@ urlpatterns = [
         name='finalizar_assinatura'
         ),
     url(r'^d/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/adicionar_assinantes/$',
-        login_required(documentos_views.AdicionarAssinantes.as_view()),
+        # login_required(documentos_views.AdicionarAssinantes.as_view()),
+        documentos_views.AdicionarAssinantes.as_view(),
         name='adicionar_assinantes'
         ),
     url(r'^m/criar_modelo/$',
