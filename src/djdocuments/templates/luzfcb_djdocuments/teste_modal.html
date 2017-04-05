@@ -2,11 +2,16 @@
 {% load staticfiles %}
 
 {% block extra_head_css %}
-{#    <link rel="stylesheet" href="{% static 'luzfcb_djdocuments/js/vendor/izimodal/1.5.0beta/css/iziModal.css' %}"#}
-{#          class="oba">#}
+    {#    <link rel="stylesheet" href="{% static 'luzfcb_djdocuments/js/vendor/izimodal/1.5.0beta/css/iziModal.css' %}"#}
+    {#          class="oba">#}
     <link rel="stylesheet" href="{% static 'luzfcb_djdocuments/js/vendor/izimodal/1.4.2/css/iziModal.css' %}"
           class="oba">
-
+    <style>
+        .bah {
+            width: 80%;
+            height: 100px;
+        }
+    </style>
 {% endblock %}
 
 {% block conteudo_app %}
@@ -24,7 +29,7 @@
 {% endblock %}
 {% block js_app %}
     <!-- Modal -->
-    <div class="minha-modal" id="minhamodalfoda">
+    <div class="minha-modal bah" id="minhamodalfoda">
     </div>
 
 
