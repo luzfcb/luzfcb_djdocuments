@@ -1,4 +1,21 @@
-{% extends 'luzfcb_djdocuments/documento_assinar.html' %}
+{% load luzfcb_djdocuments_tags %}
+{#<div class="panel panel-info">#}
+    <div class="panel-heading">Assinar Documento</div>
+    <div class="panel-body">
+        <form class="form-horizontal" method="post" action="{{ form_action }}">
+            <fieldset>
+                <legend>Tem certeza que deseja assinar o documento "{{ document_object.assunto|remover_tags_html }}"
+                    número: {{ document_object.identificador_versao }} ?
+                </legend>
+                {% include "luzfcb_djdocuments/django_form_content.html" with form=form %}
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <button type="submit" class="btn btn-success">Assinar Documento</button>
+                    </div>
+                </div>
+            </fieldset>
+        </form>
 
-{% block navbar_pricipal %}
-{% endblock %}
+    </div>
+{#</div>#}
+{{ form.media|add_defer }}

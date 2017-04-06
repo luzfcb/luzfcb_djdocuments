@@ -3,66 +3,42 @@
  */
 'use strict';
 
+// http://www.accessify.com/tools-and-wizards/developer-tools/html-javascript-convertor/
+var modal_template = "";
+modal_template += "    <div id=\"myModal\" class=\"modal hide fade\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"myModalLabel\"";
+modal_template += "         aria-hidden=\"true\">";
+modal_template += "        <div class=\"modal-header\">";
+modal_template += "            <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">×<\/button>";
+modal_template += "            <h3 id=\"myModalLabel\">Modal header<\/h3>";
+modal_template += "        <\/div>";
+modal_template += "        <div class=\"modal-body\">";
+modal_template += "";
+modal_template += "        <\/div>";
+modal_template += "        <div class=\"modal-footer\">";
+modal_template += "";
+modal_template += "        <\/div>";
+modal_template += "    <\/div>";
+
+
 var botao_abrir_modal = $('.botao-abrir-modal');
 var modal_div = $('.minha-modal');
-var modal_template = $('#myModal');
 
 botao_abrir_modal.on('click', function (event) {
     event.preventDefault();
     console.log('botao_abrir_modal click event');
+    var modal = $(modal_template);
+    modal.attr('id', 'minhamodal2');
+    modal.on('hidden', function (e) {
+        $('[data-scriptautoadded]').off().remove();
+        $('#minhamodal2').remove();
+    });
 
-    // do_ajax(that, url, $(this));
-    //
-    //
-    // var ajax_running = false;
-    //
-    //
-    // that.prop('disabled', true);
-
-
-    // ########################################################################
-    // var modal_ized = modal_div.iziModal({
-    //     autoOpen: false,
-    //     top: '10%',
-    //     width: '80%',
-    //     restoreDefaultContent: false,
-    //     onOpening: function (modal) {
-    //         modal.startLoading();
-    //
-    //     },
-    //     onOpened: function (modal) {
-    //         // $(modal).iziModal('recalculateLayout');
-    //
-    //
-    //     },
-    //     onClosed: function (modal) {
-    //         // clean the content of modal
-    //         // $(".iziModal-content").html('');
-    //         $('[data-scriptautoadded]').off().remove();
-    //         modal_div.removeClass('bah').addClass('bah');
-    //
-    //     }
-    // });
-    //
-    // modal_ized.on('opened', function (e) {
-    //     do_ajax(botao_abrir_modal, $(this));
-    //     $(this).iziModal('stopLoading');
-    // });
-    // modal_ized.on('onClosed', function (e) {
-    //     modal_div.iziModal('destroy');
-    // });
-    // modal_ized.iziModal('open');
-    //#########################################
-    var do_ajax = function (botao_el, modal) {
+    var do_ajax = function (botao_el) {
         console.log('do_ajax');
 
-        modal.attr('id', 'minhamodal2');
         var botao = $(botao_el);
         var url = botao.attr('href');
-        // var star_ajax = false;
-        // var that = el;
-        // // var izi_content = $(".iziModal-content", modal);
-        var izi_content = $(".iziModal-content");
+        var modal_body = $(".modal-body", modal);
         // // console.log(modal);
         // // modal.startLoading();
         var ajax_request_cfg = {
@@ -73,7 +49,7 @@ botao_abrir_modal.on('click', function (event) {
         var request = $.ajax(ajax_request_cfg);
 
         request.done(function (data) {
-            var response_data = $('<div>' + data + '</div>');
+            var response_data = $(data);
             var scripts = response_data.find('script');
             var css = response_data.find('link');
             $('script', response_data).remove();
@@ -86,18 +62,17 @@ botao_abrir_modal.on('click', function (event) {
             console.log(response_data);
             scripts.attr('data-scriptautoadded', 'true');
             css.attr('data-scriptautoadded', 'true');
+            console.log(scripts);
             $('head').append(css);
             $('body').append(scripts);
-            modal_div.removeClass('bah');
-            //izi_content.html(response_data);
-            $('#minhamodalfoda').html(response_data);
-            $('#minhamodalfoda').modal('show')
+            // modal_div.removeClass('bah');
+            modal_body.html(response_data);
             // modal
 
 
             // $(window).ready(function () {
             //     // modal.iziModal('stopLoading');
-            //     izi_content.fadeIn();
+            //     modal_body.fadeIn();
             //     console.log("hahah");
             // });
             //
@@ -110,10 +85,11 @@ botao_abrir_modal.on('click', function (event) {
             // 1.4.2 the method name is recalculateLayout
             // but on 1.5.0 beta, the method was renamed to recalcLayout
             // modal.iziModal('stopLoading');
-            // modal.iziModal('recalculateLayout');
+            // modal.iziModal('recalcLayout');
             // that.attr('disabled', false);
             //
-            modal.iziModal('recalcLayout');
+            $('body').append(modal);
+            modal.modal('show');
             setTimeout(function () {
                 console.log("focou");
                 $(".iziModal-content", modal).find(':input:not(button):enabled:visible:first').focus();
@@ -122,11 +98,8 @@ botao_abrir_modal.on('click', function (event) {
         //
     };
 
-   do_ajax(botao_abrir_modal, modal_template.clone());
 
-
-
-
+    do_ajax(botao_abrir_modal);
 
 
 });

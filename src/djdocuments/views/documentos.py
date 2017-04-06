@@ -1011,7 +1011,7 @@ class DocumentoDetailView(NextPageURLMixin, DjDocumentsBackendMixin, DjDocumentP
         # context['assinaturas'] = self.object.assinaturas.select_related('assinado_por').all()
         assinaturas = self.object.assinaturas.filter(ativo=True)
 
-        context['assinaturas_dos_meus_grupos'] = assinaturas.filter(ativo=True, grupo_assinante__in=self.get_ids_grupos_do_usuario)
+        context['assinaturas_dos_meus_grupos'] = assinaturas.filter(ativo=True, grupo_assinante__in=self.get_ids_grupos_do_usuario).order_by('esta_assinado', 'grupo_assinante_nome')
         context['assinaturas_outros'] = assinaturas.filter(~Q(grupo_assinante__in=self.get_ids_grupos_do_usuario), ativo=True)
         context['assinaturas'] = assinaturas
 

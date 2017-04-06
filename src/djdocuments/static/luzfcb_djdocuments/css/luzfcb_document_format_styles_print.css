@@ -2,11 +2,6 @@
     background-color: rgba(0, 0, 0, 0.15) !important;
 }
 
-body {
-    word-wrap: break-word;
-    text-align: justify;
-}
-
 @media print {
     a[href]:after {
         content: "" !important;
@@ -29,6 +24,11 @@ body {
     padding-bottom: 4mm;
     padding-left: 3.5mm;
     padding-right: 3.5mm;
+}
+
+.documento {
+    word-wrap: break-word;
+    text-align: justify;
 }
 
 .documento .documento-conteudo {

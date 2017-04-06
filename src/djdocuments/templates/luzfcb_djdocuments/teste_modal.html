@@ -4,14 +4,13 @@
 {% block extra_head_css %}
     {#    <link rel="stylesheet" href="{% static 'luzfcb_djdocuments/js/vendor/izimodal/1.5.0beta/css/iziModal.css' %}"#}
     {#          class="oba">#}
-    <link rel="stylesheet" href="{% static 'luzfcb_djdocuments/js/vendor/izimodal/1.4.2/css/iziModal.css' %}"
-          class="oba">
-    <style>
-        .bah {
-            width: 80%;
-            height: 100px;
-        }
-    </style>
+    <link rel="stylesheet" href="{% static 'luzfcb_djdocuments/js/vendor/izimodal/1.4.2/css/iziModal.css' %}">
+{#    <style>#}
+{#        .bah {#}
+{#            width: 80%;#}
+{#            height: 100px;#}
+{#        }#}
+{#    </style>#}
 {% endblock %}
 
 {% block conteudo_app %}
@@ -20,8 +19,9 @@
         html content was obtained via ajax.
         <br>
         <a href="/docs/d/a12c2382-7352-4988-bffc-50b8ce271e54/adicionar_assinantes/"
+           luzfcbmodal="true"
            class="btn btn-primary botao-abrir-modal">Abrir modal</a>
-
+        <button luzfcbmodal="true" data-luzfcbmodal-url="/docs/d/a12c2382-7352-4988-bffc-50b8ce271e54/adicionar_assinantes/">modal2</button>
 
     </div>
 
@@ -29,8 +29,7 @@
 {% endblock %}
 {% block js_app %}
     <!-- Modal -->
-    <div class="minha-modal bah" id="minhamodalfoda">
-    </div>
+
 
 
     <!-- end Modal -->
@@ -38,6 +37,6 @@
 
     <script src="{% static 'luzfcb_djdocuments/js/vendor/izimodal/1.5.0beta/js/iziModal.js' %}"></script>
     {#    <script src="{% static 'luzfcb_djdocuments/js/vendor/izimodal/1.4.2/js/iziModal.js' %}"></script>#}
-    <script src="{% static 'luzfcb_djdocuments/js/modal.js' %}"></script>
+    <script src="{% static 'luzfcb_djdocuments/js/luzfcbmodal.js' %}"></script>
 
 {% endblock %}
