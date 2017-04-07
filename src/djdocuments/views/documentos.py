@@ -836,7 +836,7 @@ class DocumentoAssinaturasListView(SingleDocumentObjectMixin, DjDocumentsBackend
         return create_form_class_finalizar(self.document_object)
 
 
-class AdicionarAssinantes(FormActionViewMixin, SingleDocumentObjectMixin, DjDocumentsBackendMixin, generic.FormView):
+class AdicionarAssinantes(FormActionViewMixin, AjaxFormPostMixin, SingleDocumentObjectMixin, DjDocumentsBackendMixin, generic.FormView):
     template_name = 'luzfcb_djdocuments/assinar_adicionar_assinantes.html'
     template_name_ajax = 'luzfcb_djdocuments/assinar_adicionar_assinantes_ajax.html'
 
@@ -1011,7 +1011,8 @@ class DocumentoDetailView(NextPageURLMixin, DjDocumentsBackendMixin, DjDocumentP
         # context['assinaturas'] = self.object.assinaturas.select_related('assinado_por').all()
         assinaturas = self.object.assinaturas.filter(ativo=True)
 
-        context['assinaturas_dos_meus_grupos'] = assinaturas.filter(ativo=True, grupo_assinante__in=self.get_ids_grupos_do_usuario).order_by('esta_assinado', 'grupo_assinante_nome')
+        context['assinaturas_pendentes_dos_meus_grupos'] = assinaturas.filter(esta_assinado=False, ativo=True, grupo_assinante__in=self.get_ids_grupos_do_usuario).order_by('grupo_assinante_nome')
+        context['assinaturas_realizadas_dos_meus_grupos'] = assinaturas.filter(esta_assinado=True, ativo=True, grupo_assinante__in=self.get_ids_grupos_do_usuario).order_by('grupo_assinante_nome')
         context['assinaturas_outros'] = assinaturas.filter(~Q(grupo_assinante__in=self.get_ids_grupos_do_usuario), ativo=True)
         context['assinaturas'] = assinaturas
 

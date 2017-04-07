@@ -581,8 +581,6 @@ class AjaxFormPostMixin(object):
     def form_valid(self, form):
         response = super(AjaxFormPostMixin, self).form_valid(form)
         if self.request.is_ajax():
-            if not self.object:
-                self.object = self.get_object()
             data = {'object_instance': self.get_object_members(), 'errors': form.errors,
                     'success_url': self.get_success_url()}
             return JsonResponse(data=data)
@@ -590,16 +588,16 @@ class AjaxFormPostMixin(object):
 
     def get_object_members(self):
         data = {}
-        if not self.object:
+        if hasattr(self, 'object') and not self.object:
             self.object = self.get_object()
-        for field in self.get_form_fields():
-            if hasattr(self.object, field):
-                field_instance = getattr(self.object, field)
-                if isinstance(field_instance, models.Model):
-                    field_data = field_instance.pk
-                else:
-                    field_data = field_instance
-                data[field] = field_data
+            for field in self.get_form_fields():
+                if hasattr(self.object, field):
+                    field_instance = getattr(self.object, field)
+                    if isinstance(field_instance, models.Model):
+                        field_data = field_instance.pk
+                    else:
+                        field_data = field_instance
+                    data[field] = field_data
         return data
 
     def form_invalid(self, form):
@@ -608,11 +606,7 @@ class AjaxFormPostMixin(object):
             if not self.object:
                 self.object = self.get_object()
             data = {}
-            # for field in self.get_form_fields():
-            #     if hasattr(obj, field):
-            #         data[field] = getattr(obj, field)
-            members = self.get_object_members()
-            print(members)
+            # members = self.get_object_members()
             data['errors'] = form.errors
             data['success_url'] = self.get_success_url()
             return JsonResponse(data=data, status=status.HTTP_400_BAD_REQUEST)
