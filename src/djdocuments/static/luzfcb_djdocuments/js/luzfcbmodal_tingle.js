@@ -155,7 +155,7 @@
             luzfcb_modal.botao_abrir_modal = $(this);
             luzfcb_modal.botao_abrir_modal.attr('luzfcbmodal-enabled', true);
             var esta_desabilitado = luzfcb_modal.botao_abrir_modal.attr('disabled');
-            $('body > div,nav').removeClass('tingle-content-wrapper').addClass('tingle-content-wrapper');
+            $('body > div,nav,section,header,footer').not('.tingle-modal').removeClass('tingle-content-wrapper2').addClass('tingle-content-wrapper2');
             //$('body').removeClass('tingle-content-wrapper').addClass('tingle-content-wrapper');
             if (!esta_desabilitado) {
                 luzfcb_modal.botao_abrir_modal.attr('disabled', true);

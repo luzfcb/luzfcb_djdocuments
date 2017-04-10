@@ -8,6 +8,17 @@ from django.views.generic import TemplateView
 from .views import documentos as documentos_views
 from .views import autocompletes
 
+
+class TemplateView2(TemplateView):
+    template_name = 'luzfcb_djdocuments/teste_modal.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(TemplateView2, self).get_context_data(**kwargs)
+        from djdocuments.models import Documento
+        context['object'] = Documento.objects.get(pk_uuid='a12c2382-7352-4988-bffc-50b8ce271e54')
+        return context
+
+
 urlpatterns = [
     # url(r'^$',
     #     login_required(documentos_views.DocumentoPainelGeralView.as_view()),
@@ -57,7 +68,8 @@ urlpatterns = [
         name='assinar'
         ),
     url(
-        r'^d/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/assinaturas/assinar/(?P<group_id>\d+)/$',  # noqa
+        r'^d/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/assinaturas/assinar/(?P<group_id>\d+)/$',
+        # noqa
         login_required(documentos_views.AssinarDocumentoView.as_view()),
         name='assinar_por_grupo'
     ),
@@ -72,7 +84,8 @@ urlpatterns = [
         name='excluir'
         ),
     url(
-        r'^d/(?P<document_slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/assinaturas/remover/(?P<pk>\d+)/$',  # noqa
+        r'^d/(?P<document_slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/assinaturas/remover/(?P<pk>\d+)/$',
+        # noqa
         login_required(documentos_views.AssinaturaDeleteView.as_view()),
         name='remover_assinatura'
     ),
@@ -143,10 +156,11 @@ urlpatterns = [
         login_required(autocompletes.GruposAssinantesDoDocumentoAutoComplete.as_view()),
         name='grupos_assinantes_do_documento_autocomplete'
         ),
-    url(r'^grupos-nao-assintantes-autocomplete/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/$',
+    url(
+        r'^grupos-nao-assintantes-autocomplete/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/$',
         login_required(autocompletes.GrupoAindaNaoAssinantesDoDocumentoAutoComplete.as_view()),
         name='grupos_ainda_nao_assinantes_do_documento_autocomplete'
-    ),
+        ),
 
     url(r'^documento-criarautocomplete/$',
         login_required(autocompletes.DocumentoCriarAutocomplete.as_view()),
@@ -157,6 +171,6 @@ urlpatterns = [
         name='tipodocumento-autocomplete'
         ),
     url(r'^teste/$',
-        TemplateView.as_view(template_name='luzfcb_djdocuments/teste_modal.html')
+        TemplateView2.as_view()
         ),
 ]

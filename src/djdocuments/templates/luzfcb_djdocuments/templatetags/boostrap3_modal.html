@@ -1,295 +1,61 @@
 {% load luzfcb_djdocuments_tags %}
 
-{% for form in assinaturas_forms %}
-    <div class="assinatura_object_div_{{ form.instance.pk }} div-modal">
-        <div class="modal fade bs-example-modal-lg assinatura_object_modal_{{ form.instance.pk }}" tabindex="-1"
-             role="dialog"
-             aria-labelledby="myLargeModalLabel">
-            <div class="modal-dialog modal-lg" role="document">
-                <div class="modal-content">
-
-                    <div class="panel panel-info">
-                        <div class="panel-heading">Assinar Documento</div>
-                        <div class="panel-body">
-                            <form class="form-horizontal form-assinar" method="post"
-                                  id="form_{{ form.instance|class_name|lower }}_{{ form.instance.pk }}"
-                                  action="{{ form.instance.get_url_para_assinar }}">
-                                <fieldset>
-                                    <legend>Tem certeza que deseja assinar o documento
-                                        "{{ form.instance.documento_assunto|remover_tags_html }}"
-                                        número: {{ form.instance.documento_identificador_versao }} ?
-                                    </legend>
-
-                                    {% include "luzfcb_djdocuments/django_form_content.html" with form=form %}
-
-                                    <div class="form-group">
-                                        <div class="col-sm-offset-2 col-sm-10">
-                                            <button type="submit" class="btn btn-success">Assinar Documento</button>
-                                        </div>
-                                    </div>
-                                </fieldset>
-                            </form>
-
-                        </div>
-                    </div>
-
-
-                </div>
-            </div>
-        </div>
-    </div>
-
-{% endfor %}
-
-{% if not object.esta_assinado_e_finalizado and adicionar_assinantes_form_instance %}
-    <div id="modal_adicionar_assinantes">
-
-
-        <div class="adicionar_assinantes_object_div_{{ adicionar_assinantes_form_instance.instance.pk }} div-modal">
-            <div class="modal fade bs-example-modal-lg adicionar_assinantes_modal" tabindex="-1"
+{% if assinaturas_pendentes_forms %}
+    {% for uuid, form in assinaturas_pendentes_forms %}
+        <div class="assinatura_object_div_{{ form.instance.pk }} div-modal" id="{{ uuid }}">
+            <div class="modal fade bs-example-modal-lg assinatura_object_modal_{{ form.instance.pk }}" tabindex="-1"
                  role="dialog"
                  aria-labelledby="myLargeModalLabel">
                 <div class="modal-dialog modal-lg" role="document">
                     <div class="modal-content">
 
+                        <div class="panel panel-info">
+                            <div class="panel-heading">Assinar Documento</div>
+                            <div class="panel-body">
+                                <form class="form-horizontal form-assinar" method="post"
+                                      id="form_{{ form.instance|class_name|lower }}_{{ form.instance.pk }}"
+                                      action="{{ form.instance.get_url_para_assinar }}">
+                                    <fieldset>
+                                        <legend>Tem certeza que deseja assinar o documento
+                                            "{{ form.instance.documento_assunto|remover_tags_html }}"
+                                            número: {{ form.instance.documento_identificador_versao }} ?
+                                        </legend>
+
+                                        {% include "luzfcb_djdocuments/django_form_content.html" with form=form %}
+
+                                        <div class="form-group">
+                                            <div class="col-sm-offset-2 col-sm-10">
+                                                <button type="submit" class="btn btn-success">Assinar Documento</button>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                </form>
+
+                            </div>
+                        </div>
+
+
                     </div>
                 </div>
             </div>
         </div>
 
+    {% endfor %}
+{% endif %}
+{#finalizar_forms assinaturas_forms adicionar_assinantes_forms#}
+{% if finalizar_forms %}
 
-    </div>
+    {% for uuid, form in finalizar_forms %}
+    {% endfor %}
+
 {% endif %}
 
-{% if assinatura_form_media %}
+{% if adicionar_assinantes_forms %}
 
-    {{ assinatura_form_media }}
-    <script type="application/javascript">
+    {% for uuid, form in adicionar_assinantes_forms %}
+    {% endfor %}
 
-
-        (function (window, jQuery) {
-            var forms = jQuery('.form-assinar');
-            var clean_form_errors = function (serialized_array, form) {
-
-                for (var item in serialized_array) {
-                    if (serialized_array.hasOwnProperty(item)) {
-                        var input_id = 'id_' + serialized_array[item].name;
-                        var label_search = "label[for='" + input_id + "']";
-                        $(label_search).parents('div:first').removeClass('has-error');
-                        $('.autoadded', form).remove();
-                    }
-                }
-            };
-
-            var mark_fields_with_errors = function (errors, form) {
-                for (var key in errors) {
-                    if (errors.hasOwnProperty(key)) {
-                        var el_text = '<p id="error_1_id_' + key + '" class="help-block autoadded"> <strong>' + errors[key] + '</strong></p>';
-                        var p_element = $(el_text);
-                        var input_id = 'id_' + key;
-                        var label_search = "label[for='" + input_id + "']";
-                        $('#hint_id_' + key, form).before(p_element);
-
-                        $(label_search).parents('div:first').removeClass('has-error').addClass('has-error');
-                    }
-                }
-            };
-            $(forms).each(function () {
-                var $formulario = $(this);
-                var excluir_modal_agora = false;
-                var $botao_salvar = $('button[type=submit]', $formulario);
-                var modal = $formulario.parents('.modal');
-                var div_modal = $formulario.parents('.div-modal');
-                $botao_salvar.click(function (event) {
-                    event.preventDefault();
-                    $formulario.submit();
-
-                });
-
-                $(modal).on('hidden.bs.modal', function () {
-                    var inputs = $(':input:enabled:not([readonly]):not([disabled])', $formulario);
-                    clean_form_errors(inputs, $formulario);
-                    if (excluir_modal_agora === true) {
-                        //$(this).exclude();
-                        div_modal.remove();
-                        window.location.reload(true);
-                    }
-                });
-
-                $(modal).on('shown.bs.modal', function () {
-
-
-                    var first_el = $(':input:enabled:not([readonly]):not([disabled]):not(button):first', $formulario);
-                    if ('select2-hidden-accessible') {
-
-                    }
-                    first_el.attr('style', 'border: 6px solid #c30000;');
-                    first_el.focus();
-                    console.log('passou aqui: ' + $(first_el));
-                });
-
-                $formulario.submit(function (event) {
-                    // Stop form from submitting normally
-                    event.preventDefault();
-                    $botao_salvar.prop('disabled', true);
-                    var $form = jQuery(this);
-                    var conteudo = $form.serializeArray();
-                    clean_form_errors(conteudo, $form);
-                    var url = $form.attr("action").replace(/\s/g, "");
-                    var posting = $.post(url, conteudo, 'JSON');
-
-                    // process fail logic
-                    posting.fail(function (jqXHR, textStatus, errorThrown) {
-
-                        console.log('textStatus: ' + textStatus);
-                        console.log('errorThrown:' + errorThrown);
-                        var response = jqXHR.responseJSON;
-
-                        mark_fields_with_errors(response.errors, $form);
-
-                    });
-                    // Put the results in a div
-                    posting.done(function (data, textStatus, jqXHR) {
-                        {#                        log_to_console("done data:", data);#}
-                        {#                        log_to_console("done textStatus:", textStatus);#}
-                        {#                        log_to_console("done jqXHR:", jqXHR);#}
-                        {#                        // var content = jQuery(data);#}
-                        {#                        log_to_console(jQuery(data));#}
-
-                        {#                        var mensagem = "Documento N° " + data.document_number + " salvo com sucesso!";#}
-                        {#                        humane.log(mensagem, {#}
-                        {#                            timeout: 2500,#}
-                        {#                            clickToClose: true,#}
-                        {#                            addnCls: 'humane-sucess'#}
-                        {#                        });#}
-                        var a = jQuery(data);
-                        console.log(data);
-                        window.io = data;
-                        {#                        console.log(a);#}
-                        console.log("done");
-                        excluir_modal_agora = true;
-                        modal.modal('hide');
-
-
-                    });
-                    posting.always(function (data, textStatus, errorThrown) {
-                        {#                        log_to_console("always");#}
-                        {#                        requestRunning = false;#}
-                        {#                        $botao_salvar.attr('')#}
-                        $botao_salvar.prop('disabled', false);
-                    });
-                }).bind('ajax:complete', function () {
-
-                    // tasks to do
-                    console.log("ajax completo");
-
-
-                });
-            });
-
-{##}
-{#            var forms_adicionar_assinantes = jQuery('.form-adicionar-assinantes');#}
-{#            $(forms_adicionar_assinantes).each(function () {#}
-{#                var $formulario = $(this);#}
-{#                var excluir_modal_agora = false;#}
-{#                var $botao_salvar = $('button[type=submit]', $formulario);#}
-{#                var modal = $formulario.parents('.modal');#}
-{#                var div_modal = $formulario.parents('.div-modal');#}
-{#                $botao_salvar.click(function (event) {#}
-{#                    event.preventDefault();#}
-{#                    $formulario.submit();#}
-{##}
-{#                });#}
-{##}
-{#                $(modal).on('hidden.bs.modal', function () {#}
-{#                    var inputs = $(':input:enabled:not([readonly]):not([disabled])', $formulario);#}
-{#                    clean_form_errors(inputs, $formulario);#}
-{#                    if (excluir_modal_agora === true) {#}
-{#                        //$(this).exclude();#}
-{#                        div_modal.remove();#}
-{#                        window.location.reload(true);#}
-{#                    }#}
-{#                });#}
-{#                $(modal).on('show.bs.modal', function (event) {#}
-{#                    console.log(event);#}
-{#                    console.log(event.relatedTarget);#}
-{##}
-{#                });#}
-{##}
-{#                $(modal).on('shown.bs.modal', function () {#}
-{##}
-{##}
-{#                    var first_el = $(':input:enabled:not([readonly]):not([disabled]):not(button):first', $formulario);#}
-{#                    if ('select2-hidden-accessible') {#}
-{##}
-{#                    }#}
-{#                    first_el.attr('style', 'border: 6px solid #c30000;');#}
-{#                    first_el.focus();#}
-{#                    console.log('passou aqui: ' + $(first_el));#}
-{#                });#}
-{##}
-{#                $formulario.submit(function (event) {#}
-{#                    // Stop form from submitting normally#}
-{#                    event.preventDefault();#}
-{#                    $botao_salvar.prop('disabled', true);#}
-{#                    var $form = jQuery(this);#}
-{#                    var conteudo = $form.serializeArray();#}
-{#                    clean_form_errors(conteudo, $form);#}
-{#                    var url = $form.attr("action").replace(/\s/g, "");#}
-{#                    var posting = $.post(url, conteudo, 'JSON');#}
-{##}
-{#                    // process fail logic#}
-{#                    posting.fail(function (jqXHR, textStatus, errorThrown) {#}
-{##}
-{#                        console.log('textStatus: ' + textStatus);#}
-{#                        console.log('errorThrown:' + errorThrown);#}
-{#                        var response = jqXHR.responseJSON;#}
-{##}
-{#                        mark_fields_with_errors(response.errors, $form);#}
-{##}
-{#                    });#}
-{#                    // Put the results in a div#}
-{#                    posting.done(function (data, textStatus, jqXHR) {#}
-                        {#                        log_to_console("done data:", data);#}
-                        {#                        log_to_console("done textStatus:", textStatus);#}
-                        {#                        log_to_console("done jqXHR:", jqXHR);#}
-                        {#                        // var content = jQuery(data);#}
-                        {#                        log_to_console(jQuery(data));#}
-{##}
-                        {#                        var mensagem = "Documento N° " + data.document_number + " salvo com sucesso!";#}
-                        {#                        humane.log(mensagem, {#}
-                        {#                            timeout: 2500,#}
-                        {#                            clickToClose: true,#}
-                        {#                            addnCls: 'humane-sucess'#}
-                        {#                        });#}
-{#                        var a = jQuery(data);#}
-{#                        console.log(data);#}
-{#                        window.io = data;#}
-                        {#                        console.log(a);#}
-{#                        console.log("done");#}
-{#                        excluir_modal_agora = true;#}
-{#                        modal.modal('hide');#}
-{##}
-{##}
-{#                    });#}
-{#                    posting.always(function (data, textStatus, errorThrown) {#}
-                        {#                        log_to_console("always");#}
-                        {#                        requestRunning = false;#}
-                        {#                        $botao_salvar.attr('')#}
-{#                        $botao_salvar.prop('disabled', false);#}
-{#                    });#}
-{#                }).bind('ajax:complete', function () {#}
-{##}
-{#                    // tasks to do#}
-{#                    console.log("ajax completo");#}
-{##}
-{##}
-{#                });#}
-{#            });#}
-{##}
-
-
-        })(window, jQuery);
-
-    </script>
 {% endif %}
+
+
+{{ forms_media }}
