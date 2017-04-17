@@ -1,9 +1,11 @@
 {% if assinatura %}
-                                        <button
-{#                                                href="{{ assinatura.get_url_para_assinar }}"#}
-                                                class="btn btn-mini btn-primary assinatura_object_{{ assinatura.pk }}_origin"
-                                           data-toggle="modal" data-target=".assinatura_object_modal_{{ assinatura.pk }}">
+    <a
+            href="{{ assinatura.get_url_para_assinar }}"
+            luzfcbmodal="true"
+            rel="prefetch"
+            class="btn btn-mini btn-primary assinatura_object_{{ assinatura.pk }}_origin"
+            data-toggle="modal" data-target=".assinatura_object_modal_{{ assinatura.pk }}">
 
-                                            <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> Assinar
-                                        </button>
+        <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> Assinar
+    </a>
 {% endif %}
