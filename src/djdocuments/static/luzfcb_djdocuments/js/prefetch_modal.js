@@ -1,17 +1,16 @@
 /**
  * Created by luzfcb on 11/04/17.
- * https://gist.github.com/WebCloud/906429ae3689b280b84583a5718ba708
+ * based on: https://gist.github.com/WebCloud/906429ae3689b280b84583a5718ba708
  */
 (function (window, document) {
     'use strict';
     var cache = {};
-    window.ncache = cache;
     var $head = undefined;
     var $body = undefined;
 
     function cacheContent(params) {
-        console.log('iniciando cache, parametros sao:');
-        console.log(params);
+        //console.log('iniciando cache, parametros sao:');
+        //console.log(params);
         $head = $head || $('head');
         $body = $body || $('body');
 
@@ -42,16 +41,31 @@
             scripts: scripts
         };
 
+        stylesheets.each(function (index, el) {
+            var link_selector = 'link[href="' + el.getAttribute("href") + '"]';
+            if ($(link_selector).length) {
+                // ja existe
+            } else {
+                $head.append(el)
+            }
 
-        $head.append(stylesheets);
-        $body.append(scripts);
+        });
+        scripts.each(function (index, el) {
+            var link_selector = 'script[src="' + el.getAttribute("src") + '"]';
+            if ($(link_selector).length) {
+                // ja existe
+            } else {
+                $body.append(el)
+            }
+
+        });
 
         // retorna o fragmento para caso queira trabalhar com ele por fora
         return $fragment.html();
     }
 
     function prefetch() {
-        console.log('executando prefetch()');
+        //console.log('executando prefetch()');
         $head = $('head');
         $body = $('body');
 
@@ -88,13 +102,13 @@
     };
 
     window.fetchContent = function fetchContent(params) {
-        console.log('executando fetchContent');
+        //console.log('executando fetchContent');
         return $.ajax(params.url)
         // quando o ajax retornar, passa a resposta e o ID para a fn cacheContent
             .then(function (response) {
-                console.log('ajax reponse do linkId: ' + params.linkId + '\n');
-                console.log(response);
-                console.log('\n\n');
+                //console.log('ajax reponse do linkId: ' + params.linkId + '\n');
+                //console.log(response);
+                //console.log('\n\n');
                 return cacheContent({response: response, id: params.linkId});
 
             });
@@ -108,9 +122,9 @@
     window.getOrAndApplyId = function getIdOrCreateAndApplyId(el) {
         var self = $(el);
         var id_ = self.data('id');
-        console.log(id_);
+        //console.log(id_);
         if (typeof id_ === "undefined") {
-            console.log('gerou novo em getOrAndApplyId');
+            //console.log('gerou novo em getOrAndApplyId');
             id_ = getUUID();
             self.attr('data-id', id_);
         }
