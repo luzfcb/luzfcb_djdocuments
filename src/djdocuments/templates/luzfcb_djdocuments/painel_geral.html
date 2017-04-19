@@ -3,8 +3,9 @@
 {% load humanize %}
 {% load luzfcb_djdocuments_tags %}
 {% load spurl %}
-{% block extra_head_css %}
+{% block css_app %}
 
+    <link rel="stylesheet" href="{% static 'luzfcb_djdocuments/js/vendor/izimodal/1.5.0/css/iziModal.css' %}">
 {% endblock %}
 
 {% block conteudo_app %}
@@ -88,11 +89,14 @@
                                             </td>
                                             <td>
                                                 <div>
-                                                    {% add_to_named_context  new_context_name_key='assinaturas_pendentes' new_context_value=dado template_name='luzfcb_djdocuments/templatetags/botao_assinatura_pendente_painel.html' %}
-                                                    {#                                                    {% spurl base=dado.get_url_para_assinar query='next={{ next_success_url }}' as url_para_assinar_com_next %}#}
-                                                    {#                                                    <a href="{{ url_para_assinar_com_next }}" class="btn-link" luzfcbmodal="true">#}
-                                                    {#                                                        <i class="elusive-edit color-red"></i> Assinar#}
-                                                    {#                                                    </a>#}
+{#                                                    {% add_to_named_context  new_context_name_key='assinaturas_pendentes' new_context_value=dado template_name='luzfcb_djdocuments/templatetags/botao_assinatura_pendente_painel.html' %}#}
+                                                    {% spurl base=dado.get_url_para_assinar query='next={{ next_success_url }}' as url_para_assinar_com_next %}
+                                                    <a href="{{ url_para_assinar_com_next }}" class="btn-link"
+                                                           data-ajaxmodal="true"
+                                                           data-ajaxmodal-prefetch="true"
+                                                    >
+                                                        <i class="elusive-edit color-red"></i> Assinar
+                                                    </a>
                                                     |
                                                     <a href="{{ dado.get_preview_url }}" class="btn-link">
                                                         <i class="icofont-search"></i> Visualizar
@@ -408,5 +412,6 @@
 {% endblock %}
 
 {% block js_app %}
-    {% render_named_context 'assinaturas_pendentes' %}
+{#    {% render_named_context 'assinaturas_pendentes' %}#}
+
 {% endblock %}

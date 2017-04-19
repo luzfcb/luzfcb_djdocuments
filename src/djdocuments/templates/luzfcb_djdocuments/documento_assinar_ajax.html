@@ -1,21 +1,52 @@
 {% load luzfcb_djdocuments_tags %}
 {#<div class="panel panel-info">#}
-    <div class="panel-heading">Assinar Documento</div>
-    <div class="panel-body">
-        <form class="form-horizontal" method="post" action="{{ form_action }}">
-            <fieldset>
-                <legend>Tem certeza que deseja assinar o documento "{{ document_object.assunto|remover_tags_html }}"
-                    número: {{ document_object.identificador_versao }} ?
-                </legend>
-                {% include "luzfcb_djdocuments/django_form_content.html" with form=form %}
-                <div class="form-group">
-                    <div class="col-sm-offset-2 col-sm-10">
-                        <button type="submit" class="btn btn-success">Assinar Documento</button>
-                    </div>
-                </div>
-            </fieldset>
-        </form>
-
-    </div>
+{#    <div class="panel-heading">Assinar Documento</div>#}
+{#    <div class="panel-body">#}
+{#        <form class="form-horizontal" method="post" action="{{ form_action }}">#}
+{#            <fieldset>#}
+{#                <legend>Tem certeza que deseja assinar o documento "{{ document_object.assunto|remover_tags_html }}"#}
+{#                    número: {{ document_object.identificador_versao }} ?#}
+{#                </legend>#}
+{#                {% include "luzfcb_djdocuments/django_form_content.html" with form=form %}#}
+{#                <div class="form-group">#}
+{#                    <div class="col-sm-offset-2 col-sm-10">#}
+{#                        <button type="submit" class="btn btn-success">Assinar Documento</button>#}
+{#                    </div>#}
+{#                </div>#}
+{#            </fieldset>#}
+{#        </form>#}
+{##}
+{#    </div>#}
 {#</div>#}
+
+
+<div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3>Assinar Documento <span class="muted">{{ document_object.identificador_versao }}</span></h3>
+    <small>Tem certeza que deseja assinar o documento?</small>
+</div>
+<div class="modal-body">
+
+    <p>
+        Número: <b>{{ document_object.identificador_versao }}</b>
+        Assunto: <b>"{{ document_object.assunto|remover_tags_html }}" asasasas as as as as as as as as a a sa sas as as
+        as as as as as as as</b>
+    </p>
+
+    {#    <div class="text-error ng-hide" ng-show="atuacao.substituicoes.length">#}
+    {#        <p><b>As seguintes substituições devem ser removidas primeiro:</b></p>#}
+    {#    </div>#}
+    {#    #}
+
+    <form class="form-horizontal" method="post" action="{{ form_action }}">
+        <fieldset>
+            {% include "luzfcb_djdocuments/django_form_content.html" with form=form %}
+        </fieldset>
+    </form>
+
+</div>
+<div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
+    <button type="submit" class="btn btn-success">Assinar Documento</button>
+</div>
 {{ form.media|add_defer }}

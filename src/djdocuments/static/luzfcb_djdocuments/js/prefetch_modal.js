@@ -70,7 +70,7 @@
         $body = $('body');
 
         // seleciona todos os links marcados como <a rel="[prefetch]">
-        var $linksToPrefetch = $('a[rel="prefetch"]');
+        var $linksToPrefetch = $('a[data-ajaxmodal-prefetch]');
         var $link = undefined;
         var linkId = undefined;
         var length = $linksToPrefetch.length - 1;

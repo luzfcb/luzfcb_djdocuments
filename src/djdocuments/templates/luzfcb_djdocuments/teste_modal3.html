@@ -4,7 +4,7 @@
 
 {% block extra_head_css %}
     <link rel="stylesheet" href="{% static 'luzfcb_djdocuments/js/vendor/izimodal/1.5.0/css/iziModal.css' %}">
-{#    <link rel="stylesheet" href="{% static 'luzfcb_djdocuments/js/vendor/tingle/dist/tingle.min.css' %}">#}
+    {#    <link rel="stylesheet" href="{% static 'luzfcb_djdocuments/js/vendor/tingle/dist/tingle.min.css' %}">#}
     {#    <link rel="stylesheet" href="{% static 'luzfcb_djdocuments/js/vendor/izimodal/1.4.2/css/iziModal.css' %}">#}
 
 {% endblock %}
@@ -15,8 +15,9 @@
         html content was obtained via ajax.
         <br>
         <a href="/docs/d/a12c2382-7352-4988-bffc-50b8ce271e54/adicionar_assinantes/"
-           luzfcbmodal="true"
-{#           rel="prefetch"#}
+           data-ajaxmodal="true"
+{#           data-ajaxmodal-prefetch="true"#}
+                {#           rel="prefetch"#}
            class="btn btn-primary botao-abrir-modal blah">Abrir modal</a>
         {% add_to_named_context 'documento' object %}
         {% for assinatura in object.assinaturas.all %}

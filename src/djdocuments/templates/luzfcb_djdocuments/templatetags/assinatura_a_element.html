@@ -1,8 +1,8 @@
 {% if assinatura %}
     <a
             href="{{ assinatura.get_url_para_assinar }}"
-            luzfcbmodal="true"
-            rel="prefetch"
+            data-ajaxmodal="true"
+            data-ajaxmodal-prefetch="true"
             class="btn btn-mini btn-primary assinatura_object_{{ assinatura.pk }}_origin"
             data-toggle="modal" data-target=".assinatura_object_modal_{{ assinatura.pk }}">
 
