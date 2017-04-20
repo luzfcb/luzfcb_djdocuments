@@ -568,9 +568,20 @@ class DocumentoAssinadoRedirectMixin(object):
         #     return redirect(detail_url, permanent=False)
         return ret
 
+
 from django.views import generic
+
+
 class AjaxFormPostMixin(object):
     document_json_fields = ('pk', 'versao_numero')
+    template_name_ajax = None
+
+    def get_template_names(self):
+        templates = super(AjaxFormPostMixin, self).get_template_names()
+        if self.request.is_ajax() and self.template_name_ajax:
+            templates = [self.template_name_ajax]
+        return templates
+
     def get_form_fields(self):
         fields = self.document_json_fields
         if not fields:
@@ -603,7 +614,7 @@ class AjaxFormPostMixin(object):
     def form_invalid(self, form):
         response = super(AjaxFormPostMixin, self).form_invalid(form)
         if self.request.is_ajax():
-            if not self.object:
+            if hasattr(self, 'object') and not self.object:
                 self.object = self.get_object()
             data = {}
             # members = self.get_object_members()

@@ -2,8 +2,10 @@
 {% load luzfcb_djdocuments_tags %}
 
 {% block modal_header_content %}
-    <h3>Assinar Documento <span class="muted">{{ document_object.identificador_versao }}</span></h3>
-    <small>Tem certeza que deseja assinar o documento?</small>
+
+    <h3>Finalizr Documento</h3>
+    <span>{{ user.get_full_name }}, Tem certeza que deseja finalizar o documento?</span>
+
 {% endblock modal_header_content %}
 
 {% block modal_body_header %}
@@ -13,5 +15,7 @@
     </p>
 {% endblock modal_body_header %}
 
-{% block submit_text %}Assinar Documento{% endblock submit_text %}
+{% block submit_text %}Finalizar{% endblock submit_text %}
+
+
 

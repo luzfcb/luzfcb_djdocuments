@@ -1,42 +1,15 @@
+{% extends 'luzfcb_djdocuments/base_ajax_modal_response.html' %}
 {% load luzfcb_djdocuments_tags %}
-{% spaceless %}
-    <div class="panel panel-info">
-        <div class="panel-heading">Escolha um ou mais grupos assinantes, para criar uma nova pendência de assinatura
-            para os mesmos
-        </div>
-        <div class="panel-body">
-            {#                {% url 'documentos:adicionar_assinantes' slug=document_object.pk_uuid as adicionar_assinantes_url %}#}
 
-            <form class="form-horizontal form-adicionar-assinantes" action="{{ form_action }}" method="post"
-                  id="form-adicionar-assinantes">
-                <fieldset>
-                    {#                        <legend>Tem certeza que deseja assinar o documento "{{ object.assunto|remover_tags_html }}"#}
-                    {#                            número: {{ object.identificador_versao }} ?</legend>#}
+{% block modal_header_content %}
+    <h3>Adicionar Assinantes</h3>
+    <span>Escolha um ou mais grupos assinantes, para criar uma nova pendência de assinatura
+            para os mesmos</span>
+{% endblock modal_header_content %}
 
-                    {% include "luzfcb_djdocuments/django_form_content.html" with form=form %}
-                    {#                        <div class="form-group">#}
-                    {#                            <div class="col-sm-offset-2 col-sm-10">#}
-                    {#                                <button type="submit" class="btn btn-primary">Adicionar selecionados</button>#}
-                    {#                            </div>#}
-                    {#                        </div>#}
-                </fieldset>
-            </form>
+{% block modal_body_header %}
 
-        </div>
-    </div>
-    <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" form="form-adicionar-assinantes">Send message</button>
-    </div>
+{% endblock modal_body_header %}
 
-    {{ form.media|add_defer }}
-    <script type="application/javascript">
+{% block submit_text %}Adicionar Assinantes{% endblock submit_text %}
 
-
-        (function (window, jQuery) {
-
-
-        })(window, jQuery);
-
-    </script>
-{% endspaceless %}

@@ -45,15 +45,22 @@
                     //console.log('fragment: ' + fragment);
                     // $whereToPutIt.append($(fragment));
                     var documentFragment = document.createElement('div');
-                    documentFragment.innerHTML = fragment;
+                    var ca = getCache(id_);
+                    documentFragment.innerHTML = ca.fragment;
+                    var d_to_insert = $(documentFragment);
+                    process_form_if_exists($the_modal, d_to_insert);
                     // $(documentFragment).hide();
-                    $the_modal_body.html($(documentFragment));
+                    $the_modal_body.html(documentFragment);
                     console.log('parando loading');
                     $the_modal.iziModal('stopLoading');
                 });
         } else {
             // se tivermos feito o prefetch quando o usuário clicar no link, buscar do cache
-            $the_modal_body.html($(cache.fragment));
+            var documentFragment = document.createElement('div');
+            documentFragment.innerHTML = cache.fragment;
+            var d_to_insert = $(documentFragment);
+            process_form_if_exists($the_modal, d_to_insert);
+            $the_modal_body.html(documentFragment);
             console.log('parando loading');
             $the_modal.iziModal('stopLoading');
         }
@@ -122,17 +129,23 @@
             var excluir_modal_agora = false;
             // var $botao_salvar = get_save_button($formulario, modal_body);
             var $botao_salvar = $('button[type=submit],input[type=submit]', modal_body);
+            var $botao_cancelar = $('button.cancelar', modal_body);
             console.log('$botao_salvar');
             console.log($botao_salvar);
             // var modal = $formulario.parents('.modal');
             var div_modal = $formulario.parents('.div-modal');
-            $botao_salvar.click(function (event) {
+            $botao_salvar.on('click', function (event) {
                 event.preventDefault();
                 console.log('clicou');
                 $formulario.submit();
 
             });
+            $botao_cancelar.on('click', function (event) {
+                event.preventDefault();
+                console.log('clicou');
+                the_modal.iziModal('close');
 
+            });
             $formulario.submit(function (event) {
                 // Stop form from submitting normally
                 event.preventDefault();
@@ -149,10 +162,18 @@
 
                     console.log('textStatus: ' + textStatus);
                     console.log('errorThrown:' + errorThrown);
-                    var response = jqXHR.responseJSON;
+                    if (errorThrown === "NOT FOUND" || errorThrown === "FORBIDDEN") {
+                        var event = jQuery.Event("ajaxmodal:ajax-form-post-error-notfound");
+                        $(document).trigger(event, {
+                            post_url: url,
+                            post_data: conteudo,
+                            modal: the_modal
+                        });
+                    } else {
+                        var response = jqXHR.responseJSON;
 
-                    mark_fields_with_errors(response.errors, $form);
-
+                        mark_fields_with_errors(response.errors, $form);
+                    }
                 });
                 // Put the results in a div
                 posting.done(function (data, textStatus, jqXHR) {
@@ -160,11 +181,11 @@
                     var returned_data = jQuery(data);
                     console.log("done");
                     // modal.close();
-                    var event = jQuery.Event("luzfcbmodal:ajaxdone");
-                    event.returned_data = returned_data;
-                    event.form = $form;
-                    event.modal = modal;
-                    $(document).trigger(event, 'alo to aqui');
+                    var event = jQuery.Event("ajaxmodal:ajax-form-post-done");
+                    $(document).trigger(event, {
+                        returned_data: returned_data,
+                        modal: the_modal
+                    });
 
                 });
                 posting.always(function (data, textStatus, errorThrown) {
@@ -189,7 +210,7 @@
             if (serialized_array.hasOwnProperty(item)) {
                 var input_id = 'id_' + serialized_array[item].name;
                 var label_search = "label[for='" + input_id + "']";
-                $(label_search).parents('div:first').removeClass('has-error');
+                $(label_search).parents('div:first').removeClass('has-error').removeClass('error');
                 $('.autoadded', form).remove();
             }
         }
@@ -204,7 +225,7 @@
                 var label_search = "label[for='" + input_id + "']";
                 $('#hint_id_' + key, form).before(p_element);
 
-                $(label_search).parents('div:first').removeClass('has-error').addClass('has-error');
+                $(label_search).parents('div:first').removeClass('has-error').removeClass('error').addClass('has-error').addClass('error');
             }
         }
     };
@@ -214,8 +235,20 @@
         console.log(e);
         console.log('ajaxmodal:opened');
         console.log(parans);
-        process_form_if_exists(parans.modal, parans.modal_body);
+        //process_form_if_exists(parans.modal, parans.modal_body);
     });
+    $(document).bind("ajaxmodal:ajax-form-post-done", function (e, parans) {
+        parans.modal.iziModal('close');
+        window.location.reload(true);
+        //process_form_if_exists(parans.modal, parans.modal_body);
+    });
+    $(document).bind("ajaxmodal:ajax-form-post-error-notfound", function (e, parans) {
+        parans.modal.iziModal('close');
+        console.log('nao existente');
+        window.location.reload(true);
+        //process_form_if_exists(parans.modal, parans.modal_body);
+    });
+
 
 })();
 

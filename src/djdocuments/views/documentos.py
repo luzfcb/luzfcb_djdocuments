@@ -151,11 +151,11 @@ class DocumentoPainelGeralPorGrupoView(DocumentoPainelGeralView):
 
     def get_ultimos_documentos_nao_finalizados_queryset(self):
         return Documento.objects.prontos_para_finalizar().from_groups(grupos_ids=self.get_ids_grupos_do_usuario)[
-            :self.mostrar_ultimas]
+               :self.mostrar_ultimas]
 
     def get_ultimos_documentos_modificados_queryset(self):
         return Documento.objects.order_by('-modificado_em').from_groups(grupos_ids=self.get_ids_grupos_do_usuario)[
-            :self.mostrar_ultimas]
+               :self.mostrar_ultimas]
 
     def get_ultimas_assinaturas_pendentes_queryset(self):
         return Assinatura.objects.assinaturas_pendentes().from_groups(
@@ -208,7 +208,6 @@ class DocumentoListView(DjDocumentsBackendMixin, MenuMixin, django_tables2.Singl
 
 
 class AAAA(object):
-
     def get_adicional_dict(self):
         d = {
             'pk': self.get_instance_object().pk,
@@ -617,10 +616,12 @@ class VincularDocumentoBaseView(CreatePopupMixin, SingleDocumentObjectMixin, Sin
         return False
 
 
-class FinalizarDocumentoFormView(FormActionViewMixin, SingleDocumentObjectMixin, DjDocumentsBackendMixin,
+class FinalizarDocumentoFormView(FormActionViewMixin, AjaxFormPostMixin, SingleDocumentObjectMixin,
+                                 DjDocumentsBackendMixin,
                                  NextPageURLMixin, generic.FormView):
     # form_class = FinalizarDocumentoForm
     template_name = 'luzfcb_djdocuments/documento_finalizar.html'
+    template_name_ajax = 'luzfcb_djdocuments/documento_finalizar_ajax.html'
 
     def get_form_action(self):
         return reverse('documentos:finalizar_assinatura',
@@ -708,7 +709,8 @@ class AssinaturasPendentesGrupo(DjDocumentsBackendMixin, MenuMixin, SearchableLi
         return context
 
 
-class DocumentosProntosParaFinalizarGrupo(DjDocumentsBackendMixin, MenuMixin, SearchableListMixin, FormActionViewMixin, generic.ListView):
+class DocumentosProntosParaFinalizarGrupo(DjDocumentsBackendMixin, MenuMixin, SearchableListMixin, FormActionViewMixin,
+                                          generic.ListView):
     model = Documento
     template_name = 'luzfcb_djdocuments/documentos_prontos_para_finalizar.html'
     paginate_by = 15
@@ -836,7 +838,8 @@ class DocumentoAssinaturasListView(SingleDocumentObjectMixin, DjDocumentsBackend
         return create_form_class_finalizar(self.document_object)
 
 
-class AdicionarAssinantes(FormActionViewMixin, AjaxFormPostMixin, SingleDocumentObjectMixin, DjDocumentsBackendMixin, generic.FormView):
+class AdicionarAssinantes(FormActionViewMixin, AjaxFormPostMixin, SingleDocumentObjectMixin, DjDocumentsBackendMixin,
+                          generic.FormView):
     template_name = 'luzfcb_djdocuments/assinar_adicionar_assinantes.html'
     template_name_ajax = 'luzfcb_djdocuments/assinar_adicionar_assinantes_ajax.html'
 
@@ -846,14 +849,6 @@ class AdicionarAssinantes(FormActionViewMixin, AjaxFormPostMixin, SingleDocument
     @method_decorator(never_cache)
     def dispatch(self, request, *args, **kwargs):
         return super(AdicionarAssinantes, self).dispatch(request, *args, **kwargs)
-
-    def get_template_names(self):
-        templates = super(AdicionarAssinantes, self).get_template_names()
-        templates = [self.template_name_ajax]
-        if self.request.is_ajax():
-            print('passou aqui')
-            templates = [self.template_name_ajax]
-        return templates
 
     def get_form_class(self):
         return create_form_class_adicionar_assinantes(self.document_object)
@@ -897,12 +892,6 @@ class AssinarDocumentoView(DocumentoAssinadoRedirectMixin,
     user_pk_url_kwarg = 'user_id'
     user_object = None
     user_disable_if_url_kwarg_not_is_available = True
-
-    def get_template_names(self):
-        templates = super(AssinarDocumentoView, self).get_template_names()
-        if self.request.is_ajax():
-            templates = [self.template_name_ajax]
-        return templates
 
     def get_form_action(self):
         if self.user_object:
@@ -1011,11 +1000,15 @@ class DocumentoDetailView(NextPageURLMixin, DjDocumentsBackendMixin, DjDocumentP
         # context['assinaturas'] = self.object.assinaturas.select_related('assinado_por').all()
         assinaturas = self.object.assinaturas.filter(ativo=True)
 
-        context['assinaturas_pendentes_dos_meus_grupos'] = assinaturas.filter(esta_assinado=False, ativo=True, grupo_assinante__in=self.get_ids_grupos_do_usuario).order_by('grupo_assinante_nome')
-        context['assinaturas_realizadas_dos_meus_grupos'] = assinaturas.filter(esta_assinado=True, ativo=True, grupo_assinante__in=self.get_ids_grupos_do_usuario).order_by('grupo_assinante_nome')
-        context['assinaturas_outros'] = assinaturas.filter(~Q(grupo_assinante__in=self.get_ids_grupos_do_usuario), ativo=True)
+        context['assinaturas_pendentes_dos_meus_grupos'] = assinaturas.filter(esta_assinado=False, ativo=True,
+                                                                              grupo_assinante__in=self.get_ids_grupos_do_usuario).order_by(
+            'grupo_assinante_nome')
+        context['assinaturas_realizadas_dos_meus_grupos'] = assinaturas.filter(esta_assinado=True, ativo=True,
+                                                                               grupo_assinante__in=self.get_ids_grupos_do_usuario).order_by(
+            'grupo_assinante_nome')
+        context['assinaturas_outros'] = assinaturas.filter(~Q(grupo_assinante__in=self.get_ids_grupos_do_usuario),
+                                                           ativo=True)
         context['assinaturas'] = assinaturas
-
 
         context['no_nav'] = True if self.request.GET.get('no_nav') else False
         context['is_pdf'] = False
@@ -1209,6 +1202,7 @@ class DocumentoExcluirView(AjaxFormPostMixin, generic.DeleteView):
     model = Documento
     slug_field = 'pk_uuid'
     template_name = 'luzfcb_djdocuments/documento_confirm_delete.html'
+    template_name_ajax = 'luzfcb_djdocuments/documento_confirm_delete_ajax.html'
 
     @method_decorator(never_cache)
     def dispatch(self, request, *args, **kwargs):
