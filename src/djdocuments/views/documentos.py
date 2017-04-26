@@ -66,12 +66,18 @@ logger = logging.getLogger('djdocuments')
 USER_MODEL = get_user_model()
 
 
-class DocumentoModeloPainelGeralView(DjDocumentsBackendMixin, MenuMixin, generic.ListView):
+class DocumentoModeloPainelGeralView(DjDocumentsBackendMixin, SearchableListMixin, MenuMixin, FormActionViewMixin,
+                                     generic.ListView):
     model = Documento
     template_name = 'luzfcb_djdocuments/painel_geral_modelos.html'
     mostrar_ultimas = 10
-    paginate_by = 20
+    paginate_by = 10
     menu_atual = 'dashboard_modelos'
+    search_fields = [('pk', 'icontains'), ('modelo_descricao', 'icontains')]
+    ordering = ('-modificado_em')
+
+    def get_form_action(self):
+        return reverse('documentos:dashboard_modelos')
 
     @method_decorator(never_cache)
     def dispatch(self, request, *args, **kwargs):
@@ -79,13 +85,22 @@ class DocumentoModeloPainelGeralView(DjDocumentsBackendMixin, MenuMixin, generic
 
     def get_queryset(self):
         grupos_ids = self.djdocuments_backend.get_grupos_usuario(self.request.user).values_list('id', flat=True)
+        if grupos_ids:
+            grupos_ids = tuple(grupos_ids)
         queryset = self.model.objects.modelos(grupos_ids).select_related('tipo_documento')
         ordering = self.get_ordering()
         if ordering:
             if isinstance(ordering, six.string_types):
                 ordering = (ordering,)
             queryset = queryset.order_by(*ordering)
-        return queryset.exclude(eh_modelo_padrao=True)
+
+        self.queryset = queryset.exclude(eh_modelo_padrao=True)
+        return super(DocumentoModeloPainelGeralView, self).get_queryset()
+
+    def get_context_data(self, **kwargs):
+        context = super(DocumentoModeloPainelGeralView, self).get_context_data(**kwargs)
+        context['is_query'] = self.get_search_query()
+        return context
 
 
 class DocumentoPainelGeralView(DjDocumentsBackendMixin, MenuMixin, generic.TemplateView):
@@ -530,7 +545,7 @@ class DocumentoModeloCriar(DocumentoCriar):
                                                                      'pk': self.vinculate_value})
             return redirect(viculate_url, permanent=True)
         else:
-            editar_url = reverse('documentos:editar-modelo', kwargs={'slug': documento_novo.pk_uuid})
+            editar_url = documento_novo.get_edit_url
             return redirect(editar_url, permanent=True)
 
 
