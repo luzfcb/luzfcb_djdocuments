@@ -7,10 +7,12 @@
 {% endblock modal_header_content %}
 
 {% block modal_body_header %}
-    <p>
-        Número: <b>{{ document_object.identificador_versao }}</b>
-        Assunto: <b>"{{ document_object.assunto|remover_tags_html }}"</b>
-    </p>
+    <a href="{{ document_object.get_preview_url }}" target="_blank">
+        <p>
+            Número: <b>{{ document_object.identificador_versao }}</b>
+            Assunto: <b>"{{ document_object.assunto|remover_tags_html }}"</b>
+        </p>
+    </a>
 {% endblock modal_body_header %}
 
 {% block submit_text %}Assinar Documento{% endblock submit_text %}

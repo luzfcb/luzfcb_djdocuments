@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import logging
 import uuid
-from collections import Iterable
+from collections import Iterable, OrderedDict
 
 from django.conf import settings
 from django.contrib.auth.hashers import SHA1PasswordHasher, check_password
@@ -12,7 +12,7 @@ from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models import Max, Q
-from django.utils import timezone
+from django.utils import timezone, six
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.functional import cached_property
 from simple_history.models import HistoricalRecords
@@ -235,6 +235,7 @@ class Assinatura(models.Model):
         # post save
 
 
+@python_2_unicode_compatible
 class Documento(SoftDeletableModel):
     pk_uuid = models.UUIDField(editable=False, unique=True, null=True, db_index=True, default=uuid.uuid4)
 
@@ -312,6 +313,16 @@ class Documento(SoftDeletableModel):
     tracker = FieldTracker()
     objects = managers.DocumentoManager()
     admin_objects = managers.DocumentoAdminManager()
+
+    def __str__(self):
+        return '<%(cls)s "%(atribs)s">' % {
+            'cls': self.__class__.__name__,
+            'atribs': OrderedDict({
+                'pk': self.pk,
+                'pk_uuid': six.text_type(self.pk_uuid),
+                'eh_modelo': self.eh_modelo
+            })
+        }
 
     @property
     def estado_documental_str(self):
@@ -597,18 +608,21 @@ class Documento(SoftDeletableModel):
 
         assinatura_update_dict = {}
         # atualiza assunto das assinaturas vinculadas a este documento
-        if self.tracker.has_changed('assunto'):
+        if self.pk and self.tracker.has_changed('assunto'):
             assinatura_update_dict['documento_assunto'] = self.assunto
 
-        if self.tracker.has_changed('versao_numero'):
+        if self.pk and self.tracker.has_changed('versao_numero'):
             assinatura_update_dict['documento_identificador_versao'] = self.identificador_versao
 
-        update_fields = kwargs.pop('update_fields', [])
-        update_fields.extend(list(self.tracker.changed().keys()))
-        update_fields = list(set(update_fields))
+        update_fields = None
+        if self.pk:
+            update_fields = kwargs.pop('update_fields', [])
+            update_fields.extend(list(self.tracker.changed().keys()))
+            update_fields = list(set(update_fields))
 
         super(Documento, self).save(update_fields=update_fields, *args, **kwargs)
-        if assinatura_update_dict:
+
+        if self.pk and assinatura_update_dict:
             self.assinaturas.update(**assinatura_update_dict)
 
     def delete(self, using=None, soft=True, current_user=None, *args, **kwargs):

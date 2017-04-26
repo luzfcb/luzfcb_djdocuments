@@ -44,7 +44,7 @@ class DocumentoQuerySet(SoftDeletableQuerySet):
             )
         if grupos_ids:
             q &= Q(grupo_dono__in=grupos_ids)
-            qs = self.filter(q)
+        qs = self.filter(q)
         return qs
 
     def modelos(self, grupos_ids=None):

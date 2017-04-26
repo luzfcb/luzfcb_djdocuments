@@ -3,25 +3,14 @@
 {% load humanize %}
 {% load luzfcb_djdocuments_tags %}
 {% load spurl %}
-{% load django_tables2 %}
 
 
 {% block conteudo_app %}
 
     {% block cabecalho_pag %}
+
         <div class="page-title">
-            <h3 class="pull-left">
-                <i class="helper-font-24 icofont-copy color-yellow"></i>
-                Modelos de documentos
-                <small>
-                    <a href="#" rel="popover" data-trigger="hover" data-html="true" data-placement="top"
-                       data-content="<b>Modelo de Documentos:</b> Documentos de modelo que foram e podem ser criados para uma das defensorias que seu usuário ({{ user.username }}) está vinculado, e são utilizados para gerar outros documentos."
-                       data-original-title="Modelo de Documentos">
-                        <i class="elusive-question-sign color-blue"></i>
-                    </a>
-                </small>
-            </h3>
-            <h3 class="pull-right">
+            <div class="pull-right">
                 <small>
                     <a href="#" rel="popover" data-trigger="hover" data-html="true" data-placement="top"
                        data-content="<b>Novo Modelo:</b> Opção para criar modelos personalizados para uma das defensorias que seu usuário ({{ user.username }}) está vinculado"
@@ -40,7 +29,30 @@
 {#                        <i class="icon-plus-sign icon-white"></i> Novo Tipo#}
 {#                    </a>#}
                 </span>
+            </div>
+            <h3 class="pull-left">
+                <i class="helper-font-24 icofont-copy color-yellow"></i>
+                Modelos de documentos
+                <small>
+                    <a href="#" rel="popover" data-trigger="hover" data-html="true" data-placement="top"
+                       data-content="<b>Modelo de Documentos:</b> Documentos de modelo que foram e podem ser criados para uma das defensorias que seu usuário ({{ user.username }}) está vinculado, e são utilizados para gerar outros documentos."
+                       data-original-title="Modelo de Documentos">
+                        <i class="elusive-question-sign color-blue"></i>
+                    </a>
+                </small>
             </h3>
+            <form action="{{ search_url }}" method="get" id="search_field"
+                  >
+                <div class="controls pull-right">
+                    <div class="input-icon-append" style="margin-right:28px;margin-top:1px;">
+                        <span class="bold">Buscar: </span>
+                        <span class="icon"><i class="icofont-search"></i></span>
+                        <input name="q" class="grd-white" maxlength="30" type="text"
+                               placeholder="Número do Documento...">
+                    </div>
+                </div>
+            </form>
+
         </div>
     {% endblock %}
     {#    {% paginate object_list %}#}
@@ -97,13 +109,18 @@
                             <a href="{{ dado.get_edit_url }}" class="btn-link">
                                 <i class="elusive-file-edit"></i> Editar
                             </a>
+                        </div>
                     </td>
                 </tr>
             {% empty %}
                 <tr>
-                    <td colspan="4">
+                    <td colspan="6">
                         <div class="alert alert-info text-center">
-                            <b>Nenhum modelo cadastrado</b>
+                            {% if is_query %}
+                                <b>Nenhum item encontrado com os termos: {{ is_query|safe }}</b>
+                            {% else %}
+                                <b>Nenhum Modelo cadastrado</b>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>
@@ -112,6 +129,21 @@
 
 
             </tbody>
+            {% if is_query %}
+                <tfoot>
+                <tr>
+                    <td colspan="6">
+                        <div class="text-center">
+                            <form action="{{ search_url }}" method="get" id="search_field">
+                                <input name="q" class="grd-white" type="hidden">
+                                <input type="submit" class="btn btn-warning" value="Limpar pesquisa">
+
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tfoot>
+            {% endif %}
             <tfoot>
             <tr>
                 <th class="span1">N° Documento</th>
