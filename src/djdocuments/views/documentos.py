@@ -1035,6 +1035,15 @@ class DocumentoDetailView(NextPageURLMixin, DjDocumentsBackendMixin, DjDocumentP
                                                                 'document_slug': self.object.pk_uuid
                                                             }
                                                             )
+        context['pode_adicionar_assinantes'] = False
+        context['pode_remover_assinantes'] = False
+        context['pode_editar'] = False
+        if not self.object.esta_assinado_e_finalizado and self.object.grupo_dono_id in self.get_ids_grupos_do_usuario:
+            context['pode_adicionar_assinantes'] = True
+            context['pode_remover_assinantes'] = True
+        if not self.object.possui_assinatura_assinada and self.object.grupo_dono_id in self.get_ids_grupos_do_usuario:
+            context['pode_editar'] = True
+
         if not self.object.esta_assinado:
             if self.object.grupo_dono and self.object.grupo_dono.pk in self.get_ids_grupos_do_usuario:
                 if not self.object.eh_modelo:
