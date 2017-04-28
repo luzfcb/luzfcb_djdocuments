@@ -24,6 +24,21 @@
     $("body").append($the_modal);
     var $the_modal_body = $('.iziModal-content', $the_modal);
 
+    window.getSucessUrl = function (el) {
+        var self = $(el);
+        var value_to_return = false;
+        var sucess_url_data = self.data('sucess-url');
+
+        if (!(typeof sucess_url_data === "undefined")) {
+            var current_location = new URL(location);
+            var sucess_url = new URL(sucess_url_data, current_location);
+            if (sucess_url.host === current_location.host) {
+                value_to_return = sucess_url;
+            }
+        }
+        return value_to_return;
+    };
+
     function dealWithIt(event) {
         // lê o cache
         $the_modal_body.html($temporary_background_image);
@@ -48,7 +63,7 @@
                     var ca = getCache(id_);
                     documentFragment.innerHTML = ca.fragment;
                     var d_to_insert = $(documentFragment);
-                    process_form_if_exists($the_modal, d_to_insert);
+                    process_form_if_exists(this, $the_modal, d_to_insert);
                     // $(documentFragment).hide();
                     $the_modal_body.html(documentFragment);
                     console.log('parando loading');
@@ -59,7 +74,7 @@
             var documentFragment = document.createElement('div');
             documentFragment.innerHTML = cache.fragment;
             var d_to_insert = $(documentFragment);
-            process_form_if_exists($the_modal, d_to_insert);
+            process_form_if_exists(this, $the_modal, d_to_insert);
             $the_modal_body.html(documentFragment);
             console.log('parando loading');
             $the_modal.iziModal('stopLoading');
@@ -73,7 +88,11 @@
         console.log(modal_body);
         var first_el = modal_body.find(':input:not(button):enabled:visible:first');
         if (first_el.has('select2-hidden-accessible')) {
-            first_el.select2('focus');
+            try {
+                first_el.select2('focus');
+            } catch (err) {
+
+            }
         } else {
             first_el.focus();
         }
@@ -117,7 +136,8 @@
         return $('.tingle-modal > .form-btn-salvar-modal');
     }
 
-    function process_form_if_exists(the_modal, modal_body) {
+    function process_form_if_exists(original_element, the_modal, modal_body) {
+        var sucess_url = getSucessUrl(original_element);
         var the_forms = $(modal_body).find('form');
         console.log('the_modal');
         console.log(the_modal);
@@ -167,7 +187,8 @@
                         $(document).trigger(event, {
                             post_url: url,
                             post_data: conteudo,
-                            modal: the_modal
+                            modal: the_modal,
+                            sucess_url: sucess_url
                         });
                     } else {
                         var response = jqXHR.responseJSON;
@@ -184,7 +205,8 @@
                     var event = jQuery.Event("ajaxmodal:ajax-form-post-done");
                     $(document).trigger(event, {
                         returned_data: returned_data,
-                        modal: the_modal
+                        modal: the_modal,
+                        sucess_url: sucess_url
                     });
 
                 });
@@ -239,7 +261,12 @@
     });
     $(document).bind("ajaxmodal:ajax-form-post-done", function (e, parans) {
         parans.modal.iziModal('close');
-        window.location.reload(true);
+        if (! parans.sucess_url === false) {
+            console.log("deveria redirecionar para: " + parans.sucess_url);
+            window.location = parans.sucess_url;
+        } else {
+            window.location.reload(true);
+        }
         //process_form_if_exists(parans.modal, parans.modal_body);
     });
     $(document).bind("ajaxmodal:ajax-form-post-error-notfound", function (e, parans) {
