@@ -981,7 +981,8 @@ class AssinarDocumentoView(DocumentoAssinadoRedirectMixin,
         next_url = self.get_next_page()
         if next_url != self.request.path:
             return next_url
-        return reverse('documentos:assinaturas', kwargs={'slug': self.document_object.pk_uuid})
+        # return reverse('documentos:assinaturas', kwargs={'slug': self.document_object.pk_uuid})
+        return self.document_object.get_preview_url
 
 
 class DocumentoDetailView(NextPageURLMixin, DjDocumentsBackendMixin, DjDocumentPopupMixin, generic.DetailView):
