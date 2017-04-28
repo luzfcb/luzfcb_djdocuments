@@ -13,7 +13,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/themes/blue/pace-theme-loading-bar.css"
           rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/pace.min.js"
-            data-pace-options='{ "ajax": true , "restartOnRequestAfter": false, "document": true, "startOnPageLoad": false}'></script>
+            data-pace-options='{ "ajax": true , "restartOnRequestAfter": false, "document": false, "startOnPageLoad": false, "elements": { "selectors": [".maindiv"] }}'></script>
 
 
     <link href="https://cdnjs.cloudflare.com/ajax/libs/humane-js/3.2.2/themes/jackedup.min.css"
@@ -41,9 +41,10 @@
         <link href="{% static "luzfcb_djdocuments/css/luzfcb_page_style.css" %}" rel="stylesheet">
 
     {% endif %}
-    <link href="{% static "luzfcb_djdocuments/css/luzfcb_djdocuments.css" %}"
-          rel="stylesheet">
-
+    <link href="{% static "luzfcb_djdocuments/css/luzfcb_djdocuments.css" %}" rel="stylesheet">
+{% if not object.eh_modelo %}
+    <link rel="stylesheet" href="{% static 'luzfcb_djdocuments/js/vendor/izimodal/1.5.0/css/iziModal.css' %}">
+{% endif %}
 
     <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
@@ -89,6 +90,9 @@
 {#                                        <a href="{{ documento_assinar_url_com_parametros }}"#}
                                         <a href="{{ url_para_assinar }}"
                                            class="btn btn-default"
+                                           data-ajaxmodal="true"
+                                           data-ajaxmodal-prefetch="true"
+                                           data-sucess-url="{{ object.get_preview_url }}"
                                            {% if object.esta_assinado %}disabled="disabled" {% endif %}><em
                                                 class="glyphicon glyphicon-pencil"></em>Assinar</a>
                                     {% endif %}
@@ -177,6 +181,12 @@
     });
 
 </script>
+{% if not object.eh_modelo %}
+<script src="{% static 'luzfcb_djdocuments/js/vendor/izimodal/1.5.0/js/iziModal.js' %}"></script>
+<script src="{% static 'luzfcb_djdocuments/js/prefetch_modal.js' %}"></script>
+<script src="{% static 'luzfcb_djdocuments/js/eventListeners.js' %}"></script>
+{% endif %}
+
 <script src="{% static "luzfcb_djdocuments/js/luzfcb_editor.js" %}"></script>
 
 {# luzfcb_dj_simplelock includes. Requires jQuery loaded first #}
@@ -185,23 +195,10 @@
 {% if popup_response_data %}
     {% include 'luzfcb_djdocuments/popup_response.html' with popup_response_data=popup_response_data %}
 {% endif %}
-<script>
-    (function (i, s, o, g, r, a, m) {
-        i['GoogleAnalyticsObject'] = r;
-        i[r] = i[r] || function () {
-                    (i[r].q = i[r].q || []).push(arguments)
-                }, i[r].l = 1 * new Date();
-        a = s.createElement(o),
-                m = s.getElementsByTagName(o)[0];
-        a.async = 1;
-        a.src = g;
-        m.parentNode.insertBefore(a, m)
-    })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
 
-    ga('create', '{{ GOOGLE_ANALYTICS_ID }}', 'auto');
-    ga('send', 'pageview');
-
-</script>
+{% block google_analytics %}
+    {% include "luzfcb_djdocuments/google_analytics_javascript.html" with GOOGLE_ANALYTICS_ID=GOOGLE_ANALYTICS_ID %}
+{% endblock google_analytics %}
 </body>
 
 </html>
