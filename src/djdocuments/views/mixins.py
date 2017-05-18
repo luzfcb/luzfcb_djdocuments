@@ -575,6 +575,10 @@ from django.views import generic
 class AjaxFormPostMixin(object):
     document_json_fields = ('pk', 'versao_numero')
     template_name_ajax = None
+    ajax_success_message = None
+
+    def get_ajax_success_message(self, object_instance=None):
+        return self.ajax_success_message
 
     def get_template_names(self):
         templates = super(AjaxFormPostMixin, self).get_template_names()
@@ -592,8 +596,12 @@ class AjaxFormPostMixin(object):
     def form_valid(self, form):
         response = super(AjaxFormPostMixin, self).form_valid(form)
         if self.request.is_ajax():
-            data = {'object_instance': self.get_object_members(), 'errors': form.errors,
+            object_instance = self.get_object_members()
+            data = {'object_instance': object_instance, 'errors': form.errors,
                     'success_url': self.get_success_url()}
+            message = self.get_ajax_success_message(object_instance)
+            if message:
+                messages.add_message(self.request, messages.SUCCESS, message)
             return JsonResponse(data=data)
         return response
 

@@ -367,7 +367,7 @@ class FinalizarDocumentoForm(BootstrapFormInputMixin, DjDocumentsBackendMixin, f
     )
     password = forms.CharField(label="Senha",
                                help_text="Digite a senha do usuário atual",
-                               widget=forms.PasswordInput())
+                               widget=forms.PasswordInput(attrs={"autocomplete": "off"}))
 
     def clean_password(self):
         password = self.cleaned_data.get('password')
@@ -411,7 +411,7 @@ def create_form_class_assinar(assinatura, usuario_atualmente_logado=None):
 
         password = forms.CharField(label="Senha",
                                    help_text="Digite a senha do usuário selecionado",
-                                   widget=forms.PasswordInput())
+                                   widget=forms.PasswordInput(attrs={"autocomplete": "off"}))
 
         error_messages = {
             'invalid_login': _("Please enter a correct %(username)s and password. "
@@ -518,7 +518,7 @@ def create_form_class_finalizar(document_object):
 
         password = forms.CharField(label="Senha",
                                    help_text="Digite a senha do usuário selecionado",
-                                   widget=forms.PasswordInput())
+                                   widget=forms.PasswordInput(attrs={"autocomplete": "off"}))
 
         error_messages = {
             'invalid_login': _("Please enter a correct %(username)s and password. "

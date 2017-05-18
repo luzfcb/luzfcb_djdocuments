@@ -696,6 +696,10 @@ class FinalizarDocumentoFormView(FormActionViewMixin, AjaxFormPostMixin, SingleD
             return next_page
         return reverse('documentos:assinaturas', kwargs={'slug': self.document_object.pk_uuid})
 
+    def get_ajax_success_message(self, object_instance=None):
+        msg = "Documento {} finalizado com sucesso".format(self.document_object.identificador_versao)
+        return msg
+
 
 class AssinaturasPendentesGrupo(DjDocumentsBackendMixin, MenuMixin, SearchableListMixin, generic.ListView):
     model = Assinatura
@@ -983,6 +987,10 @@ class AssinarDocumentoView(DocumentoAssinadoRedirectMixin,
             return next_url
         # return reverse('documentos:assinaturas', kwargs={'slug': self.document_object.pk_uuid})
         return self.document_object.get_preview_url
+
+    def get_ajax_success_message(self, object_instance=None):
+        msg = "Documento {} assinado com sucesso".format(self.document_object.identificador_versao)
+        return msg
 
 
 class DocumentoDetailView(NextPageURLMixin, DjDocumentsBackendMixin, DjDocumentPopupMixin, generic.DetailView):

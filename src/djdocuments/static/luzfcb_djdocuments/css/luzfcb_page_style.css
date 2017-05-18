@@ -4,7 +4,6 @@ body{
 .body {
     /*background: rgb(204, 204, 204) !important;*/
     background-color: rgb(228, 228, 228) !important;
-    font-family: "Times New Roman";
 }
 
 .maindiv {
@@ -21,6 +20,7 @@ body{
     /*height: 297mm !important;*/
     display: block !important;
     box-shadow: 0 0 0.5cm rgba(0, 0, 0, 0.5) !important;
+    font-family: "Times New Roman";
     /*padding-top: 5mm;*/
     /*padding-left: 5mm;*/
     /*padding-right: 5mm;*/
