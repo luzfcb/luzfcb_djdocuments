@@ -8,13 +8,15 @@
           rel="stylesheet">
     <link href="{% static 'luzfcb_djdocuments/css/luzfcb_document_format_styles_print.css' %}"
           rel="stylesheet">
+
+
     <style>
+
         @media screen {
             .spinner {
                 display: inline-block;
                 opacity: 0;
                 width: 0;
-
                 -webkit-transition: opacity 0.25s, width 0.25s;
                 -moz-transition: opacity 0.25s, width 0.25s;
                 -o-transition: opacity 0.25s, width 0.25s;
@@ -45,11 +47,12 @@
             .has-spinner.btn-large.active .spinner {
                 width: 19px;
             }
-
         }
+
         .msg-browser-print {
             display: none;
         }
+
         @media print {
         {% if not is_pdf %}
             .documento-cabecalho, .documento-rodape, .documento-assinaturas, .documento-conteudo {
@@ -59,184 +62,580 @@
                 display: block;
             }
         {% endif %}
+            .left-menu {
+                display: none;
+            }
+
+            body {
+                padding-top: 0px;
+            }
         }
 
+        {#        body {#}
+        {#            padding-top: 90px;#}
+        {#        }#}
+
+        #documento_dados {
+            color: #ffffff;
+        }
     </style>
 {% endblock %}
 
-{% block title %}{{ object.assunto|remover_tags_html|slugify|slice:":180" }}_
-    {{ object.identificador_versao }}{% endblock title %}
+{% block title %}
+    {{ object.assunto|remover_tags_html|slugify|slice:":180" }}_
+    {{ object.identificador_versao }}
+{% endblock title %}
 
-{% block project_name %}SOLAR{% endblock project_name %}
 
-{% block navbar_botoes %}
-    <li class="active">
-        <p class="navbar-btn">
-            {% if url_imprimir_pdf %}
-                <a href="{{ url_imprimir_pdf }}"
-                   class="btn btn-default djpopup nolock hidden-print print-this has-spinner"><span class="spinner"><i
-                        class="icon-spin icon-refresh"></i></span>Imprimir</a>
-            {% endif %}
-            {% if url_para_assinar %}
-                <a class="btn btn-default djpopup nolock" href="{{ url_para_assinar }}">Assinar</a>
-            {% endif %}
-            {% if url_para_finalizar %}
-                <a class="btn btn-default djpopup nolock"
-                   href="{{ url_para_finalizar }}">Finalizar</a>
-            {% endif %}
-            {% if menu_assinaturas %}
-                <a class="btn btn-default djpopup nolock" href="{% url 'documentos:assinaturas' slug=object.pk_uuid %}">Assinaturas</a>
-            {% endif %}
-            {% if url_criar_modelo_apartir_deste %}
-                <a class="btn btn-default djpopup nolock djfullscreen"
-                   href="{{ url_criar_modelo_apartir_deste }}">Criar Modelo</a>
-            {% endif %}
-        </p>
-    </li>
+{% block navbar_pricipal %}
+
+    {% if user.is_authenticated and not no_nav %}
+        <nav class="navbar navbar-inverse navbar-fixed-top">
+            <div class="container">
+                <div class="row" id="documento_dados">
+                    <div class="col-md-12">
+                        <div class="col-md-8">
+                            <div class="navbar-header">
+                                <a class="navbar-brand" href="#">SOLAR</a>
+                            </div>
+                            <div class="col-md-4">
+                            <span><strong>Documento{% if object.eh_modelo %} Modelo{% endif %}
+                                : {{ object.identificador_versao }}</strong></span>
+                            </div>
+                            <div class="col-md-6">
+                                <span><strong>Defensoria:</strong> {{ object.grupo_dono }}</span>
+                            </div>
+                            <div class="col-md-4">
+                                <span><strong>Tipo:</strong> {{ object.tipo_documento }}</span>
+                            </div>
+                            <div class="col-md-6">
+                                {% if object.eh_modelo %}
+                                    <span><strong>Descrição:</strong> {{ object.modelo_descricao|safe }}</span>
+                                {% else %}
+                                    <span><strong>Assunto:</strong> {{ object.assunto|safe }}</span>
+                                {% endif %}
+
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="btn-group" role="group">
+                                {% if object.esta_assinado_e_finalizado %}
+                                    <div class="col-md-4">
+                                        <div class="navbar-btn">
+                                            <a href="{{ url_imprimir_pdf }}"
+                                               class="btn btn-default djpopup nolock hidden-print print-this has-spinner"
+                                               type="button">Imprimir</a>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="navbar-btn">
+                                            <a href="{{ object.get_pdf_url }}" target="_blank" class="btn btn-default" type="button">Download</a>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                                <div class="col-md-4">
+                                    <div class="navbar-btn">
+                                        <a href="{{ url_criar_modelo_apartir_deste }}" class="btn btn-default djpopup nolock djfullscreen" type="button">Criar Modelo</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </nav>
+    {% endif %}
 
 {% endblock %}
-
-
 
 {% block conteudo_app %}
     {% url 'documentos:validar' as validar_url_view %}
     {% spurl base=validar_url_view query="h={{ object.get_assinatura_hash_upper_limpo }}" as validar_url %}
-    <div class="row center-block conteudo" id="conteudo">
-        <div class="a4-pagina">
-            {% if not is_pdf %}
-                <h3 class="msg-browser-print">
-                    Por favor, utilize o botão "Imprimir" acima
-                </h3>
-            {% endif %}
-            <div class="documento">
-                {% block cabecalho %}
-                    <div class="documento-cabecalho">
-                        <div align="center">
-                            {{ object.cabecalho|safe }}
-                        </div>
-                        {#                        {{ object.assunto|safe }}#}
-                        <hr class="borda-dupla">
-                    </div>
-                {% endblock cabecalho %}
+    <div class="row">
+        {% if user.is_authenticated and not no_nav %}
+            {% block left-menu %}
+                <div class="col-md-4 ">
+                    <div class="left-menu">
+                        <div class="panel panel-default">
+                            {% if not object.eh_modelo %}
+                                <div class="panel-heading text-center">
+                                    <h5><b>Estado Documental</b></h5>
+                                    <h5 class="text-center">
 
 
-                {% block corpo %}
-                    {% if object %}
-                        <div class="documento-conteudo">
-                            {{ object.conteudo|safe }}
-                        </div>
-                        {% if object.esta_assinado %}
-                            <div class="documento-assinaturas">
-                                <hr class="assinantes-borda">
-                                {% for assinatura in assinaturas %}
-                                    {% if assinatura.esta_assinado %}
-                                        <table>
-                                            <tbody>
-                                            <tr>
-                                                <td>
-                                                    <div style="height:47px;width:75px;">
-                                                        <img src="{% static 'luzfcb_djdocuments/img/assinatura_digital4_inkscape2_LOSSLESS.png' %}"
-                                                             style="max-height:47px;max-width:75px;display:block;margin:0 auto;">
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <p style="margin:0;text-align: left; font-size:11pt;font-family: Times New Roman;">
-                                                        {% if object.esta_assinado %}
-                                                            Documento assinado eletronicamente por
-                                                            <b>{{ assinatura.assinado_nome }}</b>,
-                                                            em {{ assinatura.assinado_em|date:"d/m/Y H:m:s" }}, conforme
-                                                            art.
-                                                            1º,
-                                                            III,
-                                                            "b", da Lei 11.419/2006.</p>
-                                                        {% endif %}
-                                                </td>
-                                            </tr>
-                                            </tbody>
-                                        </table>
-                                        <hr class="assinantes-borda">
+                                        {% if object.possui_assinatura_pendente == 0 %}
+                                            <span class="label label-danger">Ainda não possui assinantes cadastrados</span>
+                                        {% elif object.possui_assinatura_pendente == 1 %}
+                                            <span class="label label-warning">Possui assinaturas pendentes</span>
+                                        {% elif object.pronto_para_finalizar %}
+                                            <span class="label label-success">Pronto para Finalizar</span>
+                                        {% else %}
+                                            <span class="label label-success">Assinado e Finalizado</span>
+                                        {% endif %}
+
+
+                                    </h5>
+                                </div>
+                            {% endif %}
+                            <div class="panel-body">
+                                <div id="doc_dados">
+                                    <h4><b>Dados</b></h4>
+                                    <p><b>Documento:</b> {{ object.identificador_versao }}</p>
+                                    <p>
+                                        <small>
+                                            <b>Criado: </b> {{ object.criado_em }} - {{ object.criado_por_nome }}
+                                        </small>
+                                    </p>
+                                    <p>
+                                        <small>
+                                            <b>Última Modificação: </b> {{ object.modificado_em }}
+                                            - {{ object.modificado_por_nome }}
+                                        </small>
+                                    </p>
+                                </div>
+                                <div id="acoes">
+                                    <hr>
+                                    {% if pode_editar %}
+                                        <a href="{{ object.get_edit_url }}" class="btn btn-sm btn-primary"><span
+                                                class="glyphicon glyphicon-pencil"
+                                                aria-hidden="true"></span> Editar
+                                            documento</a>
+
                                     {% endif %}
-                                {% endfor %}
+                                    {% if object.pronto_para_finalizar %}
+                                        <a href="{{ object.get_finalizar_url }}"
+                                           class="btn btn-sm btn-primary"
+                                           data-ajaxmodal="true"
+                                           data-ajaxmodal-prefetch="true"
+                                        ><span
+                                                class="glyphicon glyphicon-pencil"
+
+                                                aria-hidden="true"></span> Finalizar</a>
+                                    {% endif %}
+                                </div>
+                                {% if not object.eh_modelo %}
+                                    {% if object.esta_assinado_e_finalizado %}
+                                        <div id="assinado_e_finalizado">
+                                            <hr>
+                                            <!--If documento finalizado e com código de validacao -->
+                                            <h4><b>Finalização</b></h4>
+                                            <h4 class="text-center">
+                                <span class="label label-success">
+                                    <span class="glyphicon glyphicon-ok-circle" aria-hidden="true"></span>
+                                    Documento finalizado
+                                </span>
+                                            </h4>
+                                            <p>
+                                                <small>
+                                                    <b>Codigo de validação:</b>
+                                                </small>
+                                            </p>
+                                            <p>
+                                                <small>
+                                            <span class="glyphicon glyphicon-qrcode text-primary"
+                                                  aria-hidden="true"></span>
+                                                    <a href="{{ validar_url|absolute_uri:request }}" class=""
+                                                       target="_blank"
+                                                       rel="noopener noreferrer">
+                                                        {{ object.get_assinatura_hash_upper_limpo|dividir_a_cada:10 }}
+                                                    </a>
+                                                </small>
+                                            </p>
+                                        </div>
+                                        <!--Fim If documento finalizado e com código de validacao -->
+                                    {% endif %}
+
+                                    <hr>
+                                    <div id="sua_assinatura">
+
+                                        <h4>
+                                            <b>Suas assinaturas</b>
+                                            {% if pode_adicionar_assinantes %}
+                                                <small class="pull-right">
+                                                    <a
+                                                            href="{{ object.get_adicionar_assinante_url }}"
+                                                            data-ajaxmodal="true"
+                                                            data-ajaxmodal-prefetch="true"
+                                                            class="btn-link adicionar_assinantes"
+                                                            {#                                                data-toggle="modal"#}
+                                                            {#                                                data-target=".adicionar_assinantes_modal"#}
+                                                    >
+                                                        Adicionar assinantes</a>
+                                                </small>
+                                            {% endif %}
+                                        </h4>
+                                        {% regroup assinaturas_pendentes_dos_meus_grupos by grupo_assinante_nome as minhas_assinaturas_pendentes %}
+                                        {% for minha in minhas_assinaturas_pendentes %}
+                                            {% if forloop.first %}
+                                                <strong>Pendentes:</strong>
+
+                                            {% endif %}
+
+                                            <ul class="list-unstyled">
+                                                <li>
+                                                    <strong>
+                                                        {{ minha.grouper }}:
+                                                    </strong>
+                                                    <ul class="list-unstyled">
+                                                        {% for assinatura in minha.list %}
+                                                            <li>
+                                                                {% if assinatura.assinado_nome %}
+                                                                    {{ assinatura.assinado_nome }}
+                                                                {% else %}
+                                                                    <span style="opacity: 0.0;">----</span>
+                                                                {% endif %}
+                                                                <div class="pull-right">
+                                                                    <div class="btn-group btn-group-xs" role="group">
+
+                                                                        <a href="{{ assinatura.get_url_para_assinar }}"
+                                                                           data-ajaxmodal="true"
+                                                                           data-ajaxmodal-prefetch="true"
+                                                                           class="btn btn-primary" type="button">
+                                                                            <em class="glyphicon glyphicon-edit"></em>
+                                                                            Assinar
+                                                                        </a>
+                                                                        {% if pode_remover_assinantes and not assinatura.esta_assinado %}
+                                                                            <a href="{{ assinatura.get_url_para_remover }}"
+                                                                               data-ajaxmodal="true"
+                                                                               data-ajaxmodal-prefetch="true"
+                                                                               class="btn btn-danger" type="button">
+                                                                                <span tabindex="0"
+                                                                                      role="button"
+                                                                                      data-container="#popover-modelo"
+                                                                                      data-toggle="popover"
+                                                                                      data-trigger="focus"
+                                                                                      data-content="Clique para remover esta pendência de assinatura">
+                                                                                    <em class="glyphicon glyphicon-trash"></em>
+                                                                                </span>
+                                                                            </a>
+                                                                        {% endif %}
+                                                                    </div>
+
+                                                                </div>
+
+                                                            </li>
+
+                                                        {% endfor %}
+                                                    </ul>
+                                                </li>
+                                            </ul>
+                                            <hr>
+                                        {% endfor %}
+                                        <!--Fim  If uma de minhas defensorias tem assinatura pendente -->
+                                        {% regroup assinaturas_realizadas_dos_meus_grupos by grupo_assinante_nome as minhas_assinaturas %}
+                                        {% for minha in minhas_assinaturas %}
+                                            {% if forloop.first %}
+                                                <strong>Realizadas:</strong>
+
+                                            {% endif %}
+                                            <ul class="list-unstyled">
+                                                <li>
+                                                    <strong>
+                                                        {{ minha.grouper }}:
+                                                    </strong>
+                                                    <ul class="list-unstyled">
+                                                        {% for assinatura in minha.list %}
+                                                            <li>
+                                                                {% if assinatura.esta_assinado %}
+                                                                    <span tabindex="0" class="" role="button"
+                                                                          data-container="#popover-modelo"
+                                                                          data-toggle="popover" data-trigger="focus"
+                                                                          data-content="Assinatura efetivada em {{ assinatura.assinado_em }}"
+                                                                    >
+                                                                                {{ assinatura.assinado_nome }}
+                                                                            </span>
+                                                                {% else %}
+                                                                    {#                                                                <span class="label label-danger">Pendente</span>#}
+                                                                    {{ assinatura.assinado_nome }}
+                                                                {% endif %}
+
+                                                                {% if pode_remover_assinantes and not assinatura.esta_assinado %}
+                                                                    <small class="pull-right">
+                                                                    <span tabindex="0" class="" role="button"
+                                                                          data-container="#popover-modelo"
+                                                                          data-toggle="popover" data-trigger="focus"
+                                                                          data-content="Clique para remover esta pendência de assinatura"
+                                                                    >
+                                                                        <a href="{{ assinatura.get_url_para_remover }}"
+                                                                           data-ajaxmodal="true"
+                                                                           data-ajaxmodal-prefetch="true"
+                                                                        >X</a>
+                                                                    </span>
+                                                                    </small>
+                                                                {% endif %}
+                                                            </li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </li>
+                                            </ul>
+
+                                            <!-- fim  If minha assinatura está ok -->
+                                        {% endfor %}
+                                        {% regroup assinaturas_outros by grupo_assinante_nome as assinaturas_dos_outros %}
+                                        {% for minha in assinaturas_dos_outros %}
+                                            {% if forloop.first %}
+                                                <hr>
+                                                <div>
+                                                <h4><b>Demais assinaturas</b>
+                                                    <small class="pull-right">
+                                                        {#                                                <a href="#">Ver detalhes</a>#}
+                                                    </small>
+                                                </h4>
+                                                <div>
+                                            {% endif %}
+
+                                        <ul class="list-unstyled">
+                                            <li>
+                                                <strong>
+                                                    {{ minha.grouper }}:
+                                                </strong>
+                                                <ul class="list-unstyled">
+                                                    {% for assinatura in minha.list %}
+                                                        <li>
+                                                            {% if assinatura.esta_assinado %}
+                                                                <span class="label label-success">Realizada</span>
+                                                                <span tabindex="0" class="" role="button"
+                                                                      data-container="#popover-modelo"
+                                                                      data-toggle="popover" data-trigger="focus"
+                                                                      data-content="Assinatura efetivada em {{ assinatura.assinado_em }}"
+                                                                >
+                                                                                {{ assinatura.assinado_nome }}
+                                                                            </span>
+                                                            {% else %}
+                                                                <span class="label label-danger">Pendente</span>
+                                                                {{ assinatura.assinado_nome }}
+                                                            {% endif %}
+
+                                                            {% if pode_remover_assinantes and not assinatura.esta_assinado %}
+                                                                <small class="pull-right">
+                                                                    <span tabindex="0" class="" role="button"
+                                                                          data-container="#popover-modelo"
+                                                                          data-toggle="popover" data-trigger="focus"
+                                                                          data-content="Clique para remover esta pendência de assinatura"
+                                                                    >
+                                                                        <a href="{{ assinatura.get_url_para_remover }}"
+                                                                           data-ajaxmodal="true"
+                                                                           data-ajaxmodal-prefetch="true"
+                                                                        >X</a>
+                                                                    </span>
+                                                                </small>
+                                                            {% endif %}
+                                                        </li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </li>
+                                        </ul>
+
+
+                                        {% if forloop.first %}
+                                            </div>
+
+                                            </div>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </div>
+
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endblock left-menu %}
+        {% endif %}
+        {# Inicio do conteudo do documento #}
+        <div class="col-md-8" style="margin-bottom: 40px">
+
+            <!-- Conteudo previsualizacao -->
+
+            <!-- Quando documento for modelo -->
+            {% if object.eh_modelo and not is_pdf %}
+                <div class="text-center">
+                    <h4>
+                        <span class="label label-warning"><span class="glyphicon glyphicon-duplicate"
+                                                                aria-hidden="true"></span> Documento Modelo</span>
+                    </h4>
+                </div>
+            {% endif %}
+            <!-- FimQuando documento for modelo -->
+
+
+            <div class="row center-block conteudo" id="conteudo">
+                <div class="a4-pagina">
+                    {% if not is_pdf %}
+                        <h3 class="msg-browser-print">
+                            Por favor, utilize o botão "Imprimir" acima
+                        </h3>
+                    {% endif %}
+                    <div class="documento">
+                        {% block cabecalho %}
+                            <div class="documento-cabecalho">
+                                <div align="center">
+                                    {{ object.cabecalho|safe }}
+                                </div>
+                                {#                        {{ object.assunto|safe }}#}
+                                <hr class="borda-dupla">
+                            </div>
+                        {% endblock cabecalho %}
+
+
+                        {% block corpo %}
+                            {% if object %}
+                                <div class="documento-conteudo">
+                                    {{ object.conteudo|safe }}
+                                </div>
+                                {% if object.esta_assinado %}
+                                    <div class="documento-assinaturas">
+                                        <hr class="assinantes-borda">
+                                        {% for assinatura in assinaturas %}
+                                            {% if assinatura.esta_assinado %}
+                                                <table>
+                                                    <tbody>
+                                                    <tr>
+                                                        <td>
+                                                            <div style="height:47px;width:75px;">
+                                                                <img src="{% static 'luzfcb_djdocuments/img/assinatura_digital4_inkscape2_LOSSLESS.png' %}"
+                                                                     style="max-height:47px;max-width:75px;display:block;margin:0 auto;">
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <p style="margin:0;text-align: left; font-size:11pt;font-family: Times New Roman;">
+                                                                {% if object.esta_assinado %}
+                                                                    Documento assinado eletronicamente por
+                                                                    <b>{{ assinatura.assinado_nome }}</b>,
+                                                                    em {{ assinatura.assinado_em|date:"d/m/Y H:m:s" }},
+                                                                    conforme
+                                                                    art.
+                                                                    1º,
+                                                                    III,
+                                                                    "b", da Lei 11.419/2006.</p>
+                                                                {% endif %}
+                                                        </td>
+                                                    </tr>
+                                                    </tbody>
+                                                </table>
+                                                <hr class="assinantes-borda">
+                                            {% endif %}
+                                        {% endfor %}
+
+                                    </div>
+                                {% endif %}
+                            {% else %}
+                                Nada para mostrar
+                            {% endif %}
+
+                        {% endblock corpo %}
+
+                        {% block rodape %}
+                            <div class="documento-rodape">
+                                <hr class="borda-dupla">
+                                {% if object.esta_assinado %}
+
+                                    <table>
+                                        <tbody>
+                                        <tr>
+                                            {#                                    <td style="width: 200px; height: 105px">#}
+                                            <td>
+                                                {% if object.esta_assinado %}
+                                                    <a id="url_validacao" class="hidden-print-href"
+                                                       href="{{ validar_url|absolute_uri:request }}">
+                                                        <div id="codigo_qr" class="codigo-qr">
+                                                            {{ qr_code_validation_html_img_tag|safe }}
+                                                        </div>
+                                                        <p class="hidden-print">Verifique a Validade</p>
+                                                    </a>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <p style="margin:4;text-align: left; font-size:11pt;font-family: Times New Roman;">
+                                                    {% if object.esta_assinado %}
+
+
+                                                        A autenticidade do documento pode ser conferida no site
+                                                        {{ validar_url_view|absolute_uri:request|urlize }} informando o
+                                                        código
+                                                        verificador:
+                                                        <div style="text-align: center;">
+                                                            <span><b>{{ object.get_assinatura_hash_upper_limpo|dividir_a_cada:10 }}</b></span>
+                                                        </div>
+                                                    {% endif %}
+                                                </p>
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                {% else %}
+
+                                {% endif %}
+
+                                <hr class="borda-dupla">
+                                <table border="0" cellpadding="2" cellspacing="0" style="width:100%">
+                                    <tbody>
+                                    <tr>
+                                        <td>
+                                            {{ object.identificador_versao }}
+                                        </td>
+                                        <td style="text-align:right">
+                                            {% block numero_pagina %}
+                                            {% endblock numero_pagina %}
+                                    </tr>
+                                    </tbody>
+                                </table>
 
                             </div>
-                        {% endif %}
-                    {% else %}
-                        Nada para mostrar
-                    {% endif %}
-
-                {% endblock corpo %}
-
-
-                {% block rodape %}
-                    <div class="documento-rodape">
-                        <hr class="borda-dupla">
-                        {% if object.esta_assinado %}
-
-                            <table>
-                                <tbody>
-                                <tr>
-                                    {#                                    <td style="width: 200px; height: 105px">#}
-                                    <td>
-                                        {% if object.esta_assinado %}
-                                            <a id="url_validacao" class="hidden-print-href"
-                                               href="{{ validar_url|absolute_uri:request }}">
-                                                <div id="codigo_qr" class="codigo-qr">
-                                                    {{ qr_code_validation_html_img_tag|safe }}
-                                                </div>
-                                                <p class="hidden-print">Verifique a Validade</p>
-                                            </a>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <p style="margin:4;text-align: left; font-size:11pt;font-family: Times New Roman;">
-                                            {% if object.esta_assinado %}
-
-
-                                                A autenticidade do documento pode ser conferida no site
-                                                {{ validar_url_view|absolute_uri:request|urlize }} informando o código
-                                                verificador:
-                                                <div style="text-align: center;">
-                                                    <span><b>{{ object.get_assinatura_hash_upper_limpo|dividir_a_cada:10 }}</b></span>
-                                                </div>
-                                            {% endif %}
-                                        </p>
-                                    </td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        {% else %}
-
-                        {% endif %}
-
-                        <hr class="borda-dupla">
-                        <table border="0" cellpadding="2" cellspacing="0" style="width:100%">
-                            <tbody>
-                            <tr>
-                                <td>
-                                    {{ object.identificador_versao }}
-                                </td>
-                                <td style="text-align:right">
-                                    {% block numero_pagina %}
-                                    {% endblock numero_pagina %}
-                            </tr>
-                            </tbody>
-                        </table>
-
+                        {% endblock rodape %}
                     </div>
-                {% endblock rodape %}
+                </div>
             </div>
+
+            <!-- Quando documento for modelo -->
+            {% if object.eh_modelo and not is_pdf %}
+                <div class="text-center">
+                    <h4>
+                        <span class="label label-warning"><span class="glyphicon glyphicon-duplicate"
+                                                                aria-hidden="true"></span> Documento Modelo</span>
+                    </h4>
+                </div>
+            {% endif %}
+            <!-- FimQuando documento for modelo -->
+
+
+            <!-- Fim Conteudo previsualizacao -->
+
+
         </div>
+        {# Final do conteudo do documento #}
     </div>
+    <div id="popover-modelo">
+
+    </div>
+
 {% endblock conteudo_app %}
 
 {% block js_app %}
 
     <iframe id="iframeprint" style="display: none;"></iframe>
+    <script src="{% static 'luzfcb_djdocuments/js/luzfcb_djdocuments.js' %}"></script>
+    <script type="application/javascript">
+        $(function () {
+            var popovers = $('[data-toggle="popover"]');
+            popovers.popover();
+            popovers.on("mouseenter", function () {
+                var self = $(this);
+                self.popover('show');
+            });
+            popovers.on("mouseout", function () {
+                var self = $(this);
+                self.popover('hide');
+            });
+        });
+    </script>
+    <iframe id="iframeprint" style="display: none;"></iframe>
     <script>
         jQuery(document).ready(function ($) {
             function print(element, url) {
                 {#                var iframe_novo = '<iframe id="iframeprint" src="' + url + '" frameborder="0"></iframe>';#}
-
                 $(element).removeClass('active').addClass('active');
                 $(element).attr('disabled');
                 var iframeId = 'iframeprint';
@@ -248,21 +647,17 @@
                 $iframe.on('load', function () {
                     $(element).removeClass('active');
                 });
-
                 $iframe.load(function () {
                     callPrint(iframeId);
                     console.log('load');
-
                 });
             }
-
             //initiates print once content has been loaded into iframe
             function callPrint(iframeId) {
                 var PDF = document.getElementById(iframeId);
                 PDF.focus();
                 PDF.contentWindow.print();
             }
-
             $(".print-this").click(function (evt) {
                 evt.preventDefault();
                 var url = $(this).prop('href');
@@ -271,5 +666,5 @@
             });
         });
     </script>
-    <script src="{% static 'luzfcb_djdocuments/js/luzfcb_djdocuments.js' %}"></script>
+
 {% endblock js_app %}

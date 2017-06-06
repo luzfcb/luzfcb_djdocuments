@@ -380,13 +380,6 @@
                                     <a href="{{ url_para_visualizar_com_query }}" target="_blank" class="btn-link">
                                         <i class="icofont-search"></i> Visualizar
                                     </a>
-                                    {% if not dado.esta_assinado %}
-                                        |
-                                        <a href="{{ dado.get_edit_url }}" class="btn-link">
-                                            <i class="elusive-file-edit"></i> Editar
-                                        </a>
-
-                                    {% endif %}
                                 </td>
                             </tr>
                         {% endfor %}

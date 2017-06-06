@@ -12,7 +12,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ImproperlyConfigured
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.urlresolvers import reverse, reverse_lazy
-from django.db import transaction
+from django.db import transaction, models
 from django.db.models import Q
 from django.db.utils import IntegrityError
 from django.http import Http404
@@ -285,6 +285,22 @@ class DocumentoEditor(AAAA, CreatePopupMixin,
     # form_class = DocumentoFormCreate
     form_class = DocumentoEditarWithReadOnlyFieldsForm
     success_url = reverse_lazy('documentos:list')
+
+    # def get_object_members(self):
+    #     data = {}
+    #     print("get_object_members aaaaa")
+    #     # if hasattr(self, 'object') and not self.object:
+    #     #     self.object = self.get_object()
+    #     for field in self.get_form_fields():
+    #         if hasattr(self.object, field):
+    #             field_instance = getattr(self.object, field)
+    #             if isinstance(field_instance, models.Model):
+    #                 field_data = field_instance.pk
+    #             else:
+    #                 field_data = field_instance
+    #             data[field] = field_data
+    #     print(data)
+    #     return data
 
     def label_from_instance(self, related_instance):
         """Return the label to show in the "main form" for the
@@ -696,6 +712,10 @@ class FinalizarDocumentoFormView(FormActionViewMixin, AjaxFormPostMixin, SingleD
             return next_page
         return reverse('documentos:assinaturas', kwargs={'slug': self.document_object.pk_uuid})
 
+    def get_ajax_success_message(self, object_instance=None):
+        msg = "Documento {} finalizado com sucesso".format(self.document_object.identificador_versao)
+        return msg
+
 
 class AssinaturasPendentesGrupo(DjDocumentsBackendMixin, MenuMixin, SearchableListMixin, generic.ListView):
     model = Assinatura
@@ -984,6 +1004,10 @@ class AssinarDocumentoView(DocumentoAssinadoRedirectMixin,
         # return reverse('documentos:assinaturas', kwargs={'slug': self.document_object.pk_uuid})
         return self.document_object.get_preview_url
 
+    def get_ajax_success_message(self, object_instance=None):
+        msg = "Documento {} assinado com sucesso".format(self.document_object.identificador_versao)
+        return msg
+
 
 class DocumentoDetailView(NextPageURLMixin, DjDocumentsBackendMixin, DjDocumentPopupMixin, generic.DetailView):
     template_name = 'luzfcb_djdocuments/documento_detail.html'
@@ -1006,8 +1030,11 @@ class DocumentoDetailView(NextPageURLMixin, DjDocumentsBackendMixin, DjDocumentP
 
     def get_context_data(self, **kwargs):
         context = super(DocumentoDetailView, self).get_context_data(**kwargs)
-        form_assinar = create_form_class_assinar(self.object.assinaturas.filter(ativo=True).first(), self.request.user)
-        context['form_assinar'] = form_assinar
+        if not self.object.eh_modelo:
+            form_assinar = create_form_class_assinar(self.object.assinaturas.filter(ativo=True).first(), self.request.user)
+            context['form_assinar'] = form_assinar
+        else:
+            context['form_assinar'] = None
         grupos_usuario_ids = ''
         context['url_imprimir_pdf'] = None
         if self.object.esta_assinado:
@@ -1080,8 +1107,9 @@ class DocumentoModeloDetailValidarView(QRCodeValidacaoMixin, DocumentoDetailView
 
 
 # class AssinaturaDeleteView(SingleDocumentObjectMixin, generic.DeleteView):
-class AssinaturaDeleteView(generic.DeleteView):
+class AssinaturaDeleteView(AjaxFormPostMixin, generic.DeleteView):
     template_name = 'luzfcb_djdocuments/assinatura_confirm_delete.html'
+    template_name_ajax = 'luzfcb_djdocuments/assinatura_confirm_delete_ajax.html'
     model = Assinatura
     document_slug_url_kwarg = 'document_slug'
 
@@ -1094,8 +1122,12 @@ class AssinaturaDeleteView(generic.DeleteView):
         status, mensagem = self.object.pode_remover_assinatura(self.request.user)
         logger.info('{klass}:{mensagem}'.format(klass=self.__class__.__name__, mensagem=mensagem))
         if not status:
-            return render(request=request, template_name='luzfcb_djdocuments/erros/erro_403.html',
-                          context={'mensagem': mensagem})
+            if self.request.is_ajax():
+                return render(request=request, template_name='luzfcb_djdocuments/erros/erro_403_ajax.html',
+                              context={'mensagem': mensagem})
+            else:
+                return render(request=request, template_name='luzfcb_djdocuments/erros/erro_403.html',
+                              context={'mensagem': mensagem})
         return response
 
     def get_context_data(self, **kwargs):

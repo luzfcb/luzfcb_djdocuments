@@ -22,7 +22,9 @@
 </div>
 <div class="modal-footer">
     <button class="btn cancelar" data-dismiss="modal" aria-hidden="true">Cancelar</button>
+{% block submit_btn %}
     <button type="submit" class="btn btn-success">{% block submit_text %}{% endblock submit_text %}</button>
+{% endblock submit_btn %}
 </div>
 <link rel="stylesheet" href="{% static 'luzfcb_djdocuments/css/fix_input_select_size_on_modal.css' %}">
 {% block form_media %}
