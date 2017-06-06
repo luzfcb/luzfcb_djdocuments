@@ -1,0 +1,22 @@
+{% extends 'luzfcb_djdocuments/base_ajax_modal_response.html' %}
+{% load luzfcb_djdocuments_tags %}
+
+{% block modal_header_content %}
+
+{% endblock modal_header_content %}
+
+{% block modal_body_header %}
+    <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+
+            <div class="centering text-center error-container">
+                <div class="text-center">
+                    <h2 class="text-warning">{{ mensagem }}</h2>
+                </div>
+
+            </div>
+        </div>
+    </div>
+{% endblock modal_body_header %}
+{% block submit_btn %} {% endblock submit_btn %}
+

@@ -266,7 +266,7 @@
                 var errors = jqXHR.responseJSON;
 
                 log_to_console(errors);
-                var msg = "Erro ao salvar documento" + errors.document_number + "\n";
+                var msg = "Erro ao salvar documento" + errors.object_instance.document_number + "\n";
                 humane.log(msg, {
                     timeout: 2500,
                     clickToClose: true,
@@ -293,13 +293,13 @@
                     }
                 }
                 ativarDesativarSalvar();
-                var mensagem = "Documento N° " + data.document_number + " salvo com sucesso!";
+                var mensagem = "Documento N° " + data.object_instance.document_number + " salvo com sucesso!";
                 humane.log(mensagem, {
                     timeout: 2500,
                     clickToClose: true,
                     addnCls: 'humane-sucess'
                 });
-                $status_bar.empty().append('Documento: ' + data.identificador_versao);
+                $status_bar.empty().append('Documento: ' + data.object_instance.identificador_versao);
             });
             posting.always(function (data, textStatus, errorThrown) {
                 log_to_console("always");

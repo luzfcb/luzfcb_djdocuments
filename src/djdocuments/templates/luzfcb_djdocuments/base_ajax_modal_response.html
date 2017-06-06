@@ -1,0 +1,35 @@
+{% load staticfiles %}
+{% load luzfcb_djdocuments_tags %}
+
+<div class="modal-header">
+    <button type="button" class="close cancelar" data-dismiss="modal" aria-hidden="true">×</button>
+    {% block modal_header_content %}
+    {% endblock modal_header_content %}
+
+</div>
+<div class="modal-body">
+    {% block modal_body_header %}
+    {% endblock modal_body_header %}
+    {% block modal_body_form %}
+        <form class="form-horizontal" method="post" action="{{ form_action }}">
+            <fieldset>
+                {% block modal_body_form_fields %}
+                    {% include "luzfcb_djdocuments/django_form_content_boostrap2.html" with form=form %}
+                {% endblock modal_body_form_fields %}
+            </fieldset>
+        </form>
+    {% endblock modal_body_form %}
+</div>
+<div class="modal-footer">
+    <button class="btn cancelar" data-dismiss="modal" aria-hidden="true">Cancelar</button>
+{% block submit_btn %}
+    <button type="submit" class="btn btn-success">{% block submit_text %}{% endblock submit_text %}</button>
+{% endblock submit_btn %}
+</div>
+<link rel="stylesheet" href="{% static 'luzfcb_djdocuments/css/fix_input_select_size_on_modal.css' %}">
+{% block form_media %}
+    {% if form.media %}
+        {{ form.media|add_defer }}
+    {% endif %}
+{% endblock form_media %}
+

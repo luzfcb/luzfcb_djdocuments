@@ -49,6 +49,10 @@ def get_grupo_assinante_model_class():
     return apps.get_model(get_grupo_assinante_model_str())
 
 
+def get_grupo_assinante_app_name_str():
+    return get_grupo_assinante_model_class()._meta.app_label
+
+
 def add_querystrings_to_url(url, querystrings_dict):
     uri = url
 

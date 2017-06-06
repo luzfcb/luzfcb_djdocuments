@@ -1,0 +1,61 @@
+{% load luzfcb_djdocuments_tags %}
+
+{% if assinaturas_pendentes_forms %}
+    {% for uuid, form in assinaturas_pendentes_forms %}
+        <div class="assinatura_object_div_{{ form.instance.pk }} div-modal" id="{{ uuid }}">
+            <div class="modal fade bs-example-modal-lg assinatura_object_modal_{{ form.instance.pk }}" tabindex="-1"
+                 role="dialog"
+                 aria-labelledby="myLargeModalLabel">
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+
+                        <div class="panel panel-info">
+                            <div class="panel-heading">Assinar Documento</div>
+                            <div class="panel-body">
+                                <form class="form-horizontal form-assinar" method="post"
+                                      id="form_{{ form.instance|class_name|lower }}_{{ form.instance.pk }}"
+                                      action="{{ form.instance.get_url_para_assinar }}">
+                                    <fieldset>
+                                        <legend>Tem certeza que deseja assinar o documento
+                                            "{{ form.instance.documento_assunto|remover_tags_html }}"
+                                            número: {{ form.instance.documento_identificador_versao }} ?
+                                        </legend>
+
+                                        {% include "luzfcb_djdocuments/django_form_content.html" with form=form %}
+
+                                        <div class="form-group">
+                                            <div class="col-sm-offset-2 col-sm-10">
+                                                <button type="submit" class="btn btn-success">Assinar Documento</button>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                </form>
+
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% endfor %}
+{% endif %}
+{#finalizar_forms assinaturas_forms adicionar_assinantes_forms#}
+{% if finalizar_forms %}
+
+    {% for uuid, form in finalizar_forms %}
+    {% endfor %}
+
+{% endif %}
+
+{% if adicionar_assinantes_forms %}
+
+    {% for uuid, form in adicionar_assinantes_forms %}
+    {% endfor %}
+
+{% endif %}
+
+
+{{ forms_media }}

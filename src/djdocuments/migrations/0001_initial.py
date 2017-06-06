@@ -5,13 +5,14 @@ from django.db import migrations, models
 import django.db.models.deletion
 from django.conf import settings
 import uuid
-from djdocuments.utils import get_grupo_assinante_model_str
+from djdocuments.utils import get_grupo_assinante_model_str, get_grupo_assinante_app_name_str
 
 
 class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('auth', '0006_require_contenttypes_0002'),
+        (get_grupo_assinante_app_name_str(), '0001_initial'),
     ]
 
     operations = [

@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import, print_function, unicode_literals
+
 from django.db import models
 from django.db.models import Case, IntegerField, Q, Sum, Value, When
 from django.db.models.query import ValuesListQuerySet
@@ -5,7 +8,6 @@ from model_utils.managers import SoftDeletableManager, SoftDeletableQuerySet
 
 
 class DocumentoQuerySet(SoftDeletableQuerySet):
-
     def ativos(self):
         return self.filter(esta_ativo=True)
 
@@ -42,7 +44,7 @@ class DocumentoQuerySet(SoftDeletableQuerySet):
             )
         if grupos_ids:
             q &= Q(grupo_dono__in=grupos_ids)
-            qs = self.filter(q)
+        qs = self.filter(q)
         return qs
 
     def modelos(self, grupos_ids=None):
@@ -76,9 +78,11 @@ class DocumentoManager(SoftDeletableManager):
     _queryset_class = DocumentoQuerySet
 
     def get_queryset(self):
-        return self._queryset_class(model=self.model,
-                                    using=self._db,
-                                    hints=self._hints).ativos().filter(eh_modelo=False)
+        kwargs = {'model': self.model, 'using': self._db}
+        if hasattr(self, '_hints'):
+            kwargs['hints'] = self._hints
+
+        return self._queryset_class(**kwargs).ativos().filter(eh_modelo=False)
 
     def prontos_para_finalizar(self):
         return self.get_queryset().prontos_para_finalizar()
@@ -101,7 +105,11 @@ class DocumentoAdminManager(SoftDeletableManager):
     _queryset_class = DocumentoQuerySet
 
     def get_queryset(self):
-        return self._queryset_class(model=self.model, using=self._db, hints=self._hints)
+        kwargs = {'model': self.model, 'using': self._db}
+        if hasattr(self, '_hints'):
+            kwargs['hints'] = self._hints
+
+        return self._queryset_class(**kwargs)
 
     def prontos_para_finalizar(self):
         return self.get_queryset().prontos_para_finalizar()
@@ -121,7 +129,6 @@ class DocumentoAdminManager(SoftDeletableManager):
 
 
 class AssinaturaQuerySet(SoftDeletableQuerySet):
-
     def assinaturas_realizadas(self):
         q = Q()
         q &= Q(documento__eh_modelo=False)

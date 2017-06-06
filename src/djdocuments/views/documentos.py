@@ -12,7 +12,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ImproperlyConfigured
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.urlresolvers import reverse, reverse_lazy
-from django.db import transaction
+from django.db import transaction, models
 from django.db.models import Q
 from django.db.utils import IntegrityError
 from django.http import Http404
@@ -66,12 +66,18 @@ logger = logging.getLogger('djdocuments')
 USER_MODEL = get_user_model()
 
 
-class DocumentoModeloPainelGeralView(DjDocumentsBackendMixin, MenuMixin, generic.ListView):
+class DocumentoModeloPainelGeralView(DjDocumentsBackendMixin, SearchableListMixin, MenuMixin, FormActionViewMixin,
+                                     generic.ListView):
     model = Documento
     template_name = 'luzfcb_djdocuments/painel_geral_modelos.html'
     mostrar_ultimas = 10
-    paginate_by = 20
+    paginate_by = 10
     menu_atual = 'dashboard_modelos'
+    search_fields = [('pk', 'icontains'), ('modelo_descricao', 'icontains')]
+    ordering = ('-modificado_em')
+
+    def get_form_action(self):
+        return reverse('documentos:dashboard_modelos')
 
     @method_decorator(never_cache)
     def dispatch(self, request, *args, **kwargs):
@@ -79,13 +85,22 @@ class DocumentoModeloPainelGeralView(DjDocumentsBackendMixin, MenuMixin, generic
 
     def get_queryset(self):
         grupos_ids = self.djdocuments_backend.get_grupos_usuario(self.request.user).values_list('id', flat=True)
+        if grupos_ids:
+            grupos_ids = tuple(grupos_ids)
         queryset = self.model.objects.modelos(grupos_ids).select_related('tipo_documento')
         ordering = self.get_ordering()
         if ordering:
             if isinstance(ordering, six.string_types):
                 ordering = (ordering,)
             queryset = queryset.order_by(*ordering)
-        return queryset.exclude(eh_modelo_padrao=True)
+
+        self.queryset = queryset.exclude(eh_modelo_padrao=True)
+        return super(DocumentoModeloPainelGeralView, self).get_queryset()
+
+    def get_context_data(self, **kwargs):
+        context = super(DocumentoModeloPainelGeralView, self).get_context_data(**kwargs)
+        context['is_query'] = self.get_search_query()
+        return context
 
 
 class DocumentoPainelGeralView(DjDocumentsBackendMixin, MenuMixin, generic.TemplateView):
@@ -151,11 +166,11 @@ class DocumentoPainelGeralPorGrupoView(DocumentoPainelGeralView):
 
     def get_ultimos_documentos_nao_finalizados_queryset(self):
         return Documento.objects.prontos_para_finalizar().from_groups(grupos_ids=self.get_ids_grupos_do_usuario)[
-            :self.mostrar_ultimas]
+               :self.mostrar_ultimas]
 
     def get_ultimos_documentos_modificados_queryset(self):
         return Documento.objects.order_by('-modificado_em').from_groups(grupos_ids=self.get_ids_grupos_do_usuario)[
-            :self.mostrar_ultimas]
+               :self.mostrar_ultimas]
 
     def get_ultimas_assinaturas_pendentes_queryset(self):
         return Assinatura.objects.assinaturas_pendentes().from_groups(
@@ -208,7 +223,6 @@ class DocumentoListView(DjDocumentsBackendMixin, MenuMixin, django_tables2.Singl
 
 
 class AAAA(object):
-
     def get_adicional_dict(self):
         d = {
             'pk': self.get_instance_object().pk,
@@ -271,6 +285,22 @@ class DocumentoEditor(AAAA, CreatePopupMixin,
     # form_class = DocumentoFormCreate
     form_class = DocumentoEditarWithReadOnlyFieldsForm
     success_url = reverse_lazy('documentos:list')
+
+    # def get_object_members(self):
+    #     data = {}
+    #     print("get_object_members aaaaa")
+    #     # if hasattr(self, 'object') and not self.object:
+    #     #     self.object = self.get_object()
+    #     for field in self.get_form_fields():
+    #         if hasattr(self.object, field):
+    #             field_instance = getattr(self.object, field)
+    #             if isinstance(field_instance, models.Model):
+    #                 field_data = field_instance.pk
+    #             else:
+    #                 field_data = field_instance
+    #             data[field] = field_data
+    #     print(data)
+    #     return data
 
     def label_from_instance(self, related_instance):
         """Return the label to show in the "main form" for the
@@ -531,7 +561,7 @@ class DocumentoModeloCriar(DocumentoCriar):
                                                                      'pk': self.vinculate_value})
             return redirect(viculate_url, permanent=True)
         else:
-            editar_url = reverse('documentos:editar-modelo', kwargs={'slug': documento_novo.pk_uuid})
+            editar_url = documento_novo.get_edit_url
             return redirect(editar_url, permanent=True)
 
 
@@ -617,10 +647,12 @@ class VincularDocumentoBaseView(CreatePopupMixin, SingleDocumentObjectMixin, Sin
         return False
 
 
-class FinalizarDocumentoFormView(FormActionViewMixin, SingleDocumentObjectMixin, DjDocumentsBackendMixin,
+class FinalizarDocumentoFormView(FormActionViewMixin, AjaxFormPostMixin, SingleDocumentObjectMixin,
+                                 DjDocumentsBackendMixin,
                                  NextPageURLMixin, generic.FormView):
     # form_class = FinalizarDocumentoForm
     template_name = 'luzfcb_djdocuments/documento_finalizar.html'
+    template_name_ajax = 'luzfcb_djdocuments/documento_finalizar_ajax.html'
 
     def get_form_action(self):
         return reverse('documentos:finalizar_assinatura',
@@ -680,6 +712,10 @@ class FinalizarDocumentoFormView(FormActionViewMixin, SingleDocumentObjectMixin,
             return next_page
         return reverse('documentos:assinaturas', kwargs={'slug': self.document_object.pk_uuid})
 
+    def get_ajax_success_message(self, object_instance=None):
+        msg = "Documento {} finalizado com sucesso".format(self.document_object.identificador_versao)
+        return msg
+
 
 class AssinaturasPendentesGrupo(DjDocumentsBackendMixin, MenuMixin, SearchableListMixin, generic.ListView):
     model = Assinatura
@@ -708,7 +744,8 @@ class AssinaturasPendentesGrupo(DjDocumentsBackendMixin, MenuMixin, SearchableLi
         return context
 
 
-class DocumentosProntosParaFinalizarGrupo(DjDocumentsBackendMixin, MenuMixin, SearchableListMixin, FormActionViewMixin, generic.ListView):
+class DocumentosProntosParaFinalizarGrupo(DjDocumentsBackendMixin, MenuMixin, SearchableListMixin, FormActionViewMixin,
+                                          generic.ListView):
     model = Documento
     template_name = 'luzfcb_djdocuments/documentos_prontos_para_finalizar.html'
     paginate_by = 15
@@ -836,8 +873,13 @@ class DocumentoAssinaturasListView(SingleDocumentObjectMixin, DjDocumentsBackend
         return create_form_class_finalizar(self.document_object)
 
 
-class AdicionarAssinantes(SingleDocumentObjectMixin, DjDocumentsBackendMixin, generic.FormView):
+class AdicionarAssinantes(FormActionViewMixin, AjaxFormPostMixin, SingleDocumentObjectMixin, DjDocumentsBackendMixin,
+                          generic.FormView):
     template_name = 'luzfcb_djdocuments/assinar_adicionar_assinantes.html'
+    template_name_ajax = 'luzfcb_djdocuments/assinar_adicionar_assinantes_ajax.html'
+
+    def get_form_action(self):
+        return reverse('documentos:adicionar_assinantes', kwargs={'slug': self.document_object.pk_uuid})
 
     @method_decorator(never_cache)
     def dispatch(self, request, *args, **kwargs):
@@ -872,10 +914,13 @@ class AssinarDocumentoView(DocumentoAssinadoRedirectMixin,
                            SingleUserObjectMixin,
                            NextPageURLMixin,
                            FormActionViewMixin,
+                           AjaxFormPostMixin,
                            generic.UpdateView):
     template_name = 'luzfcb_djdocuments/documento_assinar.html'
+    template_name_ajax = 'luzfcb_djdocuments/documento_assinar_ajax.html'
     # form_class = AssinarDocumentoForm
     model = Assinatura
+    document_json_fields = ('pk',)
     slug_field = 'pk_uuid'
     group_pk_url_kwarg = 'group_id'
     # group_object = None
@@ -940,6 +985,7 @@ class AssinarDocumentoView(DocumentoAssinadoRedirectMixin,
     def get_context_data(self, **kwargs):
         context = super(AssinarDocumentoView, self).get_context_data(**kwargs)
         context['group_object'] = self.group_object
+        context['is_ajax'] = self.request.is_ajax
         return context
 
     def form_valid(self, form):
@@ -955,7 +1001,12 @@ class AssinarDocumentoView(DocumentoAssinadoRedirectMixin,
         next_url = self.get_next_page()
         if next_url != self.request.path:
             return next_url
-        return reverse('documentos:assinaturas', kwargs={'slug': self.document_object.pk_uuid})
+        # return reverse('documentos:assinaturas', kwargs={'slug': self.document_object.pk_uuid})
+        return self.document_object.get_preview_url
+
+    def get_ajax_success_message(self, object_instance=None):
+        msg = "Documento {} assinado com sucesso".format(self.document_object.identificador_versao)
+        return msg
 
 
 class DocumentoDetailView(NextPageURLMixin, DjDocumentsBackendMixin, DjDocumentPopupMixin, generic.DetailView):
@@ -968,6 +1019,10 @@ class DocumentoDetailView(NextPageURLMixin, DjDocumentsBackendMixin, DjDocumentP
     def dispatch(self, request, *args, **kwargs):
         return super(DocumentoDetailView, self).dispatch(request, *args, **kwargs)
 
+    @cached_property
+    def get_ids_grupos_do_usuario(self):
+        return tuple(self.djdocuments_backend.get_grupos_usuario(self.request.user).values_list('id', flat=True))
+
     def get_queryset(self):
         qs = super(DocumentoDetailView, self).get_queryset()
 
@@ -975,13 +1030,29 @@ class DocumentoDetailView(NextPageURLMixin, DjDocumentsBackendMixin, DjDocumentP
 
     def get_context_data(self, **kwargs):
         context = super(DocumentoDetailView, self).get_context_data(**kwargs)
+        if not self.object.eh_modelo:
+            form_assinar = create_form_class_assinar(self.object.assinaturas.filter(ativo=True).first(), self.request.user)
+            context['form_assinar'] = form_assinar
+        else:
+            context['form_assinar'] = None
+        grupos_usuario_ids = ''
         context['url_imprimir_pdf'] = None
         if self.object.esta_assinado:
             context['url_imprimir_pdf'] = reverse('documentos:validar_detail_pdf',
                                                   kwargs={'slug': self.object.pk_uuid})
         # context['assinaturas'] = self.object.assinaturas.select_related('assinado_por').all()
-        assinaturas = self.object.assinaturas.all()
+        assinaturas = self.object.assinaturas.filter(ativo=True)
+
+        context['assinaturas_pendentes_dos_meus_grupos'] = assinaturas.filter(esta_assinado=False, ativo=True,
+                                                                              grupo_assinante__in=self.get_ids_grupos_do_usuario).order_by(
+            'grupo_assinante_nome')
+        context['assinaturas_realizadas_dos_meus_grupos'] = assinaturas.filter(esta_assinado=True, ativo=True,
+                                                                               grupo_assinante__in=self.get_ids_grupos_do_usuario).order_by(
+            'grupo_assinante_nome')
+        context['assinaturas_outros'] = assinaturas.filter(~Q(grupo_assinante__in=self.get_ids_grupos_do_usuario),
+                                                           ativo=True)
         context['assinaturas'] = assinaturas
+
         context['no_nav'] = True if self.request.GET.get('no_nav') else False
         context['is_pdf'] = False
         context['menu_assinaturas'] = False
@@ -992,10 +1063,17 @@ class DocumentoDetailView(NextPageURLMixin, DjDocumentsBackendMixin, DjDocumentP
                                                                 'document_slug': self.object.pk_uuid
                                                             }
                                                             )
+        context['pode_adicionar_assinantes'] = False
+        context['pode_remover_assinantes'] = False
+        context['pode_editar'] = False
+        if not self.object.esta_assinado_e_finalizado and self.object.grupo_dono_id in self.get_ids_grupos_do_usuario:
+            context['pode_adicionar_assinantes'] = True
+            context['pode_remover_assinantes'] = True
+        if not self.object.possui_assinatura_assinada and self.object.grupo_dono_id in self.get_ids_grupos_do_usuario:
+            context['pode_editar'] = True
+
         if not self.object.esta_assinado:
-            pks_grupos = [x[0] for x in
-                          self.djdocuments_backend.get_grupos_usuario(self.request.user).values_list('pk')]
-            if self.object.grupo_dono and self.object.grupo_dono.pk in pks_grupos:
+            if self.object.grupo_dono and self.object.grupo_dono.pk in self.get_ids_grupos_do_usuario:
                 if not self.object.eh_modelo:
                     context['menu_assinaturas'] = True
                     assinatura = assinaturas.filter(grupo_assinante_id=self.object.grupo_dono.pk).first()
@@ -1029,8 +1107,9 @@ class DocumentoModeloDetailValidarView(QRCodeValidacaoMixin, DocumentoDetailView
 
 
 # class AssinaturaDeleteView(SingleDocumentObjectMixin, generic.DeleteView):
-class AssinaturaDeleteView(generic.DeleteView):
+class AssinaturaDeleteView(AjaxFormPostMixin, generic.DeleteView):
     template_name = 'luzfcb_djdocuments/assinatura_confirm_delete.html'
+    template_name_ajax = 'luzfcb_djdocuments/assinatura_confirm_delete_ajax.html'
     model = Assinatura
     document_slug_url_kwarg = 'document_slug'
 
@@ -1043,8 +1122,12 @@ class AssinaturaDeleteView(generic.DeleteView):
         status, mensagem = self.object.pode_remover_assinatura(self.request.user)
         logger.info('{klass}:{mensagem}'.format(klass=self.__class__.__name__, mensagem=mensagem))
         if not status:
-            return render(request=request, template_name='luzfcb_djdocuments/erros/erro_403.html',
-                          context={'mensagem': mensagem})
+            if self.request.is_ajax():
+                return render(request=request, template_name='luzfcb_djdocuments/erros/erro_403_ajax.html',
+                              context={'mensagem': mensagem})
+            else:
+                return render(request=request, template_name='luzfcb_djdocuments/erros/erro_403.html',
+                              context={'mensagem': mensagem})
         return response
 
     def get_context_data(self, **kwargs):
@@ -1176,6 +1259,7 @@ class DocumentoExcluirView(AjaxFormPostMixin, generic.DeleteView):
     model = Documento
     slug_field = 'pk_uuid'
     template_name = 'luzfcb_djdocuments/documento_confirm_delete.html'
+    template_name_ajax = 'luzfcb_djdocuments/documento_confirm_delete_ajax.html'
 
     @method_decorator(never_cache)
     def dispatch(self, request, *args, **kwargs):

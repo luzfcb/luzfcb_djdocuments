@@ -48,6 +48,7 @@
                     <td>
                         <i class="elusive-file-edit color-green"></i>
                         <a href="{{ dado.get_preview_url }}" class="btn-link" rel="popover" data-trigger="hover"
+                           target="_blank"
                            data-placement="top" data-content="{{ dado.documento_assunto }}"
                            data-original-title="Doc. {{ dado.documento_identificador_versao }}">
                             {{ dado.documento_identificador_versao }}
@@ -66,7 +67,7 @@
                         </small>
                     </td>
                     <td>
-                        <a href="{{ dado.get_preview_url }}" class="btn-link">
+                        <a href="{{ dado.get_preview_url }}" target="_blank" class="btn-link">
                             <i class="icofont-search"></i> Visualizar
                         </a>
                     </td>

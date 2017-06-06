@@ -98,10 +98,12 @@ def insert_char_each(string, char='-', step=1):
     """
     out_string = ''
     previous_idx = 0
+    if string:
+        for current_idx in range(step, len(string), step):
+            out_string += string[previous_idx:current_idx] + char
+            previous_idx = current_idx
 
-    for current_idx in range(step, len(string), step):
-        out_string += string[previous_idx:current_idx] + char
-        previous_idx = current_idx
-
-    out_string += string[previous_idx:]
+        out_string += string[previous_idx:]
+    else:
+        out_string = 'invalid value passed to function'
     return out_string

@@ -85,10 +85,13 @@
                     </td>
                     <td>
                         {% spurl base=dado.get_finalizar_url query='next={{ next_success_url }}' as url_para_finalizar_com_next %}
-                        <a href="{{ url_para_finalizar_com_next }}" class="btn-link">
+                        <a href="{{ url_para_finalizar_com_next }}"
+                           data-ajaxmodal="true"
+                           data-ajaxmodal-prefetch="true"
+                           class="btn-link">
                             <i class="elusive-ok-circle color-green"></i> Finalizar
                         </a> |
-                        <a href="{{ dado.get_preview_url }}" class="btn-link">
+                        <a href="{{ dado.get_preview_url }}" target="_blank" class="btn-link">
                             <i class="icofont-search"></i> Visualizar
                         </a></td>
                 </tr>

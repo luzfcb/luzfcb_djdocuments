@@ -65,6 +65,7 @@
                                             <td>
                                                 <i class="icofont-paste color-red"></i>
                                                 <a href="{{ dado.get_preview_url }}" class="btn-link" rel="popover"
+                                                   target="_blank"
                                                    data-trigger="hover"
                                                    data-placement="top" data-content="{{ dado.documento_assunto }}"
                                                    data-original-title="Doc. {{ dado.documento_identificador_versao }}">
@@ -85,11 +86,16 @@
                                             </td>
                                             <td>
                                                 <div>
+                                                    {#                                                    {% add_to_named_context  new_context_name_key='assinaturas_pendentes' new_context_value=dado template_name='luzfcb_djdocuments/templatetags/botao_assinatura_pendente_painel.html' %}#}
                                                     {% spurl base=dado.get_url_para_assinar query='next={{ next_success_url }}' as url_para_assinar_com_next %}
-                                                    <a href="{{ url_para_assinar_com_next }}" class="btn-link">
+                                                    <a href="{{ url_para_assinar_com_next }}" class="btn-link"
+                                                       data-ajaxmodal="true"
+                                                       data-ajaxmodal-prefetch="true"
+                                                    >
                                                         <i class="elusive-edit color-red"></i> Assinar
-                                                    </a> |
-                                                    <a href="{{ dado.get_preview_url }}" class="btn-link">
+                                                    </a>
+                                                    |
+                                                    <a href="{{ dado.get_preview_url }}" target="_blank" class="btn-link">
                                                         <i class="icofont-search"></i> Visualizar
                                                     </a>
                                                 </div>
@@ -137,6 +143,7 @@
                                             <td>
                                                 <i class="elusive-file-edit color-green"></i>
                                                 <a href="{{ dado.get_preview_url }}" class="btn-link" rel="popover"
+                                                   target="_blank"
                                                    data-trigger="hover"
                                                    data-placement="top" data-content="{{ dado.documento_assunto }}"
                                                    data-original-title="Doc. {{ dado.documento_identificador_versao }}">
@@ -156,7 +163,7 @@
                                                 </small>
                                             </td>
                                             <td>
-                                                <a href="{{ dado.get_preview_url }}" class="btn-link">
+                                                <a href="{{ dado.get_preview_url }}" target="_blank" class="btn-link">
                                                     <i class="icofont-search"></i> Visualizar
                                                 </a>
                                             </td>
@@ -233,6 +240,7 @@
                                             <td>
                                                 <i class="icofont-paste color-blue"></i>
                                                 <a href="{{ dado.get_preview_url }}" class="btn-link" rel="popover"
+                                                   target="_blank"
                                                    data-trigger="hover"
                                                    data-placement="top" data-content="{{ dado.assunto }}"
                                                    data-original-title="Doc. {{ dado.identificador_versao }}">
@@ -271,10 +279,13 @@
                                             </td>
                                             <td>
                                                 {% spurl base=dado.get_finalizar_url query='next={{ next_success_url }}' as url_para_finalizar_com_next %}
-                                                <a href="{{ url_para_finalizar_com_next }}" class="btn-link">
+                                                <a href="{{ url_para_finalizar_com_next }}" class="btn-link"
+                                                   data-ajaxmodal="true"
+                                                   data-ajaxmodal-prefetch="true"
+                                                >
                                                     <i class="elusive-ok-circle color-green"></i> Finalizar
                                                 </a> |
-                                                <a href="{{ dado.get_preview_url }}" class="btn-link">
+                                                <a href="{{ dado.get_preview_url }}" target="_blank" class="btn-link">
                                                     <i class="icofont-search"></i> Visualizar
                                                 </a></td>
                                         </tr>
@@ -338,9 +349,9 @@
                             <tr>
                                 <td>
                                     <i class="icofont-paste color-purple-dark"></i>
-{#                                    {% spurl base=dado.get_preview_url add_query="no_nav=1" as url_para_visualizar_com_query %}#}
-{#                                    <a href="{{ url_para_visualizar_com_query }}" class="btn-link">#}
-                                    <a href="{{ dado.get_preview_url }}" class="btn-link">
+                                    {#                                    {% spurl base=dado.get_preview_url add_query="no_nav=1" as url_para_visualizar_com_query %}#}
+                                    {#                                    <a href="{{ url_para_visualizar_com_query }}" class="btn-link">#}
+                                    <a href="{{ dado.get_preview_url }}" target="_blank" class="btn-link">
                                         {{ dado.identificador_versao }}
                                     </a>
                                 </td>
@@ -366,16 +377,9 @@
                                 </td>
                                 <td>
                                     {% spurl base=dado.get_preview_url query='next={{ next_success_url }}' as url_para_visualizar_com_query %}
-                                    <a href="{{ url_para_visualizar_com_query }}" class="btn-link">
+                                    <a href="{{ url_para_visualizar_com_query }}" target="_blank" class="btn-link">
                                         <i class="icofont-search"></i> Visualizar
                                     </a>
-                                    {% if not dado.esta_assinado %}
-                                        |
-                                        <a href="{{ dado.get_edit_url }}" class="btn-link">
-                                            <i class="elusive-file-edit"></i> Editar
-                                        </a>
-
-                                    {% endif %}
                                 </td>
                             </tr>
                         {% endfor %}
@@ -398,5 +402,10 @@
             </div>
         </div>
     {% endblock %}
+
+{% endblock %}
+
+{% block js_app %}
+    {#    {% render_named_context 'assinaturas_pendentes' %}#}
 
 {% endblock %}

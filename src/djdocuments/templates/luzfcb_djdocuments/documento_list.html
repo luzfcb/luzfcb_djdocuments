@@ -27,7 +27,7 @@
                         <span class="bold">Buscar: </span>
                         <span class="icon"><i class="icofont-search"></i></span>
                         <input name="q" class="grd-white" maxlength="30" type="text"
-                               placeholder="Número do Documento...">
+                               placeholder="Número ou Assunto...">
                     </div>
                 </div>
             </form>
@@ -78,16 +78,9 @@
                     </td>
                     <td>
                         {% spurl base=dado.get_preview_url query='next={{ next_success_url }}' as url_para_visualizar_com_query %}
-                        <a href="{{ url_para_visualizar_com_query }}" class="btn-link">
+                        <a href="{{ url_para_visualizar_com_query }}" target="_blank" class="btn-link">
                             <i class="icofont-search"></i> Visualizar
                         </a>
-                        {% if not dado.esta_assinado %}
-                            |
-                            <a href="{{ dado.get_edit_url }}" class="btn-link">
-                                <i class="elusive-file-edit"></i> Editar
-                            </a>
-
-                        {% endif %}
                     </td>
                 </tr>
             {% empty %}
@@ -97,7 +90,7 @@
                             {% if is_query %}
                                 <b>Nenhum item encontrado com os termos: {{ is_query|safe }}</b>
                             {% else %}
-                                <b>Nenhum documento assinado</b>
+                                <b>Nenhum documento cadastrado</b>
                             {% endif %}
                         </div>
                     </td>

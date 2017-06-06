@@ -46,7 +46,6 @@ class FormActionViewMixin(object):
 
 
 class QRCodeValidacaoMixin(object):
-
     def get_context_data(self, **kwargs):
         # http://stackoverflow.com/a/7389616/2975300
         context = super(QRCodeValidacaoMixin, self).get_context_data(**kwargs)
@@ -162,12 +161,16 @@ class SingleDocumentObjectMixin(object):
     document_disable_if_url_kwarg_not_is_available = False
 
     def get(self, request, *args, **kwargs):
-        if not self.document_disable_if_url_kwarg_not_is_available or (self.kwargs.get(self.document_pk_url_kwarg, None) or self.kwargs.get(self.document_slug_url_kwarg, None)):
+        if not self.document_disable_if_url_kwarg_not_is_available or (
+                self.kwargs.get(self.document_pk_url_kwarg, None) or self.kwargs.get(self.document_slug_url_kwarg,
+                                                                                     None)):
             self.document_object = self.get_document_object()
         return super(SingleDocumentObjectMixin, self).get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        if not self.document_disable_if_url_kwarg_not_is_available or (self.kwargs.get(self.document_pk_url_kwarg, None) or self.kwargs.get(self.document_slug_url_kwarg, None)):
+        if not self.document_disable_if_url_kwarg_not_is_available or (
+                self.kwargs.get(self.document_pk_url_kwarg, None) or self.kwargs.get(self.document_slug_url_kwarg,
+                                                                                     None)):
             self.document_object = self.get_document_object()
         return super(SingleDocumentObjectMixin, self).post(request, *args, **kwargs)
 
@@ -279,12 +282,14 @@ class SingleGroupObjectMixin(object):
         super(SingleGroupObjectMixin, self).__init__()
 
     def get(self, request, *args, **kwargs):
-        if not self.group_disable_if_url_kwarg_not_is_available or (self.kwargs.get(self.group_pk_url_kwarg, None) or self.kwargs.get(self.group_slug_url_kwarg, None)):
+        if not self.group_disable_if_url_kwarg_not_is_available or (
+                self.kwargs.get(self.group_pk_url_kwarg, None) or self.kwargs.get(self.group_slug_url_kwarg, None)):
             self.group_object = self.get_group_object()
         return super(SingleGroupObjectMixin, self).get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        if not self.group_disable_if_url_kwarg_not_is_available or (self.kwargs.get(self.group_pk_url_kwarg, None) or self.kwargs.get(self.group_slug_url_kwarg, None)):
+        if not self.group_disable_if_url_kwarg_not_is_available or (
+                self.kwargs.get(self.group_pk_url_kwarg, None) or self.kwargs.get(self.group_slug_url_kwarg, None)):
             self.group_object = self.get_group_object()
         return super(SingleGroupObjectMixin, self).post(request, *args, **kwargs)
 
@@ -395,12 +400,14 @@ class SingleUserObjectMixin(object):
         super(SingleUserObjectMixin, self).__init__()
 
     def get(self, request, *args, **kwargs):
-        if not self.user_disable_if_url_kwarg_not_is_available or (self.kwargs.get(self.user_pk_url_kwarg, None) or self.kwargs.get(self.user_slug_url_kwarg, None)):
+        if not self.user_disable_if_url_kwarg_not_is_available or (
+                self.kwargs.get(self.user_pk_url_kwarg, None) or self.kwargs.get(self.user_slug_url_kwarg, None)):
             self.user_object = self.get_user_object()
         return super(SingleUserObjectMixin, self).get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        if not self.user_disable_if_url_kwarg_not_is_available or (self.kwargs.get(self.user_pk_url_kwarg, None) or self.kwargs.get(self.user_slug_url_kwarg, None)):
+        if not self.user_disable_if_url_kwarg_not_is_available or (
+                self.kwargs.get(self.user_pk_url_kwarg, None) or self.kwargs.get(self.user_slug_url_kwarg, None)):
             self.user_object = self.get_user_object()
         return super(SingleUserObjectMixin, self).post(request, *args, **kwargs)
 
@@ -493,7 +500,6 @@ class SingleUserObjectMixin(object):
 
 
 class AuditavelViewMixin(object):
-
     def form_valid(self, form):
         if hasattr(self.request, 'user') and not isinstance(self.request.user, AnonymousUser):
             if not form.instance.criado_por:
@@ -503,7 +509,6 @@ class AuditavelViewMixin(object):
 
 
 class DjDocumentPopupMixin(object):
-
     def get_initial(self):
         initial = super(DjDocumentPopupMixin, self).get_initial()
         initial.update({'is_popup': self.get_is_popup()})
@@ -527,7 +532,6 @@ class DjDocumentPopupMixin(object):
 
 
 class CopyDocumentContentMixin(object):
-
     def get_initial(self):
         initial = super(CopyDocumentContentMixin, self).get_initial()
         documento_instance = self.get_documento_instance()
@@ -554,7 +558,6 @@ class CopyDocumentContentMixin(object):
 
 
 class DocumentoAssinadoRedirectMixin(object):
-
     def get(self, request, *args, **kwargs):
         ret = super(DocumentoAssinadoRedirectMixin, self).get(request, *args, **kwargs)
 
@@ -566,28 +569,64 @@ class DocumentoAssinadoRedirectMixin(object):
         return ret
 
 
+from django.views import generic
+
+
 class AjaxFormPostMixin(object):
     document_json_fields = ('pk', 'versao_numero')
+    template_name_ajax = None
+    ajax_success_message = None
+
+    def get_ajax_success_message(self, object_instance=None):
+        return self.ajax_success_message
+
+    def get_template_names(self):
+        templates = super(AjaxFormPostMixin, self).get_template_names()
+        if self.request.is_ajax() and self.template_name_ajax:
+            templates = [self.template_name_ajax]
+        return templates
+
+    def get_form_fields(self):
+        fields = self.document_json_fields
+        if not fields:
+            form = self.get_form()
+            fields = six.iterkeys(form.fields)
+        return fields
 
     def form_valid(self, form):
         response = super(AjaxFormPostMixin, self).form_valid(form)
         if self.request.is_ajax():
-            obj = self.get_object()
-            data = {}
-            for field in self.document_json_fields:
-                data[field] = getattr(obj, field)
-            data['errors'] = form.errors
-            data['success_url'] = self.get_success_url()
+            object_instance = self.get_object_members()
+            data = {'object_instance': object_instance, 'errors': form.errors,
+                    'success_url': self.get_success_url()}
+            message = self.get_ajax_success_message(object_instance)
+            if message:
+                messages.add_message(self.request, messages.SUCCESS, message)
             return JsonResponse(data=data)
         return response
+
+    def get_object_members(self):
+        data = {}
+        if hasattr(self, 'object'):
+            if not self.object:
+                self.object = self.get_object()
+            for field in self.get_form_fields():
+                if hasattr(self.object, field):
+                    field_instance = getattr(self.object, field)
+                    if isinstance(field_instance, models.Model):
+                        field_data = field_instance.pk
+                    else:
+                        field_data = field_instance
+                    data[field] = field_data
+        return data
 
     def form_invalid(self, form):
         response = super(AjaxFormPostMixin, self).form_invalid(form)
         if self.request.is_ajax():
-            obj = self.get_object()
+            if hasattr(self, 'object') and not self.object:
+                self.object = self.get_object()
             data = {}
-            for field in self.document_json_fields:
-                data[field] = getattr(obj, field)
+            # members = self.get_object_members()
             data['errors'] = form.errors
             data['success_url'] = self.get_success_url()
             return JsonResponse(data=data, status=status.HTTP_400_BAD_REQUEST)
@@ -670,7 +709,7 @@ class NextPageURLMixin(SuccessURLAllowedHostsMixin):
                 next_page = self.next_page_url
 
         if (next_page_redirect_field_name in self.request.POST or
-                next_page_redirect_field_name in self.request.GET):
+                    next_page_redirect_field_name in self.request.GET):
             next_page = self.request.POST.get(
                 next_page_redirect_field_name,
                 self.request.GET.get(next_page_redirect_field_name)

@@ -1,0 +1,43 @@
+                                    {% csrf_token %}
+                                    {% if form.non_field_errors %}
+                                        <div class="control-group form-group row-fluid">
+                                            <div class="span12 col-sm-12">
+                                                <div class="alert alert-danger alert-dismissible" role="alert">
+                                                    <button type="button" class="close" data-dismiss="alert"
+                                                            aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                    {% for error in form.non_field_errors %}
+                                                        {{ error|escape }}{% if not forloop.last %}<br>{% endif %}
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                    {% for form_field in form %}
+                                        <div style="height:10px;">
+                                        </div>
+                                        <div class="control-group form-group row-fluid {% if form_field.errors %}error has-error{% endif %} ">
+                                            <label for="{{ form_field.id_for_label }}"
+                                                   class="span2 col-sm-2 control-label">{{ form_field.label }}:</label>
+                                            <div class="span10 col-sm-12">
+                                                {{ form_field }}
+
+                                                <div id="helpBlock2">
+                                                    {% if form_field.errors %}
+                                                        {% for error in form_field.errors %}
+                                                            <p id="error_{{ forloop.counter }}_{{ form_field.auto_id }}"
+                                                               class="help-inline help-block">
+                                                                <strong>{{ error|escape }}</strong></p>
+                                                        {% endfor %}
+                                                    {% endif %}
+                                                    {% if form_field.help_text %}
+                                                        <div class="help-inline help-block">
+                                                        <p id="hint_{{ form_field.auto_id }}"
+                                                           >{{ form_field.help_text|safe }}</p>
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
