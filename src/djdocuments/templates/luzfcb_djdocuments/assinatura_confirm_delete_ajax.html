@@ -1,90 +1,21 @@
-{% extends "luzfcb_djdocuments/bootstrap3/base.html" %}
-{% load luzfcb_djdocuments_tags %}
-{% load spurl %}
-{% load humanize %}
-{% load staticfiles %}
-{% block titulo %}
-    Listar Documentos
-{% endblock titulo %}
-
-
-
-{% block conteudo_app %}
-    {{ block.super }}
-
-
-    <div class="panel panel-info">
-        <div class="panel-heading">Remover assinatura</div>
-        <div class="panel-body">
-            <form class="form-horizontal" method="post"
-                  action="{{ form_action }}">
-                <fieldset>
-                    <legend>
-                        Tem certeza que deseja remover a pendência de assinatura para
-                        a {{ assinatura.grupo_assinante_nome|capfirst }} do documento:
-
-
-                        {#                        "{{ document_object.assunto }}"#}
-                        {#                        número: {{ document_object.identificador_versao }} para#}
-                        {#                        o {{ assinatura.grupo_assinante_nome|capfirst }}?#}
-                    </legend>
-                    <!-- Text input-->
-                    <div class="form-group">
-                        <label class="col-md-4 control-label" for="textinput">Número:</label>
-                        <div class="col-md-5">
-                            <input id="textinput" name="textinput" type="text" value="{{ document_object.identificador_versao }}"
-                                   class="form-control input-md" readonly disabled>
-
-                        </div>
-                    </div>
-                    <!-- Text input-->
-                    <div class="form-group">
-                        <label class="col-md-4 control-label" for="textinput">Assunto:</label>
-                        <div class="col-md-5">
-                            <input id="textinput" name="textinput" type="text" value="{{ document_object.assunto }}"
-                                   class="form-control input-md" readonly disabled>
-
-                        </div>
-                    </div>
-
-
-
-                    {% csrf_token %}
-                    <div class="form-group">
-                        <div class="col-sm-offset-8 col-sm-4">
-                            <button type="submit" class="btn btn-success">Excluir agora</button>
-                        </div>
-                    </div>
-                </fieldset>
-            </form>
-
-        </div>
-    </div>
-
-
-
-{% endblock conteudo_app %}
-
-
 {% extends 'luzfcb_djdocuments/base_ajax_modal_response.html' %}
 {% load luzfcb_djdocuments_tags %}
 
 {% block modal_header_content %}
-    <h3>Assinar Documento <span class="muted">{{ document_object.identificador_versao }}</span></h3>
-    Tem certeza que deseja remover do documento a pendência de assinatura para
-                        a <b>{{ assinatura.grupo_assinante_nome|capfirst }}</b>:
+    <h3>Remover pendência de assinatura</h3>
 
-
-    <small>Tem certeza que deseja remover essa pendencia de Assinatura?</small>
+    Tem certeza que deseja remover a pendência de assinatura para <b>{{ assinatura.grupo_assinante_nome|capfirst }}</b> do documento?
 {% endblock modal_header_content %}
 
 {% block modal_body_header %}
     <a href="{{ document_object.get_preview_url }}" target="_blank">
         <p>
             Número: <b>{{ document_object.identificador_versao }}</b>
-            Assunto: <b>"{{ document_object.assunto|remover_tags_html }}"</b>
         </p>
     </a>
+    <p>
+        Assunto: <b>{{ document_object.assunto|remover_tags_html }}</b>
+    </p>
 {% endblock modal_body_header %}
 
 {% block submit_text %}Excluir assinatura agora{% endblock submit_text %}

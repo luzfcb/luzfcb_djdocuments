@@ -96,11 +96,15 @@
                                            {% if object.esta_assinado %}disabled="disabled" {% endif %}><em
                                                 class="glyphicon glyphicon-pencil"></em>Assinar</a>
                                     {% endif %}
-                                    {% url 'documentos:assinaturas' slug=object.pk_uuid as documento_assinaturas %}
-                                    <a href="{{ documento_assinaturas }}"
+
+                                    <a href="{{ object.get_preview_url }}"
                                        class="btn btn-default"
-                                       {% if object.esta_assinado %}disabled="disabled" {% endif %}><em
-                                            class="glyphicon glyphicon-pencil"></em>Assinantes</a>
+                                    ><em class="icofont-search"></em>Visualizar</a>
+{#                                    {% url 'documentos:assinaturas' slug=object.pk_uuid as documento_assinaturas %}#}
+{#                                    <a href="{{ documento_assinaturas }}"#}
+{#                                       class="btn btn-default"#}
+{#                                       {% if object.esta_assinado %}disabled="disabled" {% endif %}><em#}
+{#                                            class="glyphicon glyphicon-pencil"></em>Assinantes</a>#}
                                 {% endif %}
                             {% endif %}
                         </div>

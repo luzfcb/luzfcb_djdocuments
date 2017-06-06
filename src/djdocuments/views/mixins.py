@@ -607,8 +607,9 @@ class AjaxFormPostMixin(object):
 
     def get_object_members(self):
         data = {}
-        if hasattr(self, 'object') and not self.object:
-            self.object = self.get_object()
+        if hasattr(self, 'object'):
+            if not self.object:
+                self.object = self.get_object()
             for field in self.get_form_fields():
                 if hasattr(self.object, field):
                     field_instance = getattr(self.object, field)

@@ -3,20 +3,9 @@ from __future__ import absolute_import, print_function, unicode_literals
 
 from django.conf.urls import url
 from django.contrib.auth.decorators import login_required
-from django.views.generic import TemplateView
 
 from .views import documentos as documentos_views
 from .views import autocompletes
-
-
-class TemplateView2(TemplateView):
-    template_name = 'luzfcb_djdocuments/teste_modal3.html'
-
-    def get_context_data(self, **kwargs):
-        context = super(TemplateView2, self).get_context_data(**kwargs)
-        from djdocuments.models import Documento
-        context['object'] = Documento.objects.get(pk_uuid='a12c2382-7352-4988-bffc-50b8ce271e54')
-        return context
 
 
 urlpatterns = [
@@ -110,8 +99,7 @@ urlpatterns = [
         name='finalizar_assinatura'
         ),
     url(r'^d/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/adicionar_assinantes/$',
-        # login_required(documentos_views.AdicionarAssinantes.as_view()),
-        documentos_views.AdicionarAssinantes.as_view(),
+        login_required(documentos_views.AdicionarAssinantes.as_view()),
         name='adicionar_assinantes'
         ),
     url(r'^m/criar_modelo/$',
@@ -169,8 +157,5 @@ urlpatterns = [
     url(r'^tipodocumento-autocomplete/$',
         login_required(autocompletes.TipoDocumentoAutocomplete.as_view()),
         name='tipodocumento-autocomplete'
-        ),
-    url(r'^teste/$',
-        TemplateView2.as_view()
         ),
 ]

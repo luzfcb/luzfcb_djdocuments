@@ -102,13 +102,13 @@ class Assinatura(models.Model):
                                        related_name="%(app_label)s_%(class)s_cadastrado_por",
                                        editable=False)
     cadastrado_em = models.DateTimeField(auto_now_add=True, editable=False)
-    nome_cadastrado_por = models.CharField(max_length=255, blank=True)
+    nome_cadastrado_por = models.CharField(max_length=255, blank=True, editable=False)
 
     excluido_por = models.ForeignKey(to=settings.AUTH_USER_MODEL,
                                      related_name="%(app_label)s_%(class)s_excluido_por",
-                                     null=True, blank=True)
-    nome_excluido_por = models.CharField(max_length=255, blank=True)
-    data_exclusao = models.DateTimeField(null=True, blank=True)
+                                     null=True, blank=True, editable=False)
+    nome_excluido_por = models.CharField(max_length=255, blank=True, default='')
+    data_exclusao = models.DateTimeField(null=True, blank=True, editable=False)
 
     objects = managers.AssinaturaManager()
     tracker = FieldTracker()
@@ -133,6 +133,15 @@ class Assinatura(models.Model):
                 url = reverse('documentos:assinar_por_grupo',
                               kwargs={'slug': self.documento_pk_uuid,
                                       'group_id': self.grupo_assinante_id})
+        return url
+
+    @property
+    def get_url_para_remover(self):
+        url = None
+        if not self.esta_assinado:
+            url = reverse('documentos:remover_assinatura',
+                          kwargs={'document_slug': self.documento_pk_uuid,
+                                  'pk': self.pk})
         return url
 
     @property
@@ -295,7 +304,7 @@ class Documento(SoftDeletableModel):
                                      blank=True, on_delete=models.SET_NULL, editable=False)
     excluido_em = models.DateTimeField(null=True, editable=False)
 
-    excluido_por_nome = models.CharField(max_length=255, blank=True, default='')
+    excluido_por_nome = models.CharField(max_length=255, blank=True, default='', editable=False)
 
     esta_ativo = models.NullBooleanField(default=True, editable=False)
 
@@ -364,7 +373,7 @@ class Documento(SoftDeletableModel):
         """
         Retorna pk + versao incluindo zeros, no formato 00000000v000. Ex:
 
-        :return:  
+        :return:
         """
         if not self.pk:
             return None
@@ -551,6 +560,14 @@ class Documento(SoftDeletableModel):
             url = reverse('documentos:validar-detail-modelo', kwargs={'slug': self.pk_uuid})
         else:
             url = reverse('documentos:validar-detail', kwargs={'slug': self.pk_uuid})
+        return url
+
+    @property
+    def get_pdf_url(self):
+        if self.eh_modelo:
+            url = reverse('documentos:validar-detail-modelo-pdf', kwargs={'slug': self.pk_uuid})
+        else:
+            url = reverse('documentos:validar_detail_pdf', kwargs={'slug': self.pk_uuid})
         return url
 
     @property
