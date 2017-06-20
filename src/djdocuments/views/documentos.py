@@ -407,6 +407,10 @@ def create_document_from_document_template(current_user, grupo, documento_modelo
         'modificado_por': current_user,
         'grupo_dono': grupo,
         'assunto': assunto,
+        'page_margin_top': documento_modelo.page_margin_top,
+        'page_margin_bottom': documento_modelo.page_margin_bottom,
+        'page_margin_left': documento_modelo.page_margin_left,
+        'page_margin_right': documento_modelo.page_margin_right,
     }
 
     documento_novo = Documento(**document_kwargs)
@@ -427,7 +431,11 @@ def create_document_template_from_document(current_user, grupo, documento_modelo
         'modificado_por': current_user,
         'grupo_dono': grupo,
         'modelo_descricao': modelo_descricao,
-        'eh_modelo': True
+        'eh_modelo': True,
+        'page_margin_top': documento_modelo.page_margin_top,
+        'page_margin_bottom': documento_modelo.page_margin_bottom,
+        'page_margin_left': documento_modelo.page_margin_left,
+        'page_margin_right': documento_modelo.page_margin_right
     }
 
     documento_novo = Documento(**document_kwargs)
