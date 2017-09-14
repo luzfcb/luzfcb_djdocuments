@@ -999,7 +999,7 @@ class AssinarDocumentoView(DocumentoAssinadoRedirectMixin,
     def form_valid(self, form):
         self.object = form.save(commit=False)
         ret = super(AssinarDocumentoView, self).form_valid(form)
-        print('form_valid changed_values: ', self.object.tracker.changed())
+        # print('form_valid changed_values: ', self.object.tracker.changed())
         assinado_por = form.cleaned_data['assinado_por']
         senha = form.cleaned_data['password']
         self.object.assinar(usuario_assinante=assinado_por, senha=senha)

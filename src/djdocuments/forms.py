@@ -468,7 +468,6 @@ def create_form_class_assinar(assinatura, usuario_atualmente_logado=None):
                     }
                 )
                 if self.instance.assinado_por:
-                    print('entrou aqui')
                     self.fields['assinado_por'] = UserModelChoiceField(
                         label="Assinante",
                         help_text="Selecione o usuário que irá assinar o documento",
