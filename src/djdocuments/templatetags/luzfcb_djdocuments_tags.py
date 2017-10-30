@@ -5,6 +5,8 @@ import uuid
 
 import bleach
 from django import template
+from django.conf import settings
+from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.db import models
 from django.forms import Media
 from django.forms.models import modelform_factory
@@ -323,3 +325,10 @@ def add_defer(value):
         new_tags.append(new)
 
     return mark_safe('\n'.join(new_tags))
+
+
+@register.simple_tag
+def signature_by_icon_image():
+    sigla = settings.DJDOCUMENT.get('SIGLA_UF', 'undefined') or 'undefined'
+    nome_arquivo = 'luzfcb_djdocuments/img/sigicon/{}.png'.format(sigla.lower())
+    return static(nome_arquivo)

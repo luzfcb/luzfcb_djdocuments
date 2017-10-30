@@ -10,6 +10,7 @@ USER_MODEL = get_user_model
 DOCUMENT_DEFAULT_BACKEND = {
     'BACKEND': 'luzfcb_djdocuments.backends.SolarDefensoriaBackend',
     'GRUPO_ASSINANTE_MODEL': 'contrib.Defensoria',
+    'SIGLA_UF': 'to',
 }
 
 if not hasattr(settings, 'DJDOCUMENT'):
