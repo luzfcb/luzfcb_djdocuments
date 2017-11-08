@@ -1106,8 +1106,7 @@ class DocumentoModeloDetailValidarView(QRCodeValidacaoMixin, DocumentoDetailView
     template_name = 'luzfcb_djdocuments/documento_validacao_detail.html'
 
     def get_queryset(self):
-        # qs = super(DocumentoModeloDetailValidarView, self).admin_objects.get_queryset()
-        qs = self.model.admin_objects.modelos()
+        qs = self.model.admin_objects.modelos(grupos_ids=self.get_ids_grupos_do_usuario)
         return qs
 
     def render_to_response(self, context, **response_kwargs):
