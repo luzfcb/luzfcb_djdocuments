@@ -296,6 +296,13 @@
                                                                             <em class="glyphicon glyphicon-edit"></em>
                                                                             Assinar
                                                                         </a>
+                                                                        <a href="{{ assinatura.get_url_para_assinar_e_finalizar }}"
+                                                                           data-ajaxmodal="true"
+                                                                           data-ajaxmodal-prefetch="true"
+                                                                           class="btn btn-primary" type="button">
+                                                                            <em class="glyphicon glyphicon-edit"></em>
+                                                                            Assinar e Finalizar
+                                                                        </a>
                                                                         {% if pode_remover_assinantes and not assinatura.esta_assinado %}
                                                                             <a href="{{ assinatura.get_url_para_remover }}"
                                                                                data-ajaxmodal="true"

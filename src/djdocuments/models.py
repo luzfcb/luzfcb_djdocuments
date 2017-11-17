@@ -58,15 +58,22 @@ class TipoDocumento(models.Model):
         return '{}'.format(self.descricao)
 
 
+# class Assinatura(SoftDeletableModel):
 @python_2_unicode_compatible
 class Assinatura(models.Model):
     def __str__(self):
         nome = self.assinado_por.get_full_name() if self.assinado_por else False
-        return 'pk: {}, grupo_assinante: {}, nome_assinante: (pk:{}) {}, esta_assinado: {}'.format(self.pk,
-                                                                                                   self.grupo_assinante_id,
-                                                                                                   self.assinado_por_id,
-                                                                                                   nome,
-                                                                                                   self.esta_assinado)
+        nome_assinante = '{} (pk: {})'.format(nome, self.assinado_por_id) if nome else None
+        return '<%(cls)s "%(atribs)s">' % {
+            'cls': self.__class__.__name__,
+            'atribs': OrderedDict({
+                'pk': self.pk,
+                'grupo_assinante': self.grupo_assinante_id,
+                'nome_assinante': nome_assinante,
+                'esta_assinado': self.esta_assinado,
+                'ativo': self.ativo
+            })
+        }
 
     # documento
     documento = models.ForeignKey('Documento', related_name='assinaturas')
@@ -126,13 +133,36 @@ class Assinatura(models.Model):
         if not self.esta_assinado:
             if self.assinado_por:
                 url = reverse('documentos:assinar_por_grupo_por_usuario',
-                              kwargs={'slug': self.documento_pk_uuid,
-                                      'user_id': self.assinado_por_id,
-                                      'group_id': self.grupo_assinante_id})
+                              kwargs={
+                                  'slug': self.documento_pk_uuid,
+                                  'user_id': self.assinado_por_id,
+                                  'group_id': self.grupo_assinante_id
+                              })
             else:
                 url = reverse('documentos:assinar_por_grupo',
-                              kwargs={'slug': self.documento_pk_uuid,
-                                      'group_id': self.grupo_assinante_id})
+                              kwargs={
+                                  'slug': self.documento_pk_uuid,
+                                  'group_id': self.grupo_assinante_id
+                              })
+        return url
+
+    @property
+    def get_url_para_assinar_e_finalizar(self):
+        url = None
+        if not self.esta_assinado:
+            if self.assinado_por:
+                url = reverse('documentos:assinar_finalizar_por_grupo_por_usuario',
+                              kwargs={
+                                  'slug': self.documento_pk_uuid,
+                                  'user_id': self.assinado_por_id,
+                                  'group_id': self.grupo_assinante_id
+                              })
+            else:
+                url = reverse('documentos:assinar_finalizar_por_grupo',
+                              kwargs={
+                                  'slug': self.documento_pk_uuid,
+                                  'group_id': self.grupo_assinante_id
+                              })
         return url
 
     @property
@@ -140,8 +170,10 @@ class Assinatura(models.Model):
         url = None
         if not self.esta_assinado:
             url = reverse('documentos:remover_assinatura',
-                          kwargs={'document_slug': self.documento_pk_uuid,
-                                  'pk': self.pk})
+                          kwargs={
+                              'document_slug': self.documento_pk_uuid,
+                              'pk': self.pk
+                          })
         return url
 
     @property
@@ -324,12 +356,17 @@ class Documento(SoftDeletableModel):
     admin_objects = managers.DocumentoAdminManager()
 
     def __str__(self):
+
+        nome = getattr(self.grupo_dono, DjDocumentsBackend.group_name_atrib) if self.grupo_dono_id else False
+        nome_grupo_dono = '{}(pk: {})'.format(nome, self.grupo_dono_id) if nome else None
         return '<%(cls)s "%(atribs)s">' % {
             'cls': self.__class__.__name__,
             'atribs': OrderedDict({
                 'pk': self.pk,
                 'pk_uuid': six.text_type(self.pk_uuid),
-                'eh_modelo': self.eh_modelo
+                'eh_modelo': self.eh_modelo,
+                'grupo_dono': nome_grupo_dono,
+                'esta_ativo': self.esta_ativo
             })
         }
 

@@ -68,6 +68,22 @@ urlpatterns = [
         login_required(documentos_views.AssinarDocumentoView.as_view()),
         name='assinar_por_grupo_por_usuario'
     ),
+    url(r'^d/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/assinaturas/assinar/$',
+        login_required(documentos_views.AssinarFinalizarDocumentoView.as_view()),
+        name='assinar_finalizar'
+        ),
+    url(
+        r'^d/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/assinaturas/assinarfinalizar/(?P<group_id>\d+)/$',
+        # noqa
+        login_required(documentos_views.AssinarFinalizarDocumentoView.as_view()),
+        name='assinar_finalizar_por_grupo'
+    ),
+    url(
+        r'^d/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/assinaturas/assinarfinalizar/(?P<group_id>\d+)/(?P<user_id>\d+)$',
+        # noqa
+        login_required(documentos_views.AssinarFinalizarDocumentoView.as_view()),
+        name='assinar_finalizar_por_grupo_por_usuario'
+    ),
     url(r'^d/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/excluir',
         login_required(documentos_views.DocumentoExcluirView.as_view()),
         name='excluir'

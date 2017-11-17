@@ -129,3 +129,39 @@ def make_absolute_paths(content):
                                       occur[len(x['url']):])
 
     return content
+
+
+def admin_method_attributes(**outer_kwargs):
+    """ Wrap an admin method with passed arguments as attributes and values.
+    DRY way of extremely common admin manipulation such as setting short_description, allow_tags, admin_order_field etc.
+    # https://stackoverflow.com/a/12048244
+
+    # usage
+    # models.py
+    class MyModel(models.Model):
+       temperatura = models.FloatField()
+
+    # admin.py
+    @admin.site.register(MyModel)
+    class ModelAdmin(admin.ModelAdmin):
+        list_display = [
+            '_custom_temperatura_column',
+            'temperatura',
+            'my_admin_method',
+        ]
+        @admin_method_attributes(short_description='Some Short Description', allow_tags=True)
+        def my_admin_method(self, obj):
+            return '''<em>obj.id</em>'''
+
+        @admin_method_attributes(short_description='Minha temperatura legal', admin_order_field='temperatura')
+        def _custom_temperatura_column(self, obj):
+            return obj.temperatura
+
+    """
+
+    def method_decorator(func):
+        for kw, arg in outer_kwargs.items():
+            setattr(func, kw, arg)
+        return func
+
+    return method_decorator

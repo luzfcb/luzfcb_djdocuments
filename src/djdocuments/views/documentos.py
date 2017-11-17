@@ -1017,6 +1017,41 @@ class AssinarDocumentoView(DocumentoAssinadoRedirectMixin,
         return msg
 
 
+class AssinarFinalizarDocumentoView(AssinarDocumentoView):
+    template_name = 'luzfcb_djdocuments/documento_assinar_finalizar.html'
+    template_name_ajax = 'luzfcb_djdocuments/documento_assinar_finalizar_ajax.html'
+    def form_valid(self, form):
+        ret = super(AssinarFinalizarDocumentoView, self).form_valid(form)
+        if self.document_object.pronto_para_finalizar:
+            self.document_object.finalizar_documento(self.request.user)
+        return ret
+
+    def get_form_kwargs(self):
+        """
+        Returns the keyword arguments for instantiating the form.
+        """
+        kwargs = super(AssinarFinalizarDocumentoView, self).get_form_kwargs()
+        kwargs['prefix'] = 'assinarfinalizar'
+        return kwargs
+
+    def get_form_action(self):
+        if self.user_object:
+            url = reverse('documentos:assinar_finalizar_por_grupo_por_usuario',
+                          kwargs={'slug': self.object.documento.pk_uuid,
+                                  'user_id': self.object.assinado_por_id,
+                                  'group_id': self.object.grupo_assinante_id})
+        else:
+            url = reverse('documentos:assinar_finalizar_por_grupo',
+                          kwargs={'slug': self.object.documento.pk_uuid,
+                                  'group_id': self.object.grupo_assinante_id})
+
+        return url
+
+    def get_ajax_success_message(self, object_instance=None):
+        msg = "Documento {} assinado e finalizado com sucesso".format(self.document_object.identificador_versao)
+        return msg
+
+
 class DocumentoDetailView(NextPageURLMixin, DjDocumentsBackendMixin, DjDocumentPopupMixin, generic.DetailView):
     template_name = 'luzfcb_djdocuments/documento_detail.html'
     # template_name = 'luzfcb_djdocuments/documento_validacao_detail.html'
