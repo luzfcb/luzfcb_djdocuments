@@ -64,6 +64,8 @@
                 <th class="span3">Descrição</th>
                 <th class="span3">Tipo</th>
                 <th class="span3">Defensoria</th>
+                <th class="span1">Criado por</th>
+{#                <th class="span1">Modificado por</th>#}
                 <th class="span1">Data edição</th>
                 <th class="span1">Ações</th>
             </tr>
@@ -95,6 +97,17 @@
                             {{ dado.grupo_dono|truncatechars:36 }}
                         </small>
                     </td>
+                    <td>
+                        <small rel="tooltip" data-original-title="{{ dado.criado_por_nome }}">
+                            {{ dado.criado_por_nome|truncatechars:20 }}
+                        </small>
+                    </td>
+{#                    <td>#}
+{#                        <small rel="tooltip" data-original-title="{{ dado.modificado_por_nome }}">#}
+{#                            {{ dado.modificado_por_nome|truncatechars:20 }}#}
+{#                        </small>#}
+{#                    </td>#}
+
                     <td>
                         <small>
                             {{ dado.modificado_em }}
@@ -150,6 +163,8 @@
                 <th class="span3">Descrição</th>
                 <th class="span3">Tipo</th>
                 <th class="span3">Defensoria</th>
+                <th class="span1">Criado por</th>
+{#                <th class="span1">Modificado por</th>#}
                 <th class="span1">Data edição</th>
                 <th class="span1">Ações</th>
             </tr>

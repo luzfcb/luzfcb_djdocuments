@@ -68,16 +68,16 @@
                     </td>
                     <td>
                         <div>
-                            {% spurl base=dado.get_url_para_assinar query='next={{ next_success_url }}' as url_para_assinar_com_next %}
-                            <a href="{{ url_para_assinar_com_next }}"
-                               data-ajaxmodal="true"
-                               data-ajaxmodal-prefetch="true"
-                               class="btn-link">
-                                <i class="elusive-edit color-red"></i> Assinar
-                            </a>
-                            |
+{#                            {% spurl base=dado.get_url_para_assinar query='next={{ next_success_url }}' as url_para_assinar_com_next %}#}
+{#                            <a href="{{ url_para_assinar_com_next }}"#}
+{#                               data-ajaxmodal="true"#}
+{#                               data-ajaxmodal-prefetch="true"#}
+{#                               class="btn-link">#}
+{#                                <i class="elusive-edit color-red"></i> Assinar#}
+{#                            </a>#}
+{#                            |#}
                             <a href="{{ dado.get_preview_url }}" target="_blank" class="btn-link">
-                                <i class="icofont-search"></i> Visualizar
+                                <i class="icofont-search"></i> Visualizar/Assinar/Finalizar
                             </a>
                         </div>
                     </td>

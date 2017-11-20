@@ -87,16 +87,16 @@
                                             <td>
                                                 <div>
                                                     {#                                                    {% add_to_named_context  new_context_name_key='assinaturas_pendentes' new_context_value=dado template_name='luzfcb_djdocuments/templatetags/botao_assinatura_pendente_painel.html' %}#}
-                                                    {% spurl base=dado.get_url_para_assinar query='next={{ next_success_url }}' as url_para_assinar_com_next %}
-                                                    <a href="{{ url_para_assinar_com_next }}" class="btn-link"
-                                                       data-ajaxmodal="true"
-                                                       data-ajaxmodal-prefetch="true"
-                                                    >
-                                                        <i class="elusive-edit color-red"></i> Assinar
-                                                    </a>
-                                                    |
+{#                                                    {% spurl base=dado.get_url_para_assinar query='next={{ next_success_url }}' as url_para_assinar_com_next %}#}
+{#                                                    <a href="{{ url_para_assinar_com_next }}" class="btn-link"#}
+{#                                                       data-ajaxmodal="true"#}
+{#                                                       data-ajaxmodal-prefetch="true"#}
+{#                                                    >#}
+{#                                                        <i class="elusive-edit color-red"></i> Assinar#}
+{#                                                    </a>#}
+{#                                                    |#}
                                                     <a href="{{ dado.get_preview_url }}" target="_blank" class="btn-link">
-                                                        <i class="icofont-search"></i> Visualizar
+                                                        <i class="icofont-search"></i> Visualizar/Assinar/Finalizar
                                                     </a>
                                                 </div>
                                             </td>
