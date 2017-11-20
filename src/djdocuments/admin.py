@@ -65,7 +65,11 @@ class DocumentoAdmin(SimpleHistoryAdmin):
     # readonly_fields = ('criado_em', 'criado_por', 'modificado_em', 'modificado_por', 'revertido_em', 'revertido_por',
     #                    'revertido_da_versao',
     #                    )
-    actions = ['reativar_documentos', 'desativar_documentos', 'remover_assinatura', ]
+    actions = [
+        'reativar_documentos',
+        'desativar_documentos',
+        'remover_assinatura',
+    ]
 
     def visualizar_versao(self, obj):
         url_triplet = self.admin_site.name, self.model._meta.app_label, self.model._meta.model_name
