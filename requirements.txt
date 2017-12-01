@@ -13,8 +13,7 @@ django-model-utils==2.6.1
 django-extra-views==0.9.0
 
 
--e git+https://github.com/luzfcb/django-simple-history.git@wip-generic-views2#egg=django-simple-history
--e git+https://github.com/luzfcb/django-simple-history.git@wip-generic-views2#egg=django-simple-history
+-e git+https://github.com/luzfcb/django-simple-history.git@wip-generic-views3#egg=django-simple-history
 -e git+https://github.com/luzfcb/luzfcb_dj_simplelock.git@master#egg=luzfcb_dj_simplelock
 -e git+https://github.com/maraujop/django-crispy-forms.git@dev#egg=django-crispy-forms
 -e git+https://github.com/luzfcb/django-wkhtmltopdf.git@wip-decouple-from-templateview#egg=django-wkhtmltopdf

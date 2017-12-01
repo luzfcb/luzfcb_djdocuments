@@ -669,7 +669,7 @@ class Documento(SoftDeletableModel):
             assinatura_update_dict['documento_identificador_versao'] = self.identificador_versao
 
         update_fields = None
-        if self.pk:
+        if self.pk and not hasattr(self, '_generated_by_simple_history'):
             update_fields = kwargs.pop('update_fields', [])
             update_fields.extend(list(self.tracker.changed().keys()))
             update_fields = list(set(update_fields))
