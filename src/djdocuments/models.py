@@ -294,6 +294,7 @@ class Documento(SoftDeletableModel):
     eh_modelo = models.BooleanField(default=False, editable=True)
     eh_modelo_padrao = models.BooleanField(default=False, editable=True)
     modelo_descricao = models.TextField(blank=True, default='')
+    modelo_pronto_para_utilizacao = models.BooleanField(default=False)
     # end template
 
     assinatura_hash = models.TextField(blank=True, editable=False, unique=True, null=True)

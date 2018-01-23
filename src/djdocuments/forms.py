@@ -140,7 +140,7 @@ class CriarDocumentoForm(DjDocumentsBackendMixin, forms.Form):
         other_form_field=ModeloDocumentoTemplateModelChoiceField(
             label='Modelo de Documento',
             to_field_name='pk_uuid',
-            queryset=Documento.admin_objects.all(),
+            queryset=Documento.admin_objects.filter(esta_ativo=True, modelo_pronto_para_utilizacao=True),
             widget=ModelSelect2ForwardExtras(url='documentos:documentocriar-autocomplete',
                                              to_field_name='pk_uuid',
                                              forward=('tipo_documento',),

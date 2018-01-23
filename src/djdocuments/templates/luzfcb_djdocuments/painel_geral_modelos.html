@@ -115,6 +115,9 @@
                     </td>
                     <td>
                         <div>
+                            <b href="{{ dado.get_edit_url }}" class="btn-link">
+                                <i class="elusive-file-edit"></i> Ativar/Desativar
+                            </b>
                             {% spurl base=dado.get_preview_url query='next={{ next_success_url }}' as url_para_visualizar_com_query %}
                             <a href="{{ url_para_visualizar_com_query }}" class="btn-link">
                                 <i class="icofont-search"></i> Visualizar
