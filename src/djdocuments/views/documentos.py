@@ -25,6 +25,7 @@ from django.utils.functional import cached_property
 from django.views import generic
 from django.views.decorators.cache import never_cache
 from django.views.generic.detail import SingleObjectMixin
+from django.views.generic.edit import BaseFormView, BaseUpdateView
 from django_addanother.views import CreatePopupMixin
 from extra_views import SearchableListMixin
 from luzfcb_dj_simplelock.views import LuzfcbLockMixin
@@ -1352,3 +1353,21 @@ class DocumentoExcluirView(AjaxFormPostMixin, generic.DeleteView):
                                               kwargs={'slug': self.object.pk_uuid})
         context['document_object'] = self.object
         return context
+
+
+class DocumentoModeloAtivarDesativarUtilizacao(
+    AjaxFormPostMixin,
+    # generic.UpdateView
+    BaseUpdateView
+):
+    model = Documento
+    slug_field = 'pk_uuid'
+    fields = ('modelo_pronto_para_utilizacao',)
+    success_url = reverse_lazy('documentos:dashboard_modelos')
+    document_json_fields = ('pk_uuid', 'modelo_pronto_para_utilizacao')
+    queryset = Documento.objects.modelos()
+
+    def form_valid(self, form):
+        obj = form.save(commit=False)
+        obj._desabilitar_temporiariamente_versao_numero = True
+        return super(DocumentoModeloAtivarDesativarUtilizacao, self).form_valid(form)

@@ -67,6 +67,15 @@
                 <th class="span1">Criado por</th>
 {#                <th class="span1">Modificado por</th>#}
                 <th class="span1">Data edição</th>
+                <th class="span1">
+
+                    <a href="#" rel="popover" data-trigger="hover" data-html="true" data-placement="top"
+                       data-content="<b>Modelo de Documentos:</b> Documentos de modelo que foram e podem ser criados para uma das defensorias que seu usuário ({{ user.username }}) está vinculado, e são utilizados para gerar outros documentos."
+                       data-original-title="Disponível">
+                        Disponível?
+                    </a>
+
+                </th>
                 <th class="span1">Ações</th>
             </tr>
             </thead>
@@ -115,10 +124,25 @@
                     </td>
                     <td>
                         <div>
-                            <b href="{{ dado.get_edit_url }}" class="btn-link">
-                                <i class="elusive-file-edit"></i> Ativar/Desativar
-                            </b>
-                            {% spurl base=dado.get_preview_url query='next={{ next_success_url }}' as url_para_visualizar_com_query %}
+                          <div class="form-group ">
+                            <div class="col-sm-10">
+                              <input name="modelo_pronto_para_utilizacao"
+                                     class="modelo_pronto_para_utilizacao"
+                                     type="checkbox"
+                                     {% if dado.modelo_pronto_para_utilizacao %}checked="true" {% endif %}
+                                     data-url="{% url 'documentos:modelo_ativardesativar_utilizacao' slug=dado.pk_uuid %}"
+                                     data-toggle="toggle" data-on="Sim" data-off="Não"
+                                     data-offstyle="danger"
+                                     data-onstyle="success"
+                                     data-size="small"
+                              >
+                            </div>
+                          </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div>
+                           {% spurl base=dado.get_preview_url query='next={{ next_success_url }}' as url_para_visualizar_com_query %}
                             <a href="{{ url_para_visualizar_com_query }}" class="btn-link">
                                 <i class="icofont-search"></i> Visualizar
                             </a> |
@@ -169,6 +193,7 @@
                 <th class="span1">Criado por</th>
 {#                <th class="span1">Modificado por</th>#}
                 <th class="span1">Data edição</th>
+                <th class="span1">Disponível?</th>
                 <th class="span1">Ações</th>
             </tr>
             </tfoot>
@@ -185,4 +210,50 @@
     {% endblock %}
 
 {% endblock %}
+{% block js_app %}
 
+  {{ block.super }}
+
+  <script type="application/javascript">
+    $(function () {
+      var requestRunning = false;
+      $('.modelo_pronto_para_utilizacao').change(function () {
+        var self = $(this);
+        if (requestRunning) { // don't do anything if an AJAX request is pending
+          return;
+        }
+        self.attr('disabled', true);
+
+        var post_url = self.attr('data-url').replace(/\s/g, "");
+        var is_checked = self.prop("checked");
+        var data = {};
+        if (is_checked === true) {
+          data = {'modelo_pronto_para_utilizacao': true};
+        }
+
+        requestRunning = true;
+        var posting = $.post(post_url, data, 'JSON');
+
+        posting.fail(function (jqXHR, textStatus, errorThrown) {
+
+          var errors = jqXHR.responseJSON;
+
+          var msg = "Erro ao salvar documento" + errors.object_instance.pk_uuid + "\n";
+          console.log(msg);
+
+        });
+        posting.done(function (data, textStatus, jqXHR) {
+
+          var mensagem = "Documento N° " + data.object_instance.pk_uuid + " salvo com sucesso!";
+          console.log(mensagem);
+        });
+
+        posting.always(function (data, textStatus, errorThrown) {
+          self.attr('disabled', false);
+          requestRunning = false;
+        });
+      });
+    });
+
+  </script>
+{% endblock js_app %}

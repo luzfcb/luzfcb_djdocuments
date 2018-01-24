@@ -126,6 +126,10 @@ urlpatterns = [
         login_required(documentos_views.CriarModeloDeDocumentoExistente.as_view()),
         name='criar_modelo_apartir_de_documento_existente'
         ),
+    url(r'^m/ativardesativarutilizacao/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/$',
+        login_required(documentos_views.DocumentoModeloAtivarDesativarUtilizacao.as_view()),
+        name='modelo_ativardesativar_utilizacao'
+        ),
     url(r'^m/$',
         login_required(documentos_views.DocumentoModeloPainelGeralView.as_view()),
         name='dashboard_modelos'
