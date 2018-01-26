@@ -1355,11 +1355,7 @@ class DocumentoExcluirView(AjaxFormPostMixin, generic.DeleteView):
         return context
 
 
-class DocumentoModeloAtivarDesativarUtilizacao(
-    AjaxFormPostMixin,
-    # generic.UpdateView
-    BaseUpdateView
-):
+class DocumentoModeloAtivarDesativarUtilizacao(AjaxFormPostMixin, BaseUpdateView):
     model = Documento
     slug_field = 'pk_uuid'
     fields = ('modelo_pronto_para_utilizacao',)
@@ -1371,3 +1367,17 @@ class DocumentoModeloAtivarDesativarUtilizacao(
         obj = form.save(commit=False)
         obj._desabilitar_temporiariamente_versao_numero = True
         return super(DocumentoModeloAtivarDesativarUtilizacao, self).form_valid(form)
+
+
+class DocumentoEstaProntoParaAssinar(AjaxFormPostMixin, BaseUpdateView):
+    model = Documento
+    slug_field = 'pk_uuid'
+    fields = ('esta_pronto_para_assinar',)
+    success_url = reverse_lazy('documentos:dashboard_modelos')
+    document_json_fields = ('pk_uuid', 'esta_pronto_para_assinar')
+    queryset = Documento.objects.filter(esta_ativo=True)
+
+    def form_valid(self, form):
+        obj = form.save(commit=False)
+        obj._desabilitar_temporiariamente_versao_numero = True
+        return super(DocumentoEstaProntoParaAssinar, self).form_valid(form)
