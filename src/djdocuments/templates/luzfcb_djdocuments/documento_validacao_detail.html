@@ -589,7 +589,10 @@
                                     </tr>
                                     </tbody>
                                 </table>
-
+                                {% if object.rodape %}
+                                  <hr class="borda-dupla">
+                                  {{ object.rodape|safe }}
+                                {% endif %}
                             </div>
                         {% endblock rodape %}
                     </div>
