@@ -60,6 +60,7 @@ class DocumentoAdmin(SimpleHistoryAdmin):
         # 'revertido_por', 'revertido_da_versao',
         'pk_uuid',
         'esta_assinado',
+        'rodape_assinatura',
 
     )
     # readonly_fields = ('criado_em', 'criado_por', 'modificado_em', 'modificado_por', 'revertido_em', 'revertido_por',

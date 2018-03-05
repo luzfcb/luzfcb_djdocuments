@@ -289,6 +289,7 @@ class Documento(SoftDeletableModel):
     # titulo = models.TextField(blank=True, default='')
     conteudo = models.TextField(blank=True, default='')
     rodape = models.TextField(blank=True, default='')
+    rodape_assinatura = models.TextField(blank=True, default='')
 
     # template
     eh_modelo = models.BooleanField(default=False, editable=True)
@@ -559,7 +560,7 @@ class Documento(SoftDeletableModel):
             return False
         return True
 
-    def finalizar_documento(self, usuario):
+    def finalizar_documento(self, usuario, commit=True):
         if not self.pronto_para_finalizar:
             raise ExitemAssinaturasPendentes('Impossivel finalizar documento, ainda existem assinaturas pendentes')
         self.modificado_por = usuario
@@ -567,8 +568,8 @@ class Documento(SoftDeletableModel):
         self.data_assinado = timezone.now()
         self.assinatura_hash = self.gerar_hash(self.data_assinado)
         self.esta_assinado = True
-
-        self.save()
+        if commit:
+            self.save()
 
     def gerar_hash(self, data_assinado):
         hashes = self.assinaturas.filter(ativo=True).values_list('hash_assinatura', flat=True)

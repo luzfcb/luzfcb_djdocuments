@@ -7,20 +7,17 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ImproperlyConfigured
-from django.core.urlresolvers import reverse
 from django.db import models
 from django.http import JsonResponse
 from django.http.response import Http404
 from django.shortcuts import redirect, resolve_url
 from django.utils import six
 from django.utils.translation import ugettext as _
-from urlobject import URLObject
 
 from djdocuments.utils.http import is_safe_url
 
 from ..models import Documento
-from ..templatetags.luzfcb_djdocuments_tags import absolute_uri
-from ..utils.base64utils import png_as_base64_str
+from ..utils.base64utils import png_as_base64_str, gerar_tag_img_base64_png_qr_str
 
 USER_MODEL = get_user_model()
 
@@ -46,20 +43,12 @@ class FormActionViewMixin(object):
 
 
 class QRCodeValidacaoMixin(object):
+
     def get_context_data(self, **kwargs):
         # http://stackoverflow.com/a/7389616/2975300
         context = super(QRCodeValidacaoMixin, self).get_context_data(**kwargs)
 
-        # possivel candidato para cache
-        url_validar = reverse('documentos:validar')
-        querystring = "{}={}".format('h', self.object.get_assinatura_hash_upper_limpo)
-        url_com_querystring = URLObject(url_validar).with_query(querystring)
-        url = absolute_uri(url_com_querystring, self.request)
-
-        codigo_qr = pyqrcode.create(url)
-        encoded_image = png_as_base64_str(qr_code=codigo_qr, scale=2)
-
-        img_tag = "<img src=data:image/png;base64,{}>".format(encoded_image)
+        img_tag = gerar_tag_img_base64_png_qr_str(self.request, self.object)
         #
         context.update(
             {
