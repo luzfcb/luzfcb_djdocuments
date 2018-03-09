@@ -495,37 +495,9 @@
                                 {% if object.esta_assinado %}
                                     <div class="documento-assinaturas">
                                         <hr class="assinantes-borda">
-                                        {% for assinatura in assinaturas %}
-                                            {% if assinatura.esta_assinado %}
-                                                <table>
-                                                    <tbody>
-                                                    <tr>
-                                                        <td>
-                                                            <div style="height:47px;width:75px;">
-                                                                <img src="{% signature_by_icon_image %}"
-                                                                     style="max-height:47px;max-width:75px;display:block;margin:0 auto;">
-                                                            </div>
-                                                        </td>
-                                                        <td>
-                                                            <p style="margin:0;text-align: left; font-size:11pt;font-family: Times New Roman;">
-                                                                {% if object.esta_assinado %}
-                                                                    Documento assinado eletronicamente por
-                                                                    <b>{{ assinatura.assinado_nome }}</b>,
-                                                                    em {{ assinatura.assinado_em|date:"d/m/Y H:m:s" }},
-                                                                    conforme
-                                                                    art.
-                                                                    1º,
-                                                                    III,
-                                                                    "b", da Lei 11.419/2006.</p>
-                                                                {% endif %}
-                                                        </td>
-                                                    </tr>
-                                                    </tbody>
-                                                </table>
-                                                <hr class="assinantes-borda">
-                                            {% endif %}
-                                        {% endfor %}
-
+                                        {% if object.conteudo_assinaturas %}
+                                          {{ object.conteudo_assinaturas|safe }}
+                                        {% endif %}
                                     </div>
                                 {% endif %}
                             {% else %}
