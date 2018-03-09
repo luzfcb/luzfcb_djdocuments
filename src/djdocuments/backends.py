@@ -4,6 +4,7 @@ from __future__ import absolute_import, print_function, unicode_literals
 from collections import Iterable
 
 from django.core.exceptions import ImproperlyConfigured
+from django.template.loader import render_to_string
 
 from .utils import get_djdocuments_backend, get_grupo_assinante_model_class
 
@@ -18,6 +19,25 @@ class DjDocumentsBackendMixin(object):
 class DjDocumentsBaseBackend(object):
     group_name_atrib = None
     group_label = None
+    template_conteudo_assinaturas = 'luzfcb_djdocuments/documento_finalizado_assinaturas.html'
+
+    def popular_conteudo_assinaturas(self, document, commit=True):
+        assinaturas = document.assinaturas.only(
+            'esta_assinado',
+            'assinado_em',
+            'assinado_nome'
+        ).filter(esta_assinado=True)
+        context = {
+            'assinaturas': assinaturas
+        }
+        conteudo_assinaturas = render_to_string(
+            template_name=self.template_conteudo_assinaturas,
+            context=context
+        )
+        document.conteudo_assinaturas = conteudo_assinaturas
+        if commit:
+            document.save()
+        return conteudo_assinaturas
 
     def pode_criar_documento_para_grupo(self, usuario, grupo):
         raise NotImplemented()

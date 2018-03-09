@@ -13,12 +13,22 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name='documento',
-            name='rodape_assinatura',
+            name='conteudo_assinaturas',
+            field=models.TextField(default='', blank=True),
+        ),
+        migrations.AddField(
+            model_name='documento',
+            name='rodape_qr_validacao',
             field=models.TextField(default='', blank=True),
         ),
         migrations.AddField(
             model_name='historicaldocumento',
-            name='rodape_assinatura',
+            name='conteudo_assinaturas',
+            field=models.TextField(default='', blank=True),
+        ),
+        migrations.AddField(
+            model_name='historicaldocumento',
+            name='rodape_qr_validacao',
             field=models.TextField(default='', blank=True),
         ),
     ]

@@ -715,8 +715,8 @@ class FinalizarDocumentoFormView(FormActionViewMixin, AjaxFormPostMixin, SingleD
                 'qr_code_validation_html_img_tag': img_tag
             }
 
-            rodape_assinatura = render_to_string('luzfcb_djdocuments/rodape_assinatura.html', context=context)
-            self.document_object.rodape_assinatura = rodape_assinatura
+            rodape_qr_validacao = render_to_string('luzfcb_djdocuments/documento_finalizado_rodape_qr_validacao.html', context=context)
+            self.document_object.rodape_qr_validacao = rodape_qr_validacao
             self.document_object.save()
 
         else:
@@ -1048,10 +1048,9 @@ class AssinarFinalizarDocumentoView(AssinarDocumentoView):
                 'qr_code_validation_html_img_tag': img_tag
             }
 
-            rodape_assinatura = render_to_string('luzfcb_djdocuments/rodape_assinatura.html', context=context)
-            self.document_object.rodape_assinatura = rodape_assinatura
+            rodape_qr_validacao = render_to_string('luzfcb_djdocuments/documento_finalizado_rodape_qr_validacao.html', context=context)
+            self.document_object.rodape_qr_validacao = rodape_qr_validacao
             self.document_object.save()
-
 
         return ret
 

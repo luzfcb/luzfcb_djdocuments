@@ -537,8 +537,8 @@
                         {% block rodape %}
                             <div class="documento-rodape">
 
-                                {% if object.rodape_assinatura %}
-                                  {{ object.rodape_assinatura|safe }}
+                                {% if object.rodape_qr_validacao %}
+                                  {{ object.rodape_qr_validacao|safe }}
                                 {% endif %}
 
                                 <hr class="borda-dupla">

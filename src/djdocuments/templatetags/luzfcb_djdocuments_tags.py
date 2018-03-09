@@ -6,6 +6,7 @@ import uuid
 import bleach
 from django import template
 from django.conf import settings
+from django.contrib.staticfiles.finders import find as find_static_file
 from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.db import models
 from django.forms import Media
@@ -19,6 +20,10 @@ from simple_history.forms import new_readonly_form_class
 from ..utils import identificador, split_utils, get_djdocuments_backend
 
 register = template.Library()
+
+sigla = settings.DJDOCUMENT.get('SIGLA_UF', 'undefined') or 'undefined'
+nome_arquivo_assinatura = 'luzfcb_djdocuments/img/sigicon/{}.png'.format(sigla.lower())
+
 
 
 @register.filter
@@ -329,6 +334,34 @@ def add_defer(value):
 
 @register.simple_tag
 def signature_by_icon_image():
-    sigla = settings.DJDOCUMENT.get('SIGLA_UF', 'undefined') or 'undefined'
-    nome_arquivo = 'luzfcb_djdocuments/img/sigicon/{}.png'.format(sigla.lower())
-    return static(nome_arquivo)
+    return static(nome_arquivo_assinatura)
+
+
+@register.simple_tag
+def encode_static(path, encoding='base64', file_type='image'):
+    """
+    a template tag that returns a encoded string representation of a staticfile
+    Usage::
+        {% encode_static path [encoding] %}
+    Examples::
+        <img src="{% encode_static 'path/to/img.png' %}">
+    """
+    file_path = find_static_file(path)
+    ext = file_path.split('.')[-1]
+    file_str = get_file_data(file_path).encode(encoding)
+    return u"data:{0}/{1};{2},{3}".format(file_type, ext, encoding, file_str)
+
+
+def get_file_data(file_path):
+    with open(file_path, 'rb') as f:
+        data = f.read()
+        f.close()
+        return data
+
+
+nome_arquivo_assinatura_base64 = encode_static(nome_arquivo_assinatura)
+
+
+@register.simple_tag
+def signature_by_icon_image_base64():
+    return nome_arquivo_assinatura_base64
