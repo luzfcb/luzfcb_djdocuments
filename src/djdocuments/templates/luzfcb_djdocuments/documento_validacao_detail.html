@@ -536,44 +536,9 @@
 
                         {% block rodape %}
                             <div class="documento-rodape">
-                                <hr class="borda-dupla">
-                                {% if object.esta_assinado %}
 
-                                    <table>
-                                        <tbody>
-                                        <tr>
-                                            {#                                    <td style="width: 200px; height: 105px">#}
-                                            <td>
-                                                {% if object.esta_assinado %}
-                                                    <a id="url_validacao" class="hidden-print-href"
-                                                       href="{{ validar_url|absolute_uri:request }}">
-                                                        <div id="codigo_qr" class="codigo-qr">
-                                                            {{ qr_code_validation_html_img_tag|safe }}
-                                                        </div>
-                                                        <p class="hidden-print">Verifique a Validade</p>
-                                                    </a>
-                                                {% endif %}
-                                            </td>
-                                            <td>
-                                                <p style="margin:4;text-align: left; font-size:11pt;font-family: Times New Roman;">
-                                                    {% if object.esta_assinado %}
-
-
-                                                        A autenticidade do documento pode ser conferida no site
-                                                        {{ validar_url_view|absolute_uri:request|urlize }} informando o
-                                                        código
-                                                        verificador:
-                                                        <div style="text-align: center;">
-                                                            <span><b>{{ object.get_assinatura_hash_upper_limpo|dividir_a_cada:10 }}</b></span>
-                                                        </div>
-                                                    {% endif %}
-                                                </p>
-                                            </td>
-                                        </tr>
-                                        </tbody>
-                                    </table>
-                                {% else %}
-
+                                {% if object.rodape_qr_validacao %}
+                                  {{ object.rodape_qr_validacao|safe }}
                                 {% endif %}
 
                                 <hr class="borda-dupla">

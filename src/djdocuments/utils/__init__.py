@@ -19,7 +19,16 @@ except ImportError:  # Python2
     from urlparse import urljoin
 
 __all__ = (
+    'InvalidDjDocumentsBackendException',
+    'get_djdocuments_backend',
+    'get_grupo_assinante_model_str',
+    'get_grupo_assinante_model_class',
+    'get_grupo_assinante_app_name_str',
     'add_querystrings_to_url',
+    'intercalar',
+    'pathname2fileurl',
+    'make_absolute_paths',
+    'admin_method_attributes',
 )
 
 

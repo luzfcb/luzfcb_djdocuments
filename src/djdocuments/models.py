@@ -15,12 +15,14 @@ from django.db.models import Max, Q
 from django.utils import timezone, six
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.functional import cached_property
+from django.template.loader import render_to_string
 from simple_history.models import HistoricalRecords
 from simple_history.views import MissingHistoryRecordsField
 from model_utils import FieldTracker
 from model_utils.models import SoftDeletableModel
 from . import managers
 from .utils import identificador, get_djdocuments_backend, get_grupo_assinante_model_str
+
 
 logger = logging.getLogger()
 
@@ -288,7 +290,9 @@ class Documento(SoftDeletableModel):
     cabecalho = models.TextField(blank=True, default='')
     # titulo = models.TextField(blank=True, default='')
     conteudo = models.TextField(blank=True, default='')
+    conteudo_assinaturas = models.TextField(blank=True, default='')
     rodape = models.TextField(blank=True, default='')
+    rodape_qr_validacao = models.TextField(blank=True, default='')
 
     # template
     eh_modelo = models.BooleanField(default=False, editable=True)
@@ -559,7 +563,17 @@ class Documento(SoftDeletableModel):
             return False
         return True
 
-    def finalizar_documento(self, usuario):
+    def popular_conteudo_assinaturas(self, commit=False):
+        """
+        Gera o HTML contendo todas as assinaturas ativas realizadas.
+        Internamente ele chama a funcao DjDocumentsBackend.popular_conteudo_assinaturas(document=self, commit=commit)
+        :param commit:
+        :return: conteudo html gerado
+        """
+        conteudo_gerado = DjDocumentsBackend.popular_conteudo_assinaturas(document=self, commit=commit)
+        return conteudo_gerado
+
+    def finalizar_documento(self, usuario, commit=True):
         if not self.pronto_para_finalizar:
             raise ExitemAssinaturasPendentes('Impossivel finalizar documento, ainda existem assinaturas pendentes')
         self.modificado_por = usuario
@@ -567,8 +581,9 @@ class Documento(SoftDeletableModel):
         self.data_assinado = timezone.now()
         self.assinatura_hash = self.gerar_hash(self.data_assinado)
         self.esta_assinado = True
-
-        self.save()
+        self.popular_conteudo_assinaturas()
+        if commit:
+            self.save()
 
     def gerar_hash(self, data_assinado):
         hashes = self.assinaturas.filter(ativo=True).values_list('hash_assinatura', flat=True)

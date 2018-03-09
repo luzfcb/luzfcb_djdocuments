@@ -26,11 +26,13 @@ from django.views import generic
 from django.views.decorators.cache import never_cache
 from django.views.generic.detail import SingleObjectMixin
 from django.views.generic.edit import BaseFormView, BaseUpdateView
+from django.template.loader import render_to_string
 from django_addanother.views import CreatePopupMixin
 from extra_views import SearchableListMixin
 from luzfcb_dj_simplelock.views import LuzfcbLockMixin
 from wkhtmltopdf.views import PDFRenderMixin
 
+from ..utils.base64utils import gerar_tag_img_base64_png_qr_str
 from ..backends import DjDocumentsBackendMixin
 from ..forms import (
     CriarDocumentoForm,
@@ -704,7 +706,19 @@ class FinalizarDocumentoFormView(FormActionViewMixin, AjaxFormPostMixin, SingleD
 
         # form.cleaned_data[]
         if self.document_object.pronto_para_finalizar:
-            self.document_object.finalizar_documento(self.request.user)
+            self.document_object.finalizar_documento(self.request.user, commit=False)
+
+            img_tag = gerar_tag_img_base64_png_qr_str(self.request, self.document_object)
+            context = {
+                'request': self.request,
+                'object': self.document_object,
+                'qr_code_validation_html_img_tag': img_tag
+            }
+
+            rodape_qr_validacao = render_to_string('luzfcb_djdocuments/documento_finalizado_rodape_qr_validacao.html', context=context)
+            self.document_object.rodape_qr_validacao = rodape_qr_validacao
+            self.document_object.save()
+
         else:
             # raise PermissionDenied()
             return HttpResponseForbidden()
@@ -1021,10 +1035,23 @@ class AssinarDocumentoView(DocumentoAssinadoRedirectMixin,
 class AssinarFinalizarDocumentoView(AssinarDocumentoView):
     template_name = 'luzfcb_djdocuments/documento_assinar_finalizar.html'
     template_name_ajax = 'luzfcb_djdocuments/documento_assinar_finalizar_ajax.html'
+
     def form_valid(self, form):
         ret = super(AssinarFinalizarDocumentoView, self).form_valid(form)
         if self.document_object.pronto_para_finalizar:
-            self.document_object.finalizar_documento(self.request.user)
+            self.document_object.finalizar_documento(self.request.user, commit=False)
+
+            img_tag = gerar_tag_img_base64_png_qr_str(self.request, self.document_object)
+            context = {
+                'request': self.request,
+                'object': self.document_object,
+                'qr_code_validation_html_img_tag': img_tag
+            }
+
+            rodape_qr_validacao = render_to_string('luzfcb_djdocuments/documento_finalizado_rodape_qr_validacao.html', context=context)
+            self.document_object.rodape_qr_validacao = rodape_qr_validacao
+            self.document_object.save()
+
         return ret
 
     def get_form_kwargs(self):
