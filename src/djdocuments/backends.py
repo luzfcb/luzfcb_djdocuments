@@ -5,6 +5,7 @@ from collections import Iterable
 
 from django.core.exceptions import ImproperlyConfigured
 from django.template.loader import render_to_string
+from django.contrib.auth.hashers import check_password as django_check_password
 
 from .utils import get_djdocuments_backend, get_grupo_assinante_model_class
 
@@ -20,6 +21,9 @@ class DjDocumentsBaseBackend(object):
     group_name_atrib = None
     group_label = None
     template_conteudo_assinaturas = 'luzfcb_djdocuments/documento_finalizado_assinaturas.html'
+
+    def check_password(self, password_str, user_instance):
+        return django_check_password(password_str, user_instance.password)
 
     def popular_conteudo_assinaturas(self, document, commit=True):
         assinaturas = document.assinaturas.only(

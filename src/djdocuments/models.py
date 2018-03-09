@@ -6,7 +6,7 @@ import uuid
 from collections import Iterable, OrderedDict
 
 from django.conf import settings
-from django.contrib.auth.hashers import SHA1PasswordHasher, check_password
+from django.contrib.auth.hashers import SHA1PasswordHasher
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
@@ -207,7 +207,7 @@ class Assinatura(models.Model):
 
     def assinar(self, usuario_assinante, senha):
 
-        if not check_password(senha, usuario_assinante.password):
+        if not DjDocumentsBackend.check_password(senha, usuario_assinante):
             raise ValidationError('Senha inválida para o usuario selecionado')
 
         assert self.ativo is True, 'O registro nao esta ativo para ser assinado'

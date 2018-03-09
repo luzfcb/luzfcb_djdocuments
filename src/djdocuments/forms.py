@@ -6,7 +6,6 @@ from dal import autocomplete
 from dj_waff.choice_with_other import ChoiceWithOtherField
 from django import forms
 from django.contrib.auth import get_user_model
-from django.contrib.auth.hashers import check_password
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.utils.translation import ugettext_lazy as _
 from django_addanother.widgets import AddAnotherWidgetWrapper
@@ -371,7 +370,7 @@ class FinalizarDocumentoForm(BootstrapFormInputMixin, DjDocumentsBackendMixin, f
 
     def clean_password(self):
         password = self.cleaned_data.get('password')
-        valid = check_password(password, self.current_logged_user.password)
+        valid = self.djdocuments_backend.check_password(password, self.current_logged_user)
         if not valid:
             raise forms.ValidationError('Invalid password')
 
@@ -442,7 +441,7 @@ def create_form_class_assinar(assinatura, usuario_atualmente_logado=None):
                 user = self.cleaned_data.get('assinado_por')
 
             if user:
-                valid = check_password(password, user.password)
+                valid = self.djdocuments_backend.check_password(password, user)
 
                 if not valid:
                     self.add_error('password', forms.ValidationError('Senha inválida para o assinante selecionado'))
@@ -566,7 +565,7 @@ def create_form_class_finalizar(document_object):
         def clean_password(self):
             password = self.cleaned_data.get('password')
             user = self.cleaned_data.get('assinado_por')
-            valid = check_password(password, user.password)
+            valid = self.djdocuments_backend.check_password(password, user)
             if not valid:
                 raise forms.ValidationError('Invalid password')
 
