@@ -64,6 +64,7 @@ jQuery(document).ready(function ($) {
             //var h = $(this).data('height');
             //var s = $(this).data('scrollbars');
             var fullscreen = $(this).hasClass('djfullscreen');
+            var reloadparentonclose = $(this).hasClass('reloadparentonclose');
 
             if (fullscreen) {
                 width = screen.width;
@@ -75,17 +76,33 @@ jQuery(document).ready(function ($) {
             //var top = (screen.height / 2) - (h / 2);
             //var features = 'scrollbars=' + s + ',resizable=yes,width=' + w + ',height=' + h + ',top=' + top + ',left=' + left + ',modal=yes';
             //
-
+            var get_param = "";
+            var additional_get_param = "";
+            if (reloadparentonclose === true){
+                additional_get_param = "reloadparentonclose=1"
+            }
             if (!contem(url_to_open, 'popup=')) {
                 if (contem(url_to_open, '?')) {
-                    url_to_open = inserirApos('?', url_to_open, "popup=1&");
+                    get_param = "popup=1&";
+                    if(reloadparentonclose === true){
+                        get_param = get_param + additional_get_param + "&";
+                    }
+                    url_to_open = inserirApos('?', url_to_open, get_param);
                 }
                 else {
                     if (contem(url_to_open, '#')) {
-                        url_to_open = inserirAntes('#', url_to_open, "?popup=1");
+                        get_param = "?popup=1";
+                        if(reloadparentonclose === true){
+                            get_param = get_param + "&"+ additional_get_param;
+                        }
+                        url_to_open = inserirAntes('#', url_to_open, get_param);
                     }
                     else {
-                        url_to_open = url_to_open + "?popup=1";
+                        get_param = "?popup=1";
+                        if(reloadparentonclose === true){
+                            get_param = get_param + "&"+ additional_get_param;
+                        }
+                        url_to_open = url_to_open + get_param;
                     }
                 }
             }
@@ -126,18 +143,23 @@ jQuery(document).ready(function ($) {
             if ($(this).hasClass('.nolock') === false) {
 
                 LoadModalDiv(popUpObj);
-                autoHideModalDivIfPopUPClosed(popUpObj);
+                autoHideModalDivIfPopUPClosed(popUpObj, reloadparentonclose);
             }
         }
         return false;
 
     });
 
-    function autoHideModalDivIfPopUPClosed(popUpObj) {
+    function autoHideModalDivIfPopUPClosed(popUpObj, reload) {
         var timer = setInterval(function () {
             if (popUpObj.closed) {
                 clearInterval(timer);
-                HideModalDiv('');
+                if(reload === true){
+                    HideModalDiv('reload');
+                }else {
+                    HideModalDiv('');
+                }
+
             }
         }, 500);
 
@@ -199,6 +221,9 @@ function HideModalDiv(param) {
     'use strict';
     var bcgDiv = document.getElementById("jdDivBackground");
     bcgDiv.style.display = "none";
+    if(contem(param, 'reload')){
+        document.location.reload(true);
+    }
     //var bcgbody = document.getElementsByName('body');
     //document.focus();
     //redirecionar(param);
