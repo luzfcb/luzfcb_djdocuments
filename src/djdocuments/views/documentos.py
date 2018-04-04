@@ -453,6 +453,7 @@ class DocumentoCriar(CreatePopupMixin, VinculateMixin, FormActionViewMixin, DjDo
     default_selected_document_template_pk = None
     document_slug_url_kwarg = 'document_pk'
     form_action = reverse_lazy('documentos:create')
+    object = None
 
     def get_context_data(self, **kwargs):
         context = super(DocumentoCriar, self).get_context_data(**kwargs)
@@ -487,6 +488,7 @@ class DocumentoCriar(CreatePopupMixin, VinculateMixin, FormActionViewMixin, DjDo
                                                                 grupo=grupo,
                                                                 documento_modelo=modelo_documento,
                                                                 assunto=assunto)
+        self.object = documento_novo
         # vinculate_view_name = self.request.GET.get(self.vinculate_view_field, None)
         # vinculate_value = self.request.GET.get(self.vinculate_value_field, None)
         if self.vinculate_view_name and self.vinculate_value:
