@@ -19,6 +19,7 @@ from django.http import Http404
 from django.http.response import HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import six
+from django.utils.six.moves.urllib.parse import urlparse
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_text
 from django.utils.functional import cached_property
@@ -46,7 +47,8 @@ from ..forms import (
     TipoDocumentoForm,
     create_form_class_adicionar_assinantes,
     create_form_class_assinar,
-    create_form_class_finalizar
+    create_form_class_finalizar,
+    DocumentoMarcarDesmarcarProntoParaAssinarForm,
 )
 from ..models import Assinatura, Documento, TipoDocumento
 from ..tables import DocumentoTable
@@ -120,7 +122,7 @@ class DocumentoPainelGeralView(DjDocumentsBackendMixin, MenuMixin, generic.Templ
         return self.next_success_url
 
     def get_ultimas_assinaturas_pendentes_queryset(self):
-        return Assinatura.objects.assinaturas_pendentes().order_by('-cadastrado_em')[:self.mostrar_ultimas]
+        return Assinatura.objects.assinaturas_pendentes().filter(documento__esta_pronto_para_assinar=True).order_by('-cadastrado_em')[:self.mostrar_ultimas]
 
     def get_ultimas_assinaturas_realizadas_queryset(self):
         return Assinatura.objects.assinaturas_realizadas().order_by('-cadastrado_em')[:self.mostrar_ultimas]
@@ -176,7 +178,7 @@ class DocumentoPainelGeralPorGrupoView(DocumentoPainelGeralView):
                :self.mostrar_ultimas]
 
     def get_ultimas_assinaturas_pendentes_queryset(self):
-        return Assinatura.objects.assinaturas_pendentes().from_groups(
+        return Assinatura.objects.assinaturas_pendentes().filter(documento__esta_pronto_para_assinar=True).from_groups(
             grupos_ids=self.get_ids_grupos_do_usuario).order_by(
             '-cadastrado_em')[:self.mostrar_ultimas]
 
@@ -1115,7 +1117,7 @@ class DocumentoDetailView(NextPageURLMixin, DjDocumentsBackendMixin, DjDocumentP
                                                   kwargs={'slug': self.object.pk_uuid})
         # context['assinaturas'] = self.object.assinaturas.select_related('assinado_por').all()
         assinaturas = self.object.assinaturas.filter(ativo=True)
-
+        context['eh_ultimo_pendente'] = assinaturas.filter(esta_assinado=False, ativo=True).count() <= 1
         context['assinaturas_pendentes_dos_meus_grupos'] = assinaturas.filter(esta_assinado=False, ativo=True,
                                                                               grupo_assinante__in=self.get_ids_grupos_do_usuario).order_by(
             'grupo_assinante_nome')
@@ -1398,15 +1400,65 @@ class DocumentoModeloAtivarDesativarUtilizacao(AjaxFormPostMixin, BaseUpdateView
         return super(DocumentoModeloAtivarDesativarUtilizacao, self).form_valid(form)
 
 
-class DocumentoEstaProntoParaAssinar(AjaxFormPostMixin, BaseUpdateView):
+class DocumentoMarcarDesmarcarProntoParaAssinar(AjaxFormPostMixin, FormActionViewMixin, generic.UpdateView):
     model = Documento
+    form_class = DocumentoMarcarDesmarcarProntoParaAssinarForm
     slug_field = 'pk_uuid'
-    fields = ('esta_pronto_para_assinar',)
-    success_url = reverse_lazy('documentos:dashboard_modelos')
+    # fields = ('esta_pronto_para_assinar',)
     document_json_fields = ('pk_uuid', 'esta_pronto_para_assinar')
     queryset = Documento.objects.filter(esta_ativo=True)
+    request_origin_is_edit_url = False
+    request_origin_is_preview_url = False
+
+    template_name = 'luzfcb_djdocuments/documento_marcardesmarcar_pronto_para_assinar.html'
+    template_name_ajax = 'luzfcb_djdocuments/documento_marcardesmarcar_pronto_para_assinar_ajax.html'
+
+    def get_http_referer_path(self):
+        http_referer = self.request.META.get('HTTP_REFERER')
+        url_path = ''
+        if http_referer:
+            parsed = urlparse(http_referer)
+            url_path = parsed.path
+            print('passou aqui')
+
+        return url_path
+
+    def get_esta_pronto_para_assinar_value(self):
+        request_path = self.get_http_referer_path()
+        esta_pronto_para_assinar = None
+        if request_path == self.object.get_edit_url:
+            self.request_origin_is_edit_url = esta_pronto_para_assinar = True
+        if request_path == self.object.get_preview_url:
+            self.request_origin_is_preview_url = esta_pronto_para_assinar = False
+        return esta_pronto_para_assinar
+
+    def get_initial(self):
+        initial = super(DocumentoMarcarDesmarcarProntoParaAssinar, self).get_initial()
+        esta_pronto_para_assinar = self.get_esta_pronto_para_assinar_value()
+        if esta_pronto_para_assinar is not None:
+            initial.update({
+                'esta_pronto_para_assinar': esta_pronto_para_assinar
+            })
+        return initial
+
+    def get_form_action(self):
+        return self.object.get_pronto_para_assinar_url
+
+    def get_success_url(self):
+        return self.object.get_preview_url
 
     def form_valid(self, form):
         obj = form.save(commit=False)
+        obj.esta_pronto_para_assinar = self.get_esta_pronto_para_assinar_value()
         obj._desabilitar_temporiariamente_versao_numero = True
-        return super(DocumentoEstaProntoParaAssinar, self).form_valid(form)
+        ret = super(DocumentoMarcarDesmarcarProntoParaAssinar, self).form_valid(form)
+        if not obj.esta_pronto_para_assinar:
+            return redirect(self.object.get_edit_url)
+        return ret
+
+    def get_context_data(self, **kwargs):
+        context = super(DocumentoMarcarDesmarcarProntoParaAssinar, self).get_context_data(**kwargs)
+        esta_pronto_para_assinar = self.get_esta_pronto_para_assinar_value()
+        context['request_origin_is_edit_url'] = self.request_origin_is_edit_url
+        context['request_origin_is_preview_url'] = self.request_origin_is_preview_url
+        return context

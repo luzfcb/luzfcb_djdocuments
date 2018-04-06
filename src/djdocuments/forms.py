@@ -579,3 +579,16 @@ class TipoDocumentoForm(BootstrapFormInputMixin, forms.ModelForm):
     class Meta:
         model = TipoDocumento
         fields = '__all__'
+
+
+class DocumentoMarcarDesmarcarProntoParaAssinarForm(forms.ModelForm):
+    esta_pronto_para_assinar = forms.BooleanField(label='', widget=forms.HiddenInput, required=False)
+
+    class Meta:
+        model = Documento
+        fields = (
+            'esta_pronto_para_assinar',
+        )
+        # widgets = {
+        #     'esta_pronto_para_assinar': forms.HiddenInput()
+        # }
