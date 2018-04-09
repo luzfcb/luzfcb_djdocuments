@@ -75,7 +75,7 @@
                         </div>
                         <div class="btn-group">
 
-                            <button class="btn btn-default" type="button" id="salvar">
+                            <button class="btn btn-success" type="button" id="salvar">
                                 <em class="glyphicon glyphicon-floppy-disk"></em> Salvar
                             </button>
                             {% if object %}
@@ -100,6 +100,16 @@
                                     <a href="{{ object.get_preview_url }}"
                                        class="btn btn-default"
                                     ><em class="icofont-search"></em>Visualizar</a>
+                                    <a
+                                       href="{% url 'documentos:marcardesmarcar_pronto_para_assinar' slug=object.pk_uuid %}?initial=True"
+                                       class="btn btn-default"
+                                       id="btn-liberar-para-assinatura"
+                                       data-ajaxmodal="true"
+                                       data-ajaxmodal-prefetch="true"
+                                       data-sucess-url="{{ object.get_preview_url }}"
+                                    >
+                                      <em class="icofont-search"></em>Liberar para assinatura
+                                    </a>
 {#                                    {% url 'documentos:assinaturas' slug=object.pk_uuid as documento_assinaturas %}#}
 {#                                    <a href="{{ documento_assinaturas }}"#}
 {#                                       class="btn btn-default"#}

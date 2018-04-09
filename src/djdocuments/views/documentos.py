@@ -19,6 +19,7 @@ from django.http import Http404
 from django.http.response import HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import six
+from django.utils.six.moves.urllib.parse import urlparse
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_text
 from django.utils.functional import cached_property
@@ -46,7 +47,8 @@ from ..forms import (
     TipoDocumentoForm,
     create_form_class_adicionar_assinantes,
     create_form_class_assinar,
-    create_form_class_finalizar
+    create_form_class_finalizar,
+    DocumentoMarcarDesmarcarProntoParaAssinarForm,
 )
 from ..models import Assinatura, Documento, TipoDocumento
 from ..tables import DocumentoTable
@@ -62,7 +64,8 @@ from .mixins import (  # NextURLMixin,
     SingleDocumentObjectMixin,
     SingleGroupObjectMixin,
     VinculateMixin,
-    SingleUserObjectMixin)
+    SingleUserObjectMixin,
+)
 
 logger = logging.getLogger('djdocuments')
 
@@ -120,16 +123,42 @@ class DocumentoPainelGeralView(DjDocumentsBackendMixin, MenuMixin, generic.Templ
         return self.next_success_url
 
     def get_ultimas_assinaturas_pendentes_queryset(self):
-        return Assinatura.objects.assinaturas_pendentes().order_by('-cadastrado_em')[:self.mostrar_ultimas]
+        qs = Assinatura.objects.assinaturas_pendentes().filter(documento__esta_pronto_para_assinar=True).order_by(
+            '-cadastrado_em')
+        if self.mostrar_ultimas:
+            qs = qs[:self.mostrar_ultimas]
+        return qs
 
     def get_ultimas_assinaturas_realizadas_queryset(self):
-        return Assinatura.objects.assinaturas_realizadas().order_by('-cadastrado_em')[:self.mostrar_ultimas]
+        qs = Assinatura.objects.assinaturas_realizadas().order_by('-cadastrado_em')
+        if self.mostrar_ultimas:
+            qs = qs[:self.mostrar_ultimas]
+
+        return qs
 
     def get_ultimos_documentos_nao_finalizados_queryset(self):
-        return Documento.objects.prontos_para_finalizar()[:self.mostrar_ultimas]
+        qs = Documento.objects.prontos_para_finalizar()
+        if self.mostrar_ultimas:
+            qs = qs[:self.mostrar_ultimas]
+        return qs
+
+    def get_ultimos_documentos_finalizados_queryset(self):
+        qs = Documento.objects.finalizados()
+        if self.mostrar_ultimas:
+            qs = qs[:self.mostrar_ultimas]
+        return qs
+
+    def get_ultimos_documentos_nao_pronto_para_assinar_queryset(self):
+        qs = Documento.objects.filter(esta_pronto_para_assinar=False)
+        if self.mostrar_ultimas:
+            qs = qs[:self.mostrar_ultimas]
+        return qs
 
     def get_ultimos_documentos_modificados_queryset(self):
-        return Documento.objects.order_by('-modificado_em')[:self.mostrar_ultimas]
+        qs = Documento.objects.order_by('-modificado_em')
+        if self.mostrar_ultimas:
+            qs = qs[:self.mostrar_ultimas]
+        return qs
 
     def get_ultimas_assinaturas_pendentes_dados(self):
         object_list = self.get_ultimas_assinaturas_pendentes_queryset()
@@ -146,14 +175,41 @@ class DocumentoPainelGeralView(DjDocumentsBackendMixin, MenuMixin, generic.Templ
 
         return object_list
 
+    def get_ultimos_documentos_finalizados_dados(self):
+        object_list = self.get_ultimos_documentos_finalizados_queryset()
+
+        return object_list
+
+    def get_ultimos_documentos_modificados_dados(self):
+        object_list = self.get_ultimos_documentos_modificados_queryset()
+
+        return object_list
+
+    def get_ultimos_documentos_nao_pronto_para_assinar_dados(self):
+        object_list = self.get_ultimos_documentos_nao_pronto_para_assinar_queryset()
+
+        return object_list
+
     def get_context_data(self, **kwargs):
         context = super(DocumentoPainelGeralView, self).get_context_data(**kwargs)
 
         context['ultimas_assinaturas_pendentes'] = self.get_ultimas_assinaturas_pendentes_dados()
+        context['ultimas_assinaturas_pendentes_count'] = context['ultimas_assinaturas_pendentes'].count()
 
         context['ultimas_assinaturas_realizadas'] = self.get_ultimas_assinaturas_realizadas_dados()
+        context['ultimas_assinaturas_realizadas_count'] = context['ultimas_assinaturas_realizadas'].count()
+
         context['ultimos_documentos_nao_finalizados'] = self.get_ultimos_documentos_nao_finalizados_dados()
-        context['ultimos_documentos_modificados'] = self.get_ultimos_documentos_modificados_queryset()
+        context['ultimos_documentos_nao_finalizados_count'] = context['ultimos_documentos_nao_finalizados'].count()
+
+        context['ultimos_documentos_finalizados'] = self.get_ultimos_documentos_finalizados_dados()
+        context['ultimos_documentos_finalizados_count'] = context['ultimos_documentos_finalizados'].count()
+
+        context['ultimos_documentos_modificados'] = self.get_ultimos_documentos_modificados_dados()
+        context['ultimos_documentos_modificados__count'] = context['ultimos_documentos_modificados'].count()
+
+        context['ultimos_documentos_nao_pronto_para_assinar'] = self.get_ultimos_documentos_nao_pronto_para_assinar_dados()  # noqa
+        context['ultimos_documentos_nao_pronto_para_assinar__count'] = context['ultimos_documentos_nao_pronto_para_assinar'].count()
 
         context['mostrar_ultimas'] = self.mostrar_ultimas
         context['next_success_url'] = self.get_next_success_url()
@@ -168,22 +224,50 @@ class DocumentoPainelGeralPorGrupoView(DocumentoPainelGeralView):
         return tuple(self.djdocuments_backend.get_grupos_usuario(self.request.user).values_list('id', flat=True))
 
     def get_ultimos_documentos_nao_finalizados_queryset(self):
-        return Documento.objects.prontos_para_finalizar().from_groups(grupos_ids=self.get_ids_grupos_do_usuario)[
-               :self.mostrar_ultimas]
+        qs = Documento.objects.prontos_para_finalizar().from_groups(grupos_ids=self.get_ids_grupos_do_usuario)
+        if self.mostrar_ultimas:
+            qs = qs[:self.mostrar_ultimas]
+        return qs
+
+    def get_ultimos_documentos_finalizados_queryset(self):
+        qs = Documento.objects.finalizados().from_groups(grupos_ids=self.get_ids_grupos_do_usuario)
+        if self.mostrar_ultimas:
+            qs = qs[:self.mostrar_ultimas]
+        return qs
+
+    def get_ultimos_documentos_nao_pronto_para_assinar_queryset(self):
+        qs = Documento.objects.filter(esta_pronto_para_assinar=False).from_groups(grupos_ids=self.get_ids_grupos_do_usuario)
+        if self.mostrar_ultimas:
+            qs = qs[:self.mostrar_ultimas]
+        return qs
 
     def get_ultimos_documentos_modificados_queryset(self):
-        return Documento.objects.order_by('-modificado_em').from_groups(grupos_ids=self.get_ids_grupos_do_usuario)[
-               :self.mostrar_ultimas]
+        qs = Documento.objects.order_by('-modificado_em').from_groups(grupos_ids=self.get_ids_grupos_do_usuario)
+        if self.mostrar_ultimas:
+            qs = qs[:self.mostrar_ultimas]
+        return qs
 
     def get_ultimas_assinaturas_pendentes_queryset(self):
-        return Assinatura.objects.assinaturas_pendentes().from_groups(
-            grupos_ids=self.get_ids_grupos_do_usuario).order_by(
-            '-cadastrado_em')[:self.mostrar_ultimas]
+        qs = Assinatura.objects.assinaturas_pendentes().filter(
+            documento__esta_pronto_para_assinar=True
+        ).from_groups(
+            grupos_ids=self.get_ids_grupos_do_usuario
+        ).order_by(
+            '-cadastrado_em'
+        )
+        if self.mostrar_ultimas:
+            qs = qs[:self.mostrar_ultimas]
+        return qs
 
     def get_ultimas_assinaturas_realizadas_queryset(self):
-        return Assinatura.objects.assinaturas_realizadas().from_groups(
-            grupos_ids=self.get_ids_grupos_do_usuario).order_by(
-            '-cadastrado_em')[:self.mostrar_ultimas]
+        qs = Assinatura.objects.assinaturas_realizadas().from_groups(
+            grupos_ids=self.get_ids_grupos_do_usuario
+        ).order_by(
+            '-cadastrado_em'
+        )
+        if self.mostrar_ultimas:
+            qs = qs[:self.mostrar_ultimas]
+        return qs
 
     def get_next_success_url(self):
         return reverse('documentos:dashboard-por-grupo')
@@ -198,7 +282,7 @@ class DocumentoListView(DjDocumentsBackendMixin, MenuMixin, django_tables2.Singl
     mostrar_ultimas = 10
     menu_atual = 'list'
     search_fields = [('pk', 'icontains'), ('assunto', 'icontains')]
-    ordering = ('-modificado_em')
+    ordering = ('-modificado_em', )
 
     @method_decorator(never_cache)
     def dispatch(self, request, *args, **kwargs):
@@ -330,8 +414,10 @@ class DocumentoEditor(AAAA, CreatePopupMixin,
             if self.djdocuments_backend.pode_assinar(self.object, self.request.user):
                 # TODO: corrigir url para assinar em editor
                 retorno = reverse_lazy('documentos:assinar_por_grupo',
-                                       kwargs={'slug': self.object.pk_uuid,
-                                               'group_id': group_id})
+                                       kwargs={
+                                           'slug': self.object.pk_uuid,
+                                           'group_id': group_id
+                                       })
             else:
                 return False
         return retorno
@@ -353,11 +439,14 @@ class DocumentoEditor(AAAA, CreatePopupMixin,
     def form_valid(self, form):
         status, mensagem = self.object.pode_editar(usuario_atual=self.request.user)
         logger.info('{klass}:{mensagem}'.format(klass=self.__class__.__name__, mensagem=mensagem),
-                    extra={'params': {'documento_pk': self.object.pk,
-                                      'documento_pk_uuid': self.object.pk_uuid,
-                                      'documento_eh_modelo': self.object.eh_modelo,
-                                      'usuario': self.request.user
-                                      }}
+                    extra={
+                        'params': {
+                            'documento_pk': self.object.pk,
+                            'documento_pk_uuid': self.object.pk_uuid,
+                            'documento_eh_modelo': self.object.eh_modelo,
+                            'usuario': self.request.user
+                        }
+                    }
                     )
         if not status:
             return render(request=self.request, template_name='luzfcb_djdocuments/erros/erro_403.html',
@@ -373,11 +462,14 @@ class DocumentoEditor(AAAA, CreatePopupMixin,
 
         status, mensagem = self.object.pode_editar(usuario_atual=self.request.user)
         logger.info('{klass}:{mensagem}'.format(klass=self.__class__.__name__, mensagem=mensagem),
-                    extra={'params': {'documento_pk': self.object.pk,
-                                      'documento_pk_uuid': self.object.pk_uuid,
-                                      'documento_eh_modelo': self.object.eh_modelo,
-                                      'usuario': self.request.user
-                                      }}
+                    extra={
+                        'params': {
+                            'documento_pk': self.object.pk,
+                            'documento_pk_uuid': self.object.pk_uuid,
+                            'documento_eh_modelo': self.object.eh_modelo,
+                            'usuario': self.request.user
+                        }
+                    }
                     )
         if not status:
             return render(request=request, template_name='luzfcb_djdocuments/erros/erro_403.html',
@@ -492,8 +584,10 @@ class DocumentoCriar(CreatePopupMixin, VinculateMixin, FormActionViewMixin, DjDo
         # vinculate_view_name = self.request.GET.get(self.vinculate_view_field, None)
         # vinculate_value = self.request.GET.get(self.vinculate_value_field, None)
         if self.vinculate_view_name and self.vinculate_value:
-            viculate_url = reverse(self.vinculate_view_name, kwargs={'document_pk': documento_novo.pk,
-                                                                     'pk': self.vinculate_value})
+            viculate_url = reverse(self.vinculate_view_name, kwargs={
+                'document_pk': documento_novo.pk,
+                'pk': self.vinculate_value
+            })
             if self.is_popup():
                 viculate_url = '{}?_popup=1'.format(viculate_url)
             return redirect(viculate_url, permanent=True)
@@ -570,8 +664,10 @@ class DocumentoModeloCriar(DocumentoCriar):
                                                                 )
 
         if self.vinculate_view_name and self.vinculate_value:
-            viculate_url = reverse(self.vinculate_view_name, kwargs={'document_pk': documento_novo.pk,
-                                                                     'pk': self.vinculate_value})
+            viculate_url = reverse(self.vinculate_view_name, kwargs={
+                'document_pk': documento_novo.pk,
+                'pk': self.vinculate_value
+            })
             return redirect(viculate_url, permanent=True)
         else:
             editar_url = documento_novo.get_edit_url
@@ -717,7 +813,8 @@ class FinalizarDocumentoFormView(FormActionViewMixin, AjaxFormPostMixin, SingleD
                 'qr_code_validation_html_img_tag': img_tag
             }
 
-            rodape_qr_validacao = render_to_string('luzfcb_djdocuments/documento_finalizado_rodape_qr_validacao.html', context=context)
+            rodape_qr_validacao = render_to_string('luzfcb_djdocuments/documento_finalizado_rodape_qr_validacao.html',
+                                                   context=context)
             self.document_object.rodape_qr_validacao = rodape_qr_validacao
             self.document_object.save()
 
@@ -864,8 +961,10 @@ class DocumentoAssinaturasListView(SingleDocumentObjectMixin, DjDocumentsBackend
                 'grupo_assinante_nome': self.djdocuments_backend.get_grupo_name(assinatura.grupo_assinante),
                 'url_para_assinar': url_para_assinar,
                 'url_remover_assinatura': reverse_lazy('documentos:remover_assinatura',
-                                                       kwargs={'document_slug': self.document_object.pk_uuid,
-                                                               'pk': assinatura.pk})
+                                                       kwargs={
+                                                           'document_slug': self.document_object.pk_uuid,
+                                                           'pk': assinatura.pk
+                                                       })
             }
             dados_processados.append(dados)
         context['dados_processados'] = dados_processados
@@ -956,13 +1055,17 @@ class AssinarDocumentoView(DocumentoAssinadoRedirectMixin,
     def get_form_action(self):
         if self.user_object:
             url = reverse('documentos:assinar_por_grupo_por_usuario',
-                          kwargs={'slug': self.object.documento.pk_uuid,
-                                  'user_id': self.object.assinado_por_id,
-                                  'group_id': self.object.grupo_assinante_id})
+                          kwargs={
+                              'slug': self.object.documento.pk_uuid,
+                              'user_id': self.object.assinado_por_id,
+                              'group_id': self.object.grupo_assinante_id
+                          })
         else:
             url = reverse('documentos:assinar_por_grupo',
-                          kwargs={'slug': self.object.documento.pk_uuid,
-                                  'group_id': self.object.grupo_assinante_id})
+                          kwargs={
+                              'slug': self.object.documento.pk_uuid,
+                              'group_id': self.object.grupo_assinante_id
+                          })
 
         return url
 
@@ -1050,7 +1153,8 @@ class AssinarFinalizarDocumentoView(AssinarDocumentoView):
                 'qr_code_validation_html_img_tag': img_tag
             }
 
-            rodape_qr_validacao = render_to_string('luzfcb_djdocuments/documento_finalizado_rodape_qr_validacao.html', context=context)
+            rodape_qr_validacao = render_to_string('luzfcb_djdocuments/documento_finalizado_rodape_qr_validacao.html',
+                                                   context=context)
             self.document_object.rodape_qr_validacao = rodape_qr_validacao
             self.document_object.save()
 
@@ -1067,13 +1171,17 @@ class AssinarFinalizarDocumentoView(AssinarDocumentoView):
     def get_form_action(self):
         if self.user_object:
             url = reverse('documentos:assinar_finalizar_por_grupo_por_usuario',
-                          kwargs={'slug': self.object.documento.pk_uuid,
-                                  'user_id': self.object.assinado_por_id,
-                                  'group_id': self.object.grupo_assinante_id})
+                          kwargs={
+                              'slug': self.object.documento.pk_uuid,
+                              'user_id': self.object.assinado_por_id,
+                              'group_id': self.object.grupo_assinante_id
+                          })
         else:
             url = reverse('documentos:assinar_finalizar_por_grupo',
-                          kwargs={'slug': self.object.documento.pk_uuid,
-                                  'group_id': self.object.grupo_assinante_id})
+                          kwargs={
+                              'slug': self.object.documento.pk_uuid,
+                              'group_id': self.object.grupo_assinante_id
+                          })
 
         return url
 
@@ -1104,7 +1212,8 @@ class DocumentoDetailView(NextPageURLMixin, DjDocumentsBackendMixin, DjDocumentP
     def get_context_data(self, **kwargs):
         context = super(DocumentoDetailView, self).get_context_data(**kwargs)
         if not self.object.eh_modelo:
-            form_assinar = create_form_class_assinar(self.object.assinaturas.filter(ativo=True).first(), self.request.user)
+            form_assinar = create_form_class_assinar(self.object.assinaturas.filter(ativo=True).first(),
+                                                     self.request.user)
             context['form_assinar'] = form_assinar
         else:
             context['form_assinar'] = None
@@ -1115,7 +1224,7 @@ class DocumentoDetailView(NextPageURLMixin, DjDocumentsBackendMixin, DjDocumentP
                                                   kwargs={'slug': self.object.pk_uuid})
         # context['assinaturas'] = self.object.assinaturas.select_related('assinado_por').all()
         assinaturas = self.object.assinaturas.filter(ativo=True)
-
+        context['eh_ultimo_pendente'] = assinaturas.filter(esta_assinado=False, ativo=True).count() <= 1
         context['assinaturas_pendentes_dos_meus_grupos'] = assinaturas.filter(esta_assinado=False, ativo=True,
                                                                               grupo_assinante__in=self.get_ids_grupos_do_usuario).order_by(
             'grupo_assinante_nome')
@@ -1154,8 +1263,9 @@ class DocumentoDetailView(NextPageURLMixin, DjDocumentsBackendMixin, DjDocumentP
                         context['url_para_assinar'] = assinatura.get_url_para_assinar
                     if self.object.pronto_para_finalizar:
                         context['url_para_finalizar'] = reverse_lazy('documentos:finalizar_assinatura',
-                                                                     kwargs={'slug': self.object.pk_uuid,
-                                                                             })
+                                                                     kwargs={
+                                                                         'slug': self.object.pk_uuid,
+                                                                     })
 
         return context
 
@@ -1205,8 +1315,10 @@ class AssinaturaDeleteView(AjaxFormPostMixin, generic.DeleteView):
     def get_context_data(self, **kwargs):
         context = super(AssinaturaDeleteView, self).get_context_data(**kwargs)
         context['form_action'] = reverse_lazy('documentos:remover_assinatura',
-                                              kwargs={'document_slug': self.object.documento.pk_uuid,
-                                                      'pk': self.object.pk})
+                                              kwargs={
+                                                  'document_slug': self.object.documento.pk_uuid,
+                                                  'pk': self.object.pk
+                                              })
         context['document_object'] = self.object.documento
         return context
 
@@ -1398,15 +1510,90 @@ class DocumentoModeloAtivarDesativarUtilizacao(AjaxFormPostMixin, BaseUpdateView
         return super(DocumentoModeloAtivarDesativarUtilizacao, self).form_valid(form)
 
 
-class DocumentoEstaProntoParaAssinar(AjaxFormPostMixin, BaseUpdateView):
+class DocumentoMarcarDesmarcarProntoParaAssinar(AjaxFormPostMixin, FormActionViewMixin, generic.UpdateView):
     model = Documento
+    form_class = DocumentoMarcarDesmarcarProntoParaAssinarForm
     slug_field = 'pk_uuid'
-    fields = ('esta_pronto_para_assinar',)
-    success_url = reverse_lazy('documentos:dashboard_modelos')
+    # fields = ('esta_pronto_para_assinar',)
     document_json_fields = ('pk_uuid', 'esta_pronto_para_assinar')
-    queryset = Documento.objects.filter(esta_ativo=True)
+    queryset = Documento.objects.filter(esta_ativo=True, esta_assinado=False)
+    is_request_origin_edit_url = False
+    is_request_origin_preview_url = False
+
+    template_name = 'luzfcb_djdocuments/documento_marcardesmarcar_pronto_para_assinar.html'
+    template_name_ajax = 'luzfcb_djdocuments/documento_marcardesmarcar_pronto_para_assinar_ajax.html'
+
+    def get_http_referer_path(self):
+        http_referer = self.request.META.get('HTTP_REFERER')
+        url_path = ''
+        if http_referer:
+            parsed = urlparse(http_referer)
+            url_path = parsed.path
+        return url_path
+
+    def get_esta_pronto_para_assinar_value(self):
+        request_path = self.get_http_referer_path()
+        esta_pronto_para_assinar = None
+        if request_path == self.object.get_edit_url:
+            self.is_request_origin_edit_url = esta_pronto_para_assinar = True
+        if request_path == self.object.get_preview_url:
+            self.is_request_origin_preview_url = esta_pronto_para_assinar = False
+        return esta_pronto_para_assinar
+
+    def get_initial(self):
+        initial = super(DocumentoMarcarDesmarcarProntoParaAssinar, self).get_initial()
+        esta_pronto_para_assinar = self.get_esta_pronto_para_assinar_value()
+        if esta_pronto_para_assinar is not None:
+            initial.update({
+                'esta_pronto_para_assinar': esta_pronto_para_assinar
+            })
+        return initial
+
+    def get_form_action(self):
+        return self.object.get_pronto_para_assinar_url
+
+    def get_success_url(self):
+        return self.object.get_preview_url
 
     def form_valid(self, form):
         obj = form.save(commit=False)
+        obj.esta_pronto_para_assinar = self.get_esta_pronto_para_assinar_value()
         obj._desabilitar_temporiariamente_versao_numero = True
-        return super(DocumentoEstaProntoParaAssinar, self).form_valid(form)
+        ret = super(DocumentoMarcarDesmarcarProntoParaAssinar, self).form_valid(form)
+        if not obj.esta_pronto_para_assinar:
+            return redirect(self.object.get_edit_url)
+        return ret
+
+    def get_context_data(self, **kwargs):
+        context = super(DocumentoMarcarDesmarcarProntoParaAssinar, self).get_context_data(**kwargs)
+        self.get_esta_pronto_para_assinar_value()
+        msgs_funcionalidade = {
+            'liberar': {
+                'msg_header': "Liberar para coleta de assinaturas",
+                'msg': "Ao liberar, este documento ficará disponivel para as "
+                       "Defensorias assinarem e não poderá ser editado.",
+                'msg_botao_submit': "Liberar"
+            },
+            'bloquear': {
+                'msg_header': "Desbloquear documento para edição",
+                'msg': 'Ao Desbloquear, este documento ficará disponivel para edição, contudo, '
+                       'somente poderá ser assinado após novamente ser "Liberado para coleta de assinaturas"',
+                'msg_botao_submit': "Desbloquear"
+            }
+        }
+        if self.is_request_origin_edit_url:
+            funcionalidade = 'liberar'
+
+        elif self.is_request_origin_preview_url:
+            funcionalidade = 'bloquear'
+        else:
+            if self.object.esta_pronto_para_assinar:
+                funcionalidade = 'bloquear'
+            else:
+                funcionalidade = 'liberar'
+
+        context.update(msgs_funcionalidade[funcionalidade])
+
+        context['is_request_origin_edit_url'] = self.is_request_origin_edit_url
+        context['is_request_origin_preview_url'] = self.is_request_origin_preview_url
+        return context

@@ -197,12 +197,20 @@
                                 </div>
                                 <div id="acoes">
                                     <hr>
-                                    {% if pode_editar %}
+                                    {% if pode_editar and not object.esta_pronto_para_assinar %}
                                         <a href="{{ object.get_edit_url }}" class="btn btn-sm btn-primary"><span
                                                 class="glyphicon glyphicon-pencil"
                                                 aria-hidden="true"></span> Editar
                                             documento</a>
-
+                                    {% elif pode_editar and object.esta_pronto_para_assinar %}
+                                        <a href="{{ object.get_pronto_para_assinar_url }}"
+                                           class="btn btn-sm btn-primary"
+                                           data-ajaxmodal="true"
+                                           data-ajaxmodal-prefetch="true"
+                                        ><span
+                                                class="glyphicon glyphicon-pencil"
+                                                aria-hidden="true"></span> Desbloquear para edição
+                                        </a>
                                     {% endif %}
                                     {% if object.pronto_para_finalizar %}
                                         <a href="{{ object.get_finalizar_url }}"
@@ -213,6 +221,20 @@
                                                 class="glyphicon glyphicon-pencil"
 
                                                 aria-hidden="true"></span> Finalizar</a>
+                                    {% endif %}
+                                    {% if pode_adicionar_assinantes %}
+{#                                        <small class="pull-right">#}
+                                            <a
+                                                    href="{{ object.get_adicionar_assinante_url }}"
+                                                    data-ajaxmodal="true"
+                                                    data-ajaxmodal-prefetch="true"
+                                                    class="btn btn-sm btn-primary adicionar_assinantes"
+                                                    {#                                                data-toggle="modal"#}
+                                                    {#                                                data-target=".adicionar_assinantes_modal"#}
+                                            >
+                                                Adicionar assinantes
+                                            </a>
+{#                                        </small>#}
                                     {% endif %}
                                 </div>
                                 {% if not object.eh_modelo %}
@@ -250,22 +272,7 @@
                                     <hr>
                                     <div id="sua_assinatura">
 
-                                        <h4>
-                                            <b>Suas assinaturas</b>
-                                            {% if pode_adicionar_assinantes %}
-                                                <small class="pull-right">
-                                                    <a
-                                                            href="{{ object.get_adicionar_assinante_url }}"
-                                                            data-ajaxmodal="true"
-                                                            data-ajaxmodal-prefetch="true"
-                                                            class="btn-link adicionar_assinantes"
-                                                            {#                                                data-toggle="modal"#}
-                                                            {#                                                data-target=".adicionar_assinantes_modal"#}
-                                                    >
-                                                        Adicionar assinantes</a>
-                                                </small>
-                                            {% endif %}
-                                        </h4>
+
                                         {% regroup assinaturas_pendentes_dos_meus_grupos by grupo_assinante_nome as minhas_assinaturas_pendentes %}
                                         {% for minha in minhas_assinaturas_pendentes %}
                                             {% if forloop.first %}
@@ -286,7 +293,8 @@
                                                                 {% else %}
                                                                     <span style="opacity: 0.0;">----</span>
                                                                 {% endif %}
-                                                                <div class="pull-right">
+                                                                {% if object.esta_pronto_para_assinar %}
+                                                                  <div class="pull-right">
                                                                     <div class="btn-group btn-group-xs" role="group">
 
                                                                         <a href="{{ assinatura.get_url_para_assinar }}"
@@ -296,6 +304,7 @@
                                                                             <em class="glyphicon glyphicon-edit"></em>
                                                                             Assinar
                                                                         </a>
+                                                                        {% if eh_ultimo_pendente %}
                                                                         <a href="{{ assinatura.get_url_para_assinar_e_finalizar }}"
                                                                            data-ajaxmodal="true"
                                                                            data-ajaxmodal-prefetch="true"
@@ -303,7 +312,8 @@
                                                                             <em class="glyphicon glyphicon-edit"></em>
                                                                             Assinar e Finalizar
                                                                         </a>
-                                                                        {% if pode_remover_assinantes and not assinatura.esta_assinado %}
+                                                                        {% endif %}
+                                                                        {% if pode_remover_assinantes and not assinatura.esta_assinado and not assinatura.grupo_assinante_id == object.grupo_dono_id %}
                                                                             <a href="{{ assinatura.get_url_para_remover }}"
                                                                                data-ajaxmodal="true"
                                                                                data-ajaxmodal-prefetch="true"
@@ -313,7 +323,7 @@
                                                                                       data-container="#popover-modelo"
                                                                                       data-toggle="popover"
                                                                                       data-trigger="focus"
-                                                                                      data-content="Clique para remover esta pendência de assinatura">
+                                                                                      data-content="Remover assinante">
                                                                                     <em class="glyphicon glyphicon-trash"></em>
                                                                                 </span>
                                                                             </a>
@@ -321,7 +331,7 @@
                                                                     </div>
 
                                                                 </div>
-
+                                                                {% endif %}
                                                             </li>
 
                                                         {% endfor %}
@@ -340,37 +350,49 @@
                                             <ul class="list-unstyled">
                                                 <li>
                                                     <strong>
-                                                        {{ minha.grouper }}:
+                                                        {{ minha.grouper }}
                                                     </strong>
                                                     <ul class="list-unstyled">
                                                         {% for assinatura in minha.list %}
                                                             <li>
                                                                 {% if assinatura.esta_assinado %}
-                                                                    <span tabindex="0" class="" role="button"
-                                                                          data-container="#popover-modelo"
-                                                                          data-toggle="popover" data-trigger="focus"
-                                                                          data-content="Assinatura efetivada em {{ assinatura.assinado_em }}"
-                                                                    >
-                                                                                {{ assinatura.assinado_nome }}
-                                                                            </span>
+                                                                  <span class="label label-success">Assinado</span>
+                                                                  <small class="text-muted">
+                                                                    por <span tabindex="0" class=""
+                                                                                       role="button"
+                                                                                       data-container="#popover-modelo"
+                                                                                       data-toggle="popover"
+                                                                                       data-trigger="focus"
+                                                                                       data-content="{{ assinatura.assinado_nome }}"
+                                                                  >{{ assinatura.assinado_por.username }}</span>
+                                                                    em {{ assinatura.assinado_em|date:'d/m/Y H:i' }}
+                                                                  </small>
+
                                                                 {% else %}
-                                                                    {#                                                                <span class="label label-danger">Pendente</span>#}
-                                                                    {{ assinatura.assinado_nome }}
+                                                                    {#                                                               <span class="label label-danger">Pendente</span>#}
+                                                                   <small class="text-muted">
+                                                                   {{ assinatura.assinado_nome }}
+                                                                  </small>
                                                                 {% endif %}
 
                                                                 {% if pode_remover_assinantes and not assinatura.esta_assinado %}
-                                                                    <small class="pull-right">
-                                                                    <span tabindex="0" class="" role="button"
-                                                                          data-container="#popover-modelo"
-                                                                          data-toggle="popover" data-trigger="focus"
-                                                                          data-content="Clique para remover esta pendência de assinatura"
-                                                                    >
-                                                                        <a href="{{ assinatura.get_url_para_remover }}"
-                                                                           data-ajaxmodal="true"
-                                                                           data-ajaxmodal-prefetch="true"
-                                                                        >X</a>
-                                                                    </span>
-                                                                    </small>
+                                                                    <div class="pull-right">
+                                                                      <div  class="btn-group btn-group-xs" role="group">
+                                                                            <a href="{{ assinatura.get_url_para_remover }}"
+                                                                               data-ajaxmodal="true"
+                                                                               data-ajaxmodal-prefetch="true"
+                                                                               class="btn btn-danger" type="button">
+                                                                                <span tabindex="0"
+                                                                                      role="button"
+                                                                                      data-container="#popover-modelo"
+                                                                                      data-toggle="popover"
+                                                                                      data-trigger="focus"
+                                                                                      data-content="Remover assinante">
+                                                                                    <em class="glyphicon glyphicon-trash"></em>
+                                                                                </span>
+                                                                            </a>
+                                                                      </div>
+                                                                    </div>
                                                                 {% endif %}
                                                             </li>
                                                         {% endfor %}
@@ -385,7 +407,7 @@
                                             {% if forloop.first %}
                                                 <hr>
                                                 <div>
-                                                <h4><b>Demais assinaturas</b>
+                                                <h4><b>Demais assinantes</b>
                                                     <small class="pull-right">
                                                         {#                                                <a href="#">Ver detalhes</a>#}
                                                     </small>
@@ -402,32 +424,42 @@
                                                     {% for assinatura in minha.list %}
                                                         <li>
                                                             {% if assinatura.esta_assinado %}
-                                                                <span class="label label-success">Realizada</span>
-                                                                <span tabindex="0" class="" role="button"
-                                                                      data-container="#popover-modelo"
-                                                                      data-toggle="popover" data-trigger="focus"
-                                                                      data-content="Assinatura efetivada em {{ assinatura.assinado_em }}"
-                                                                >
-                                                                                {{ assinatura.assinado_nome }}
-                                                                            </span>
+                                                                <span class="label label-success">Assinado</span>
+                                                                  <small class="text-muted">
+                                                                    por <span tabindex="0" class=""
+                                                                                       role="button"
+                                                                                       data-container="#popover-modelo"
+                                                                                       data-toggle="popover"
+                                                                                       data-trigger="focus"
+                                                                                       data-content="{{ assinatura.assinado_nome }}"
+                                                                  >{{ assinatura.assinado_por.username }}</span>
+                                                                    em {{ assinatura.assinado_em|date:'d/m/Y H:i' }}
+                                                                  </small>
                                                             {% else %}
                                                                 <span class="label label-danger">Pendente</span>
+                                                              <small class="text-muted">
                                                                 {{ assinatura.assinado_nome }}
+                                                              </small>
                                                             {% endif %}
 
                                                             {% if pode_remover_assinantes and not assinatura.esta_assinado %}
-                                                                <small class="pull-right">
-                                                                    <span tabindex="0" class="" role="button"
-                                                                          data-container="#popover-modelo"
-                                                                          data-toggle="popover" data-trigger="focus"
-                                                                          data-content="Clique para remover esta pendência de assinatura"
-                                                                    >
-                                                                        <a href="{{ assinatura.get_url_para_remover }}"
-                                                                           data-ajaxmodal="true"
-                                                                           data-ajaxmodal-prefetch="true"
-                                                                        >X</a>
-                                                                    </span>
-                                                                </small>
+                                                                    <div class="pull-right">
+                                                                      <div  class="btn-group btn-group-xs" role="group">
+                                                                            <a href="{{ assinatura.get_url_para_remover }}"
+                                                                               data-ajaxmodal="true"
+                                                                               data-ajaxmodal-prefetch="true"
+                                                                               class="btn btn-danger" type="button">
+                                                                                <span tabindex="0"
+                                                                                      role="button"
+                                                                                      data-container="#popover-modelo"
+                                                                                      data-toggle="popover"
+                                                                                      data-trigger="focus"
+                                                                                      data-content="Remover assinante">
+                                                                                    <em class="glyphicon glyphicon-trash"></em>
+                                                                                </span>
+                                                                            </a>
+                                                                      </div>
+                                                                    </div>
                                                             {% endif %}
                                                         </li>
                                                     {% endfor %}

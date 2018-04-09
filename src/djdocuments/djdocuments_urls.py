@@ -106,6 +106,10 @@ urlpatterns = [
         login_required(documentos_views.AssinaturasRealizadasPorGrupo.as_view()),
         name='assinados'
         ),
+    url(r'^d/marcardesmarcarprontoparaassinar/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/$',
+        login_required(documentos_views.DocumentoMarcarDesmarcarProntoParaAssinar.as_view()),
+        name='marcardesmarcar_pronto_para_assinar'
+        ),
     url(r'^d/(?P<slug>\b[0-9A-Fa-f]{8}\b(-\b[0-9A-Fa-f]{4}\b){3}-\b[0-9A-Fa-f]{12}\b)/assinaturas/$',
         login_required(documentos_views.DocumentoAssinaturasListView.as_view()),
         name='assinaturas'

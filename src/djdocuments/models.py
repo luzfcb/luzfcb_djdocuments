@@ -646,6 +646,13 @@ class Documento(SoftDeletableModel):
             url = reverse('documentos:finalizar_assinatura', kwargs={'slug': self.pk_uuid})
         return url
 
+    @property
+    def get_pronto_para_assinar_url(self):
+        url = '#'
+        if not self.eh_modelo and not self.esta_assinado:
+            url = reverse('documentos:marcardesmarcar_pronto_para_assinar', kwargs={'slug': self.pk_uuid})
+        return url
+
     _desabilitar_temporiariamente_versao_numero = False
 
     def save(self, *args, **kwargs):

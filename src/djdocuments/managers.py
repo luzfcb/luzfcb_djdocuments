@@ -30,8 +30,25 @@ class DocumentoQuerySet(SoftDeletableQuerySet):
         # if grupos_ids and isinstance(grupos_ids, (list, tuple, ValuesListQuerySet)):
         #     q &= Q(grupo_dono__in=grupos_ids)
         qs = self.filter(q).annotate(
-            assinaturas_pendentes=Sum(Case(When(assinaturas__esta_assinado=False, then=Value(1)), default=0,
-                                           output_field=IntegerField()))).filter(assinaturas_pendentes=0)
+            assinaturas_pendentes=Sum(
+                Case(
+                    When(
+                        Q(assinaturas__esta_assinado=False) & Q(assinaturas__ativo=True),
+                        then=Value(1)
+                    ),
+                    default=0,
+                    output_field=IntegerField()
+                )
+            )
+        ).filter(assinaturas_pendentes=0)
+        return qs
+
+    def finalizados(self):
+        q = Q()
+        q &= Q(esta_assinado=True)
+        q &= Q(eh_modelo=False)
+        q &= (~Q(assinatura_hash='') | ~Q(assinatura_hash=None))
+        qs = self.filter(q)
         return qs
 
     def from_groups(self, grupos_ids):
@@ -89,6 +106,9 @@ class DocumentoManager(SoftDeletableManager):
     def prontos_para_finalizar(self):
         return self.get_queryset().prontos_para_finalizar()
 
+    def finalizados(self):
+        return self.get_queryset().finalizados()
+
     def from_groups(self, grupos_ids):
         return self.get_queryset().from_groups(grupos_ids=grupos_ids)
 
@@ -115,6 +135,9 @@ class DocumentoAdminManager(SoftDeletableManager):
 
     def prontos_para_finalizar(self):
         return self.get_queryset().prontos_para_finalizar()
+
+    def finalizados(self):
+        return self.get_queryset().finalizados()
 
     def from_groups(self, grupos_ids):
         return self.get_queryset().from_groups(grupos_ids=grupos_ids)

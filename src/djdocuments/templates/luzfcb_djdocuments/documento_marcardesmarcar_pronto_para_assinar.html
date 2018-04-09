@@ -1,0 +1,40 @@
+{% extends "luzfcb_djdocuments/documento_assinar_base.html" %}
+{% load luzfcb_djdocuments_tags %}
+
+
+
+{% block form_section %}
+    <div class="panel panel-info">
+        <div class="panel-heading">{{ msg_header }}</div>
+        <div class="panel-body">
+            <form class="form-horizontal" method="post" action="{{ form_action }}">
+                <fieldset>
+                    <legend>
+                      {{ msg }}
+                    </legend>
+                    {% include "luzfcb_djdocuments/django_form_content.html" with form=form %}
+                    <div class="form-group">
+                        <div class="col-sm-offset-2 col-sm-10">
+                            <button type="submit" class="btn btn-success">{{ msg_botao_submit }}</button>
+                        </div>
+                    </div>
+                </fieldset>
+            </form>
+
+        </div>
+    </div>
+
+
+
+
+{% endblock form_section %}
+{% block js_app %}
+
+
+    {% if form %}
+        {{ form.media }}
+    {% endif %}
+
+{% endblock js_app %}
+
+
