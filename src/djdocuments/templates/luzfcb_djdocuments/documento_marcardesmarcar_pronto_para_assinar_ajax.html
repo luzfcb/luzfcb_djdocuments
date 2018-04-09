@@ -3,9 +3,9 @@
 
 {% block modal_header_content %}
     <h3>
-      Liberar para coleta de assinaturas
+      {{ msg_header }}
     </h3>
-    Ao liberar, este documento ficará disponivel paras as Defensorias assinarem.
+    {{ msg }}
 {% endblock modal_header_content %}
 
 {% block modal_body_header %}
@@ -21,5 +21,5 @@
 
 {% endblock modal_body_header %}
 
-{% block submit_text %}Liberar{% endblock submit_text %}
+{% block submit_text %}{{ msg_botao_submit }}{% endblock submit_text %}
 

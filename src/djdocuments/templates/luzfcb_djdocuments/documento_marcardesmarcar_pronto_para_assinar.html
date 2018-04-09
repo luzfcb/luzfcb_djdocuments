@@ -4,19 +4,18 @@
 
 
 {% block form_section %}
-    {#    {% if form %}#}
-
     <div class="panel panel-info">
-        <div class="panel-heading">Liberar documento para coleta de assinaturas</div>
+        <div class="panel-heading">{{ msg_header }}</div>
         <div class="panel-body">
             <form class="form-horizontal" method="post" action="{{ form_action }}">
                 <fieldset>
-                    <legend>Tem certeza que deseja liberar para coleta de assinaturas?
+                    <legend>
+                      {{ msg }}
                     </legend>
                     {% include "luzfcb_djdocuments/django_form_content.html" with form=form %}
                     <div class="form-group">
                         <div class="col-sm-offset-2 col-sm-10">
-                            <button type="submit" class="btn btn-success">Liberar</button>
+                            <button type="submit" class="btn btn-success">{{ msg_botao_submit }}</button>
                         </div>
                     </div>
                 </fieldset>
