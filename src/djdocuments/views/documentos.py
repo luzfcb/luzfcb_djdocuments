@@ -1377,6 +1377,10 @@ class PrintPDFConfiguracaoMixin(object):
         return cmd_options
 
     def get_context_data(self, **kwargs):
+
+        if self.request.GET.get('download', False):
+            self.show_content_in_browser = False
+
         context = super(PrintPDFConfiguracaoMixin, self).get_context_data(**kwargs)
         context['is_pdf'] = True
         return context
