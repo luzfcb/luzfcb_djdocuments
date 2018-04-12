@@ -23,6 +23,7 @@ from django.utils.six.moves.urllib.parse import urlparse
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_text
 from django.utils.functional import cached_property
+from django.utils.text import slugify
 from django.views import generic
 from django.views.decorators.cache import never_cache
 from django.views.generic.detail import SingleObjectMixin
@@ -1390,12 +1391,14 @@ class PrintPDFConfiguracaoMixin(object):
 
 
 class PrintPDFDocumentoDetailValidarView(PrintPDFConfiguracaoMixin, PDFRenderMixin, DocumentoDetailValidarView):
-    pass
+    def get_filename(self):
+        return '{}_{:.25}.pdf'.format(self.object.identificador_versao, slugify(self.object.assunto))
 
 
 class PrintPDFDocumentoModeloDetailValidarView(PrintPDFConfiguracaoMixin, PDFRenderMixin,
                                                DocumentoModeloDetailValidarView):
-    pass
+    def get_filename(self):
+        return '{}_{:.25}.pdf'.format(self.object.identificador_versao, slugify(self.object.modelo_descricao))
 
 
 class DocumentoValidacaoView(generic.FormView):
