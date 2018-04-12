@@ -43,6 +43,15 @@ class DocumentoQuerySet(SoftDeletableQuerySet):
         ).filter(assinaturas_pendentes=0)
         return qs
 
+    def em_edicao(self):
+
+        q = Q()
+        q &= Q(esta_assinado=False)
+        q &= Q(eh_modelo=False)
+        q &= Q(esta_pronto_para_assinar=False)
+        qs = self.filter(q)
+        return qs
+
     def finalizados(self):
         q = Q()
         q &= Q(esta_assinado=True)
@@ -116,6 +125,9 @@ class DocumentoManager(SoftDeletableManager):
         return self._queryset_class(model=self.model,
                                     using=self._db,
                                     hints=self._hints).ativos().modelos(grupos_ids=grupos_ids)
+
+    def em_edicao(self):
+        return self.get_queryset().em_edicao()
 
     def documentos_dos_grupos(self, grupos_ids=None):
         return self._queryset_class(model=self.model,
