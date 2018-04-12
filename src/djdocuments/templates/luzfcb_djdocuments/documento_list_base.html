@@ -1,8 +1,9 @@
 {% extends "luzfcb_djdocuments/base.html" %}
+{% load luzfcb_djdocuments_tags %}
 
-{% block title %}SOLAR - Defensoria Pública do Estado do Tocantins{% endblock title %}
+{% block title %}{% nome_sistema_nome_instituicao %}{% endblock title %}
 
-{% block project_name %}SOLAR{% endblock project_name %}
+{% block project_name %}{% nome_sistema %}{% endblock project_name %}
 
 {% block conteudo_app %}
 

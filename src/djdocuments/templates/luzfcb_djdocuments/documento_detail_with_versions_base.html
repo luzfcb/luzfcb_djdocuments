@@ -1,10 +1,11 @@
 {% load staticfiles %}
+{% load luzfcb_djdocuments_tags %}
 
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="utf-8">
-    <title>SOLAR - Defensoria Pública do Estado do Tocantins</title>
+    <title>{% nome_sistema_nome_instituicao %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
     <meta name="author" content="diti">
@@ -38,7 +39,7 @@
             <!--panel site-name-->
             <div class="span3">
                 <div class="panel-sitename">
-                    <h2><a href="#">SOLAR</a></h2>
+                    <h2><a href="#">{% nome_sistema %}</a></h2>
                 </div>
             </div>
             <!--/panel name-->
