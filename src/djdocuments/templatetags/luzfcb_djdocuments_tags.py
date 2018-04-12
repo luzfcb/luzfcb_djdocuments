@@ -365,3 +365,37 @@ nome_arquivo_assinatura_base64 = encode_static(nome_arquivo_assinatura)
 @register.simple_tag
 def signature_by_icon_image_base64():
     return nome_arquivo_assinatura_base64
+
+
+@register.simple_tag
+def nome_sistema_nome_instituicao():
+    djdocuments_backend = get_djdocuments_backend()
+    nome_instituicao_str = djdocuments_backend.get_nome_instituicao()
+    nome_sistema_str = djdocuments_backend.get_nome_sistema()
+    if not nome_instituicao_str:
+        nome_instituicao_str = ''
+    nome_final = '{}'.format(nome_instituicao_str)
+    if nome_sistema_str:
+        nome_final = '{} - {}'.format(nome_sistema_str, nome_final)
+
+    return remover_tags_html(nome_final)
+
+
+@register.simple_tag
+def nome_instituicao():
+    djdocuments_backend = get_djdocuments_backend()
+    nome_instituicao_str = djdocuments_backend.get_nome_instituicao()
+    if not nome_instituicao_str:
+        nome_instituicao_str = ''
+    nome_final = '{}'.format(nome_instituicao_str)
+    return remover_tags_html(nome_final)
+
+
+@register.simple_tag
+def nome_sistema():
+    djdocuments_backend = get_djdocuments_backend()
+    nome_sistema_str = djdocuments_backend.get_nome_sistema()
+    if not nome_sistema_str:
+        nome_sistema_str = ''
+    nome_final = '{}'.format(nome_sistema_str)
+    return remover_tags_html(nome_final)
