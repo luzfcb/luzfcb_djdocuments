@@ -917,6 +917,70 @@ class AssinaturasPendentesGrupo(DjDocumentsBackendMixin, MenuMixin, SearchableLi
         return context
 
 
+class DocumentosEmEdicaoGrupo(DjDocumentsBackendMixin, MenuMixin, SearchableListMixin,
+                              FormActionViewMixin,
+                              generic.ListView):
+    model = Documento
+    template_name = 'luzfcb_djdocuments/documentos_em_edicao.html'
+    paginate_by = 15
+    menu_atual = 'documentos_em_edicao'
+    search_fields = [('pk', 'icontains')]
+
+    @method_decorator(never_cache)
+    def dispatch(self, request, *args, **kwargs):
+        return super(DocumentosEmEdicaoGrupo, self).dispatch(request, *args, **kwargs)
+
+    def get_form_action(self):
+        return reverse('documentos:documentos_em_edicao')
+
+    def get_queryset(self):
+        queryset = super(DocumentosEmEdicaoGrupo, self).get_queryset()
+
+        grupos_id_list = tuple(
+            self.djdocuments_backend.get_grupos_usuario(self.request.user).values_list('pk', flat=True))
+
+        queryset = queryset.em_edicao().from_groups(grupos_ids=grupos_id_list).select_related('criado_por__username')
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super(DocumentosEmEdicaoGrupo, self).get_context_data(**kwargs)
+        context['is_query'] = self.get_search_query()
+        context['next_success_url'] = reverse('documentos:documentos_em_edicao')
+        return context
+
+
+class DocumentosFinalizadosGrupo(DjDocumentsBackendMixin, MenuMixin, SearchableListMixin,
+                                 FormActionViewMixin,
+                                 generic.ListView):
+    model = Documento
+    template_name = 'luzfcb_djdocuments/documentos_finalizados.html'
+    paginate_by = 15
+    menu_atual = 'documentos_finalizados'
+    search_fields = [('pk', 'icontains')]
+
+    @method_decorator(never_cache)
+    def dispatch(self, request, *args, **kwargs):
+        return super(DocumentosFinalizadosGrupo, self).dispatch(request, *args, **kwargs)
+
+    def get_form_action(self):
+        return reverse('documentos:documentos_em_edicao')
+
+    def get_queryset(self):
+        queryset = super(DocumentosFinalizadosGrupo, self).get_queryset()
+
+        grupos_id_list = tuple(
+            self.djdocuments_backend.get_grupos_usuario(self.request.user).values_list('pk', flat=True))
+
+        queryset = queryset.finalizados().from_groups(grupos_ids=grupos_id_list).select_related('criado_por__username')
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super(DocumentosFinalizadosGrupo, self).get_context_data(**kwargs)
+        context['is_query'] = self.get_search_query()
+        context['next_success_url'] = reverse('documentos:documentos_em_edicao')
+        return context
+
+
 class DocumentosProntosParaFinalizarGrupo(DjDocumentsBackendMixin, MenuMixin, SearchableListMixin, FormActionViewMixin,
                                           generic.ListView):
     model = Documento
