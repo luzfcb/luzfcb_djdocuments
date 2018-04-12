@@ -21,6 +21,14 @@ class DjDocumentsBaseBackend(object):
     group_name_atrib = None
     group_label = None
     template_conteudo_assinaturas = 'luzfcb_djdocuments/documento_finalizado_assinaturas.html'
+    nome_instituicao = ''
+    nome_sistema = ''
+
+    def get_nome_instituicao(self):
+        return self.nome_instituicao
+
+    def get_nome_sistema(self):
+        return self.nome_sistema
 
     def check_password(self, password_str, user_instance):
         return django_check_password(password_str, user_instance.password)
