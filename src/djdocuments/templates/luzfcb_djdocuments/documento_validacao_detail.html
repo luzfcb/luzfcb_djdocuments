@@ -148,6 +148,22 @@
             </div>
         </nav>
     {% endif %}
+    {% if not object.eh_modelo and no_nav and status %}
+      <nav class="navbar-fixed-top no-print">
+        {% if object.possui_assinatura_pendente == 0 %}
+          <span class="label label-danger">Ainda não possui assinantes vinculados</span>
+        {% elif object.possui_assinatura_pendente == 1 and object.esta_pronto_para_assinar %}
+          <span class="label label-warning">Possui assinaturas pendentes</span>
+        {% elif not object.esta_pronto_para_assinar %}
+          <span class="label label-info">Em edição</span>
+        {% elif object.pronto_para_finalizar %}
+          <span class="label label-success">Pronto para Finalizar</span>
+        {% else %}
+          <span class="label label-success">Assinado e Finalizado</span>
+        {% endif %}
+      </nav>
+
+    {% endif %}
 
 {% endblock %}
 

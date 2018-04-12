@@ -1236,6 +1236,7 @@ class DocumentoDetailView(NextPageURLMixin, DjDocumentsBackendMixin, DjDocumentP
         context['assinaturas'] = assinaturas
 
         context['no_nav'] = True if self.request.GET.get('no_nav') else False
+        context['status'] = True if self.request.GET.get('status') else False
         context['is_pdf'] = False
         context['menu_assinaturas'] = False
         context['url_para_assinar'] = None
