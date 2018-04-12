@@ -1,0 +1,15 @@
+{% extends "luzfcb_djdocuments/bootstrap3/base.html" %}
+{% load luzfcb_djdocuments_tags %}
+
+{% block title %}{% nome_sistema_nome_instituicao %}{% endblock title %}
+
+{% block project_name %}{% nome_sistema %}{% endblock project_name %}
+
+{% block conteudo_app %}
+
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+            {% block form_section %}{% endblock %}
+        </div>
+    </div>
+{% endblock conteudo_app %}

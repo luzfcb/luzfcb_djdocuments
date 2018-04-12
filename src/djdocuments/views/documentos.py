@@ -130,6 +130,13 @@ class DocumentoPainelGeralView(DjDocumentsBackendMixin, MenuMixin, generic.Templ
             qs = qs[:self.mostrar_ultimas]
         return qs
 
+    def get_ultimos_modelos_queryset(self):
+        qs = Documento.objects.modelos().order_by(
+            '-cadastrado_em')
+        if self.mostrar_ultimas:
+            qs = qs[:self.mostrar_ultimas]
+        return qs
+
     def get_ultimas_assinaturas_realizadas_queryset(self):
         qs = Assinatura.objects.assinaturas_realizadas().order_by('-cadastrado_em')
         if self.mostrar_ultimas:
@@ -149,14 +156,20 @@ class DocumentoPainelGeralView(DjDocumentsBackendMixin, MenuMixin, generic.Templ
             qs = qs[:self.mostrar_ultimas]
         return qs
 
-    def get_ultimos_documentos_nao_pronto_para_assinar_queryset(self):
-        qs = Documento.objects.filter(esta_pronto_para_assinar=False)
+    def get_ultimos_documentos_em_edicao_queryset(self):
+        qs = Documento.objects.em_edicao()
         if self.mostrar_ultimas:
             qs = qs[:self.mostrar_ultimas]
         return qs
 
     def get_ultimos_documentos_modificados_queryset(self):
         qs = Documento.objects.order_by('-modificado_em')
+        if self.mostrar_ultimas:
+            qs = qs[:self.mostrar_ultimas]
+        return qs
+
+    def get_ultimos_modelos_queryset(self):
+        qs = Documento.objects.modelos().order_by('-modificado_em')
         if self.mostrar_ultimas:
             qs = qs[:self.mostrar_ultimas]
         return qs
@@ -186,8 +199,14 @@ class DocumentoPainelGeralView(DjDocumentsBackendMixin, MenuMixin, generic.Templ
 
         return object_list
 
-    def get_ultimos_documentos_nao_pronto_para_assinar_dados(self):
-        object_list = self.get_ultimos_documentos_nao_pronto_para_assinar_queryset()
+    def get_ultimos_documentos_em_edicao_dados(self):
+        object_list = self.get_ultimos_documentos_em_edicao_queryset()
+
+        return object_list
+
+    def get_ultimos_modelos_dados(self):
+
+        object_list = self.get_ultimos_modelos_queryset()
 
         return object_list
 
@@ -209,8 +228,11 @@ class DocumentoPainelGeralView(DjDocumentsBackendMixin, MenuMixin, generic.Templ
         context['ultimos_documentos_modificados'] = self.get_ultimos_documentos_modificados_dados()
         context['ultimos_documentos_modificados__count'] = context['ultimos_documentos_modificados'].count()
 
-        context['ultimos_documentos_nao_pronto_para_assinar'] = self.get_ultimos_documentos_nao_pronto_para_assinar_dados()  # noqa
-        context['ultimos_documentos_nao_pronto_para_assinar__count'] = context['ultimos_documentos_nao_pronto_para_assinar'].count()
+        context['ultimos_documentos_em_edicao'] = self.get_ultimos_documentos_em_edicao_dados()
+        context['ultimos_documentos_em_edicao_count'] = context['ultimos_documentos_em_edicao'].count()
+
+        context['ultimos_modelos'] = self.get_ultimos_modelos_dados()
+        context['ultimos_modelos_count'] = context['ultimos_modelos'].count()
 
         context['mostrar_ultimas'] = self.mostrar_ultimas
         context['next_success_url'] = self.get_next_success_url()
@@ -236,8 +258,8 @@ class DocumentoPainelGeralPorGrupoView(DocumentoPainelGeralView):
             qs = qs[:self.mostrar_ultimas]
         return qs
 
-    def get_ultimos_documentos_nao_pronto_para_assinar_queryset(self):
-        qs = Documento.objects.filter(esta_pronto_para_assinar=False).from_groups(grupos_ids=self.get_ids_grupos_do_usuario)
+    def get_ultimos_documentos_em_edicao_queryset(self):
+        qs = Documento.objects.em_edicao().from_groups(grupos_ids=self.get_ids_grupos_do_usuario)
         if self.mostrar_ultimas:
             qs = qs[:self.mostrar_ultimas]
         return qs
@@ -266,6 +288,26 @@ class DocumentoPainelGeralPorGrupoView(DocumentoPainelGeralView):
         ).order_by(
             '-cadastrado_em'
         )
+        if self.mostrar_ultimas:
+            qs = qs[:self.mostrar_ultimas]
+        return qs
+
+    def get_ultimos_modelos_queryset(self):
+        q = Q()
+        q &= Q(grupo_dono__in=self.get_ids_grupos_do_usuario) | Q(grupo_dono=None)
+
+        qs = Documento.objects.modelos().filter(q).order_by(
+            '-cadastrado_em')
+        if self.mostrar_ultimas:
+            qs = qs[:self.mostrar_ultimas]
+        return qs
+
+    def get_ultimos_modelos_queryset(self):
+        qs = Documento.objects.modelos(
+            self.get_ids_grupos_do_usuario
+        ).select_related(
+            'tipo_documento'
+        ).exclude(eh_modelo_padrao=True)
         if self.mostrar_ultimas:
             qs = qs[:self.mostrar_ultimas]
         return qs
@@ -857,8 +899,16 @@ class AssinaturasPendentesGrupo(DjDocumentsBackendMixin, MenuMixin, SearchableLi
 
     def get_queryset(self):
         queryset = super(AssinaturasPendentesGrupo, self).get_queryset()
-        return queryset.assinaturas_pendentes().from_groups(grupos_ids=self.get_ids_grupos_do_usuario).order_by(
-            '-cadastrado_em')
+        queryset = queryset.assinaturas_pendentes().filter(
+            documento__esta_pronto_para_assinar=True
+        ).from_groups(
+            grupos_ids=self.get_ids_grupos_do_usuario
+        ).select_related(
+            'documento__criado_por__username'
+        ).order_by(
+            '-cadastrado_em'
+        )
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super(AssinaturasPendentesGrupo, self).get_context_data(**kwargs)
@@ -916,8 +966,7 @@ class AssinaturasRealizadasPorGrupo(DjDocumentsBackendMixin, MenuMixin, Searchab
         queryset = super(AssinaturasRealizadasPorGrupo, self).get_queryset()
 
         grupos_ids = tuple(self.djdocuments_backend.get_grupos_usuario(self.request.user).values_list('id', flat=True))
-        queryset = queryset.select_related('documento', 'grupo_assinante')
-
+        queryset = queryset.select_related('documento', 'grupo_assinante', 'assinado_por__username', 'documento__criado_por__username')
         queryset = queryset.assinaturas_realizadas().from_groups(grupos_ids=grupos_ids)
         return queryset
 
