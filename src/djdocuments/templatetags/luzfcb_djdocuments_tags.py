@@ -25,7 +25,6 @@ sigla = settings.DJDOCUMENT.get('SIGLA_UF', 'undefined') or 'undefined'
 nome_arquivo_assinatura = 'luzfcb_djdocuments/img/sigicon/{}.png'.format(sigla.lower())
 
 
-
 @register.filter
 def as_form(model_instance):
     model = model_instance.__class__

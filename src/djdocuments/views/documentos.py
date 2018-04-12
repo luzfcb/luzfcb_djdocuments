@@ -489,8 +489,8 @@ class DocumentoEditor(AAAA, CreatePopupMixin,
                             'documento_eh_modelo': self.object.eh_modelo,
                             'usuario': self.request.user
                         }
-                    }
-                    )
+        }
+        )
         if not status:
             return render(request=self.request, template_name='luzfcb_djdocuments/erros/erro_403.html',
                           context={'mensagem': mensagem})
@@ -512,8 +512,8 @@ class DocumentoEditor(AAAA, CreatePopupMixin,
                             'documento_eh_modelo': self.object.eh_modelo,
                             'usuario': self.request.user
                         }
-                    }
-                    )
+        }
+        )
         if not status:
             return render(request=request, template_name='luzfcb_djdocuments/erros/erro_403.html',
                           context={'mensagem': mensagem})

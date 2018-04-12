@@ -698,7 +698,7 @@ class NextPageURLMixin(SuccessURLAllowedHostsMixin):
                 next_page = self.next_page_url
 
         if (next_page_redirect_field_name in self.request.POST or
-                    next_page_redirect_field_name in self.request.GET):
+                next_page_redirect_field_name in self.request.GET):
             next_page = self.request.POST.get(
                 next_page_redirect_field_name,
                 self.request.GET.get(next_page_redirect_field_name)
