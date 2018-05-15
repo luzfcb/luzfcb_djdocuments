@@ -85,17 +85,17 @@
                                 {#                                </a>#}
                                 {% if not esta_editando_modelo %}
                                     {% url 'documentos:list' as documento_list_url %}
-                                    {% if url_para_assinar %}
+{#                                    {% if url_para_assinar %}#}
 {#                                        {% spurl base=url_para_assinar add_query="{{ next_page_redirect_field_name }}={{ documento_list_url }}" as documento_assinar_url_com_parametros %}#}
 {#                                        <a href="{{ documento_assinar_url_com_parametros }}"#}
-                                        <a href="{{ url_para_assinar }}"
-                                           class="btn btn-default"
-                                           data-ajaxmodal="true"
-                                           data-ajaxmodal-prefetch="true"
-                                           data-sucess-url="{{ object.get_preview_url }}"
-                                           {% if object.esta_assinado %}disabled="disabled" {% endif %}><em
-                                                class="glyphicon glyphicon-pencil"></em>Assinar</a>
-                                    {% endif %}
+{#                                        <a href="{{ url_para_assinar }}"#}
+{#                                           class="btn btn-default"#}
+{#                                           data-ajaxmodal="true"#}
+{#                                           data-ajaxmodal-prefetch="true"#}
+{#                                           data-sucess-url="{{ object.get_preview_url }}"#}
+{#                                           {% if object.esta_assinado %}disabled="disabled" {% endif %}><em#}
+{#                                                class="glyphicon glyphicon-pencil"></em>Assinar</a>#}
+{#                                    {% endif %}#}
 
                                     <a href="{{ object.get_preview_url }}"
                                        class="btn btn-default"
