@@ -860,6 +860,10 @@ class FinalizarDocumentoFormView(FormActionViewMixin, AjaxFormPostMixin, SingleD
                                                    context=context)
             self.document_object.rodape_qr_validacao = rodape_qr_validacao
             self.document_object.save()
+            self.djdocuments_backend.notificar_documento_assinado_e_finalizado(
+                document=self.document_object,
+                usuario_atual=self.request.user
+            )
 
         else:
             # raise PermissionDenied()
@@ -1153,6 +1157,7 @@ class AssinarDocumentoView(DocumentoAssinadoRedirectMixin,
                            NextPageURLMixin,
                            FormActionViewMixin,
                            AjaxFormPostMixin,
+                           DjDocumentsBackendMixin,
                            generic.UpdateView):
     template_name = 'luzfcb_djdocuments/documento_assinar.html'
     template_name_ajax = 'luzfcb_djdocuments/documento_assinar_ajax.html'
@@ -1271,7 +1276,10 @@ class AssinarFinalizarDocumentoView(AssinarDocumentoView):
                                                    context=context)
             self.document_object.rodape_qr_validacao = rodape_qr_validacao
             self.document_object.save()
-
+            self.djdocuments_backend.notificar_documento_assinado_e_finalizado(
+                document=self.document_object,
+                usuario_atual=self.request.user
+            )
         return ret
 
     def get_form_kwargs(self):
@@ -1631,7 +1639,7 @@ class DocumentoModeloAtivarDesativarUtilizacao(AjaxFormPostMixin, BaseUpdateView
         return super(DocumentoModeloAtivarDesativarUtilizacao, self).form_valid(form)
 
 
-class DocumentoMarcarDesmarcarProntoParaAssinar(AjaxFormPostMixin, FormActionViewMixin, generic.UpdateView):
+class DocumentoMarcarDesmarcarProntoParaAssinar(AjaxFormPostMixin, FormActionViewMixin, DjDocumentsBackendMixin, generic.UpdateView):
     model = Documento
     form_class = DocumentoMarcarDesmarcarProntoParaAssinarForm
     slug_field = 'pk_uuid'
@@ -1683,6 +1691,10 @@ class DocumentoMarcarDesmarcarProntoParaAssinar(AjaxFormPostMixin, FormActionVie
         ret = super(DocumentoMarcarDesmarcarProntoParaAssinar, self).form_valid(form)
         if not obj.esta_pronto_para_assinar:
             return redirect(self.object.get_edit_url)
+        self.djdocuments_backend.notificar_documento_pronto_para_assinar(
+            document=self.object,
+            usuario_atual=self.request.user
+        )
         return ret
 
     def get_context_data(self, **kwargs):

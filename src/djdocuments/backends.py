@@ -24,6 +24,15 @@ class DjDocumentsBaseBackend(object):
     nome_instituicao = ''
     nome_sistema = ''
 
+    def notificar_documento_assinado_e_finalizado(self, document, usuario_atual):
+        raise NotImplemented()
+
+    def notificar_documento_pronto_para_assinar(self, document, usuario_atual):
+        raise NotImplemented()
+
+    def notificar_pendencia_assinatura(self, assinatura, usuario_atual):
+        raise NotImplemented()
+
     def get_nome_instituicao(self):
         return self.nome_instituicao
 
