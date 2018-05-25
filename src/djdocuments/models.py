@@ -486,7 +486,7 @@ class Documento(SoftDeletableModel):
                                                     cadastrado_por=cadastrado_por)
                 obj.save()
                 if self.esta_pronto_para_assinar and not self.esta_assinado:
-                    self.DjDocumentsBackend.notificar_pendencia_assinatura(assinatura=obj, usuario_atual=cadastrado_por)
+                    DjDocumentsBackend.notificar_pendencia_assinatura(assinatura=obj, usuario_atual=cadastrado_por)
 
     def remover_grupos_assinantes(self, grupos_assinantes, removido_por):
         if not isinstance(grupos_assinantes, Iterable):
