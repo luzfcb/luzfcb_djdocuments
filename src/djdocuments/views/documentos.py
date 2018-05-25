@@ -1150,7 +1150,6 @@ class AdicionarAssinantes(FormActionViewMixin, AjaxFormPostMixin, SingleDocument
 
 
 class AssinarDocumentoView(DocumentoAssinadoRedirectMixin,
-                           DjDocumentsBackendMixin,
                            SingleDocumentObjectMixin,
                            SingleGroupObjectMixin,
                            SingleUserObjectMixin,
