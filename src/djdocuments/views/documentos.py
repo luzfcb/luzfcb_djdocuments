@@ -146,24 +146,105 @@ class DocumentoPainelGeralView(DjDocumentsBackendMixin, MenuMixin, generic.Templ
 
     def get_ultimos_documentos_nao_finalizados_queryset(self):
         qs = Documento.objects.prontos_para_finalizar()
+        qs = qs.only(
+            'pk',
+            'pk_uuid',
+            'eh_modelo',
+            'esta_ativo',
+            'versao_numero',
+            'assunto',
+            'criado_por_nome',
+            'criado_por__username',
+            'criado_em',
+            'esta_assinado',
+            'data_assinado',
+            'modificado_por__username',
+            'modificado_por_nome',
+        ).select_related(
+            'modificado_por',
+            'criado_por'
+        )
         if self.mostrar_ultimas:
             qs = qs[:self.mostrar_ultimas]
         return qs
 
     def get_ultimos_documentos_finalizados_queryset(self):
-        qs = Documento.objects.finalizados()
+        qs = Documento.objects.finalizados().order_by('-data_assinado')
+        qs = qs.only(
+            'pk',
+            'pk_uuid',
+            'eh_modelo',
+            'esta_ativo',
+            'versao_numero',
+            'assunto',
+            'criado_por_nome',
+            'criado_por__username',
+            'criado_em',
+            'esta_assinado',
+            'data_assinado',
+            'finalizado_por_nome',
+            'finalizado_por__username',
+            'modificado_por__username',
+            'modificado_por_nome',
+        ).select_related(
+            'finalizado_por',
+            'modificado_por',
+            'criado_por'
+        )
         if self.mostrar_ultimas:
             qs = qs[:self.mostrar_ultimas]
         return qs
 
     def get_ultimos_documentos_em_edicao_queryset(self):
         qs = Documento.objects.em_edicao()
+        qs = qs.only(
+            'pk',
+            'pk_uuid',
+            'eh_modelo',
+            'esta_ativo',
+            'versao_numero',
+            'assunto',
+            'criado_por_nome',
+            'criado_por__username',
+            'criado_em',
+            'esta_assinado',
+            'data_assinado',
+            'finalizado_por_nome',
+            'finalizado_por__username',
+            'modificado_por__username',
+            'modificado_por_nome',
+        ).select_related(
+            'finalizado_por',
+            'modificado_por',
+            'criado_por'
+        )
         if self.mostrar_ultimas:
             qs = qs[:self.mostrar_ultimas]
         return qs
 
     def get_ultimos_documentos_modificados_queryset(self):
         qs = Documento.objects.order_by('-modificado_em')
+        qs = qs.only(
+            'pk',
+            'pk_uuid',
+            'eh_modelo',
+            'esta_ativo',
+            'versao_numero',
+            'assunto',
+            'criado_por_nome',
+            'criado_por__username',
+            'criado_em',
+            'esta_assinado',
+            'data_assinado',
+            'finalizado_por_nome',
+            'finalizado_por__username',
+            'modificado_por__username',
+            'modificado_por_nome',
+        ).select_related(
+            'finalizado_por',
+            'modificado_por',
+            'criado_por'
+        )
         if self.mostrar_ultimas:
             qs = qs[:self.mostrar_ultimas]
         return qs
@@ -248,24 +329,102 @@ class DocumentoPainelGeralPorGrupoView(DocumentoPainelGeralView):
 
     def get_ultimos_documentos_nao_finalizados_queryset(self):
         qs = Documento.objects.prontos_para_finalizar().from_groups(grupos_ids=self.get_ids_grupos_do_usuario)
+        qs = qs.only(
+            'pk',
+            'pk_uuid',
+            'eh_modelo',
+            'esta_ativo',
+            'versao_numero',
+            'assunto',
+            'criado_por_nome',
+            'criado_por__username',
+            'criado_em',
+            'esta_assinado',
+            'data_assinado',
+            'modificado_por__username',
+            'modificado_por_nome',
+        ).select_related(
+            'modificado_por',
+            'criado_por'
+        )
         if self.mostrar_ultimas:
             qs = qs[:self.mostrar_ultimas]
         return qs
 
     def get_ultimos_documentos_finalizados_queryset(self):
         qs = Documento.objects.finalizados().from_groups(grupos_ids=self.get_ids_grupos_do_usuario)
+        qs = qs.only(
+            'pk',
+            'pk_uuid',
+            'eh_modelo',
+            'esta_ativo',
+            'versao_numero',
+            'assunto',
+            'criado_por_nome',
+            'criado_por__username',
+            'criado_em',
+            'esta_assinado',
+            'data_assinado',
+            'finalizado_por_nome',
+            'finalizado_por__username',
+            'modificado_por__username',
+            'modificado_por_nome',
+        ).select_related(
+            'finalizado_por',
+            'modificado_por',
+            'criado_por'
+        )
         if self.mostrar_ultimas:
             qs = qs[:self.mostrar_ultimas]
-        return qs
+        return qs.order_by('-data_assinado')
 
     def get_ultimos_documentos_em_edicao_queryset(self):
         qs = Documento.objects.em_edicao().from_groups(grupos_ids=self.get_ids_grupos_do_usuario)
+        qs = qs.only(
+            'pk',
+            'pk_uuid',
+            'eh_modelo',
+            'esta_ativo',
+            'versao_numero',
+            'assunto',
+            'criado_por_nome',
+            'criado_por__username',
+            'criado_em',
+            'esta_assinado',
+            'data_assinado',
+            'modificado_por__username',
+            'modificado_por_nome',
+        ).select_related(
+            'modificado_por',
+            'criado_por'
+        )
         if self.mostrar_ultimas:
             qs = qs[:self.mostrar_ultimas]
         return qs
 
     def get_ultimos_documentos_modificados_queryset(self):
         qs = Documento.objects.order_by('-modificado_em').from_groups(grupos_ids=self.get_ids_grupos_do_usuario)
+        qs = qs.only(
+            'pk',
+            'pk_uuid',
+            'eh_modelo',
+            'esta_ativo',
+            'versao_numero',
+            'assunto',
+            'criado_por_nome',
+            'criado_por__username',
+            'criado_em',
+            'esta_assinado',
+            'data_assinado',
+            'finalizado_por_nome',
+            'finalizado_por__username',
+            'modificado_por__username',
+            'modificado_por_nome',
+        ).select_related(
+            'finalizado_por',
+            'modificado_por',
+            'criado_por'
+        )
         if self.mostrar_ultimas:
             qs = qs[:self.mostrar_ultimas]
         return qs
@@ -947,7 +1106,28 @@ class DocumentosEmEdicaoGrupo(DjDocumentsBackendMixin, MenuMixin, SearchableList
         grupos_id_list = tuple(
             self.djdocuments_backend.get_grupos_usuario(self.request.user).values_list('pk', flat=True))
 
-        queryset = queryset.em_edicao().from_groups(grupos_ids=grupos_id_list).select_related('criado_por__username')
+        queryset = queryset.em_edicao().from_groups(grupos_ids=grupos_id_list)
+        queryset = queryset.only(
+            'pk',
+            'pk_uuid',
+            'eh_modelo',
+            'esta_ativo',
+            'versao_numero',
+            'assunto',
+            'criado_por_nome',
+            'criado_por__username',
+            'criado_em',
+            'esta_assinado',
+            'data_assinado',
+            'finalizado_por_nome',
+            'finalizado_por__username',
+            'modificado_por__username',
+            'modificado_por_nome',
+        ).select_related(
+            'finalizado_por',
+            'modificado_por',
+            'criado_por'
+        )
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -979,8 +1159,29 @@ class DocumentosFinalizadosGrupo(DjDocumentsBackendMixin, MenuMixin, SearchableL
         grupos_id_list = tuple(
             self.djdocuments_backend.get_grupos_usuario(self.request.user).values_list('pk', flat=True))
 
-        queryset = queryset.finalizados().from_groups(grupos_ids=grupos_id_list).select_related('criado_por__username')
-        return queryset
+        queryset = queryset.finalizados().from_groups(grupos_ids=grupos_id_list)
+        queryset = queryset.only(
+            'pk',
+            'pk_uuid',
+            'eh_modelo',
+            'esta_ativo',
+            'versao_numero',
+            'assunto',
+            'criado_por_nome',
+            'criado_por__username',
+            'criado_em',
+            'esta_assinado',
+            'data_assinado',
+            'finalizado_por_nome',
+            'finalizado_por__username',
+            'modificado_por__username',
+            'modificado_por_nome',
+        ).select_related(
+            'finalizado_por',
+            'modificado_por',
+            'criado_por'
+        )
+        return queryset.order_by('-data_assinado')
 
     def get_context_data(self, **kwargs):
         context = super(DocumentosFinalizadosGrupo, self).get_context_data(**kwargs)
@@ -1011,7 +1212,27 @@ class DocumentosProntosParaFinalizarGrupo(DjDocumentsBackendMixin, MenuMixin, Se
             self.djdocuments_backend.get_grupos_usuario(self.request.user).values_list('pk', flat=True))
 
         queryset = queryset.prontos_para_finalizar().from_groups(grupos_ids=grupos_id_list)
-        # queryset = queryset.prefetch_related('assinaturas')
+        queryset = queryset.only(
+            'pk',
+            'pk_uuid',
+            'eh_modelo',
+            'esta_ativo',
+            'versao_numero',
+            'assunto',
+            'criado_por_nome',
+            'criado_por__username',
+            'criado_em',
+            'esta_assinado',
+            'data_assinado',
+            'finalizado_por_nome',
+            'finalizado_por__username',
+            'modificado_por__username',
+            'modificado_por_nome',
+        ).select_related(
+            'finalizado_por',
+            'modificado_por',
+            'criado_por'
+        )
         return queryset
 
     def get_context_data(self, **kwargs):
