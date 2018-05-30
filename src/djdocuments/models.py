@@ -304,6 +304,16 @@ class Documento(SoftDeletableModel):
     assinatura_hash = models.TextField(blank=True, editable=False, unique=True, null=True)
 
     data_assinado = models.DateTimeField(null=True, blank=True)
+
+    finalizado_por = models.ForeignKey(to=settings.AUTH_USER_MODEL, null=True,
+                                       related_name="%(app_label)s_%(class)s_finalizado_por",
+                                       blank=True, on_delete=models.SET_NULL, editable=False,
+                                       help_text='Usuario que finalizou '
+                                                 'o documento para o sistema '
+                                                 'gere o código de validação')
+
+    finalizado_por_nome = models.CharField(max_length=255, blank=True, default='', editable=False)
+
     esta_assinado = models.BooleanField(default=False, editable=False)
 
     esta_pronto_para_assinar = models.BooleanField(default=False, editable=True)
