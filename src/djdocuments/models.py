@@ -585,15 +585,23 @@ class Documento(SoftDeletableModel):
         conteudo_gerado = DjDocumentsBackend.popular_conteudo_assinaturas(document=self, commit=commit)
         return conteudo_gerado
 
-    def finalizar_documento(self, usuario, commit=True):
+    def finalizar_documento(self, usuario_atual_da_requisicao, finalizado_por=None, commit=True):
         if not self.pronto_para_finalizar:
             raise ExitemAssinaturasPendentes('Impossivel finalizar documento, ainda existem assinaturas pendentes')
-        self.modificado_por = usuario
+        data_finalizacao = timezone.now()
+        self.modificado_por = usuario_atual_da_requisicao
         self.modificado_por_nome = self.modificado_por.get_full_name()
-        self.data_assinado = timezone.now()
+        self.data_assinado = data_finalizacao
         self.assinatura_hash = self.gerar_hash(self.data_assinado)
         self.esta_assinado = True
         self.popular_conteudo_assinaturas()
+        self._desabilitar_temporiariamente_versao_numero = True
+        if finalizado_por and not isinstance(finalizado_por, AnonymousUser):
+            self.finalizado_por = finalizado_por
+            self.finalizado_por_nome = finalizado_por.get_full_name()
+        else:
+            self.finalizado_por = self.modificado_por
+            self.finalizado_por_nome = self.modificado_por_nome
         if commit:
             self.save()
 
