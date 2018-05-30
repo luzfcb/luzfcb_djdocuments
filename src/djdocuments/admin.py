@@ -59,9 +59,12 @@ class DocumentoAdmin(SimpleHistoryAdmin):
         # 'revertido_em',
         # 'revertido_por', 'revertido_da_versao',
         'pk_uuid',
+        'data_assinado',
         'esta_assinado',
         'rodape_qr_validacao',
         'conteudo_assinaturas',
+        'finalizado_por',
+        'finalizado_por_nome',
 
     )
     # readonly_fields = ('criado_em', 'criado_por', 'modificado_em', 'modificado_por', 'revertido_em', 'revertido_por',
