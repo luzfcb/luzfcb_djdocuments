@@ -847,7 +847,11 @@ class FinalizarDocumentoFormView(FormActionViewMixin, AjaxFormPostMixin, SingleD
 
         # form.cleaned_data[]
         if self.document_object.pronto_para_finalizar:
-            self.document_object.finalizar_documento(self.request.user, commit=False)
+            self.document_object.finalizar_documento(
+                usuario_atual_da_requisicao=self.request.user,
+                finalizado_por=form.cleaned_data.get('assinado_por'),
+                commit=False
+            )
 
             img_tag = gerar_tag_img_base64_png_qr_str(self.request, self.document_object)
             context = {
@@ -1262,7 +1266,11 @@ class AssinarFinalizarDocumentoView(AssinarDocumentoView):
     def form_valid(self, form):
         ret = super(AssinarFinalizarDocumentoView, self).form_valid(form)
         if self.document_object.pronto_para_finalizar:
-            self.document_object.finalizar_documento(self.request.user, commit=False)
+            self.document_object.finalizar_documento(
+                usuario_atual_da_requisicao=self.request.user,
+                finalizado_por=self.object.assinado_por,
+                commit=False
+            )
 
             img_tag = gerar_tag_img_base64_png_qr_str(self.request, self.document_object)
             context = {
