@@ -3,7 +3,12 @@ from __future__ import absolute_import, print_function, unicode_literals
 
 from django.db import models
 from django.db.models import Case, IntegerField, Q, Sum, Value, When
-from django.db.models.query import ValuesListQuerySet
+
+try:
+    from django.db.models.query import ValuesListQuerySet
+except ImportError:
+    ValuesListQuerySet = list
+
 from model_utils.managers import SoftDeletableManager, SoftDeletableQuerySet
 
 
