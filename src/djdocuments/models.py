@@ -10,7 +10,7 @@ from django.contrib.auth.hashers import SHA1PasswordHasher
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
-from django.db import models
+from django.db import models, transaction
 from django.db.models import Max, Q
 from django.utils import timezone, six
 from django.utils.encoding import python_2_unicode_compatible
@@ -723,13 +723,18 @@ class Documento(SoftDeletableModel):
             self.assinaturas.update(**assinatura_update_dict)
 
     def delete(self, using=None, soft=True, current_user=None, *args, **kwargs):
-        self.excluido_em = timezone.now()
         if current_user and not isinstance(current_user, AnonymousUser):
-            self.excluido_por = current_user
-            self.excluido_por_nome = self.excluido_por.get_full_name()
-        self._desabilitar_temporiariamente_versao_numero = True
-        super(Documento, self).delete(using, soft, *args, **kwargs)
-        self._desabilitar_temporiariamente_versao_numero = False
+            with transaction.atomic():
+                self.excluido_em = timezone.now()
+                self.excluido_por = current_user
+                self.excluido_por_nome = self.excluido_por.get_full_name()
+                self._desabilitar_temporiariamente_versao_numero = True
+                super(Documento, self).delete(using, soft, *args, **kwargs)
+
+                for assinatura in self.assinaturas:
+                    assinatura.revogar()
+
+                self._desabilitar_temporiariamente_versao_numero = False
 
 
 class PDFDocument(models.Model):
