@@ -248,11 +248,11 @@ class Assinatura(models.Model):
 
         return assinatura_hash
 
-    def revogar(self, usuario_atual):
+    def revogar(self, usuario_atual, agora=timezone.now()):
         self.ativo = False
         self.excluido_por = usuario_atual
         self.nome_excluido_por = usuario_atual.get_full_name()
-        self.data_exclusao = timezone.now()
+        self.data_exclusao = agora
         self.save()
 
     def save(self, *args, **kwargs):
@@ -724,15 +724,18 @@ class Documento(SoftDeletableModel):
 
     def delete(self, using=None, soft=True, current_user=None, *args, **kwargs):
         if current_user and not isinstance(current_user, AnonymousUser):
+
+            agora = kwargs.get('agora', timezone.now())
+
             with transaction.atomic():
-                self.excluido_em = timezone.now()
+                self.excluido_em = agora
                 self.excluido_por = current_user
                 self.excluido_por_nome = self.excluido_por.get_full_name()
                 self._desabilitar_temporiariamente_versao_numero = True
                 super(Documento, self).delete(using, soft, *args, **kwargs)
 
-                for assinatura in self.assinaturas:
-                    assinatura.revogar()
+                for assinatura in self.assinaturas.all():
+                    assinatura.revogar(current_user, agora)
 
                 self._desabilitar_temporiariamente_versao_numero = False
 
