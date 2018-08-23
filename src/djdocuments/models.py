@@ -728,6 +728,7 @@ class Documento(SoftDeletableModel):
             agora = kwargs.get('agora', timezone.now())
 
             with transaction.atomic():
+                self.esta_ativo = False
                 self.excluido_em = agora
                 self.excluido_por = current_user
                 self.excluido_por_nome = self.excluido_por.get_full_name()
