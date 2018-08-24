@@ -9,7 +9,10 @@ from django.conf import settings
 from django.contrib.auth.hashers import SHA1PasswordHasher
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ValidationError
-from django.core.urlresolvers import reverse
+try:
+    from django.urls import reverse
+except ImportError:
+    from django.core.urlresolvers import reverse
 from django.db import models, transaction, Error
 from django.db.models import Max, Q
 from django.utils import timezone, six
@@ -78,7 +81,7 @@ class Assinatura(models.Model):
         }
 
     # documento
-    documento = models.ForeignKey('Documento', related_name='assinaturas')
+    documento = models.ForeignKey('Documento', related_name='assinaturas', on_delete=models.CASCADE)
     documento_pk_uuid = models.UUIDField(editable=False, null=True, db_index=True)
     documento_identificador_versao = models.CharField(editable=False, max_length=25, blank=True)
     documento_assunto = models.CharField(editable=False, max_length=255, blank=True)
@@ -88,6 +91,7 @@ class Assinatura(models.Model):
     # Defensoria
     grupo_assinante = models.ForeignKey(to=get_grupo_assinante_model_str(),
                                         related_name="%(app_label)s_%(class)s_assinaturas",
+                                        on_delete=models.CASCADE
                                         )
 
     grupo_assinante_nome = models.CharField(max_length=255, blank=True)
@@ -95,7 +99,7 @@ class Assinatura(models.Model):
     # Usuario Assinante
     assinado_por = models.ForeignKey(to=settings.AUTH_USER_MODEL,
                                      related_name="%(app_label)s_%(class)s_assinaturas",
-                                     null=True)
+                                     null=True, on_delete=models.CASCADE)
 
     assinado_nome = models.CharField(max_length=255, blank=True)
 
@@ -109,13 +113,13 @@ class Assinatura(models.Model):
     # auditoria
     cadastrado_por = models.ForeignKey(to=settings.AUTH_USER_MODEL,
                                        related_name="%(app_label)s_%(class)s_cadastrado_por",
-                                       editable=False)
+                                       editable=False, on_delete=models.CASCADE)
     cadastrado_em = models.DateTimeField(auto_now_add=True, editable=False)
     nome_cadastrado_por = models.CharField(max_length=255, blank=True, editable=False)
 
     excluido_por = models.ForeignKey(to=settings.AUTH_USER_MODEL,
                                      related_name="%(app_label)s_%(class)s_excluido_por",
-                                     null=True, blank=True, editable=False)
+                                     null=True, blank=True, editable=False, on_delete=models.CASCADE)
     nome_excluido_por = models.CharField(max_length=255, blank=True, default='')
     data_exclusao = models.DateTimeField(null=True, blank=True, editable=False)
 
@@ -326,6 +330,7 @@ class Documento(SoftDeletableModel):
                                    related_name="%(app_label)s_%(class)s_donos",
                                    null=True,
                                    blank=True,
+                                   on_delete=models.CASCADE
                                    )
     # grupo_dono_nome = models.CharField(max_length=500, blank=True, editable=False)
 
@@ -760,7 +765,7 @@ class Documento(SoftDeletableModel):
 
 class PDFDocument(models.Model):
     file = models.FileField(upload_to='djdocuments')
-    documento = models.OneToOneField('Documento', related_name='pdf')
+    documento = models.OneToOneField('Documento', related_name='pdf', on_delete=models.CASCADE)
     documento_pk_uuid = models.UUIDField(editable=False, null=True, db_index=True)
     documento_identificador_versao = models.CharField(editable=False, max_length=25, blank=True)
 
