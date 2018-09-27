@@ -204,13 +204,26 @@
                                     <p><b>Documento:</b> {{ object.identificador_versao }}</p>
                                     <p>
                                         <small>
-                                            <b>Criado: </b> {{ object.criado_em }} - {{ object.criado_por_nome }}
+                                            <b>Criado por </b>
+                                            <span role="button"
+                                              data-container="#popover-modelo"
+                                              data-toggle="popover"
+                                              data-trigger="focus"
+                                              data-content="{{ object.criado_por_nome }}">{{ object.criado_por }}
+                                            </span>
+                                            <b>em</b> {{ object.criado_em|date:'d/m/Y H:i' }}
                                         </small>
                                     </p>
                                     <p>
                                         <small>
-                                            <b>Última Modificação: </b> {{ object.modificado_em }}
-                                            - {{ object.modificado_por_nome }}
+                                            <b>Alterado por </b>
+                                            <span role="button"
+                                              data-container="#popover-modelo"
+                                              data-toggle="popover"
+                                              data-trigger="focus"
+                                              data-content="{{ object.modificado_por_nome }}">{{ object.modificado_por }}
+                                            </span>
+                                             <b>em</b> {{ object.modificado_em|date:'d/m/Y H:i' }}
                                         </small>
                                     </p>
                                 </div>
@@ -291,12 +304,11 @@
                                     <hr>
                                     <div id="sua_assinatura">
 
-
                                         {% regroup assinaturas_pendentes_dos_meus_grupos by grupo_assinante_nome as minhas_assinaturas_pendentes %}
                                         {% for minha in minhas_assinaturas_pendentes %}
-                                            {% if forloop.first %}
-                                                <strong>Pendentes:</strong>
 
+                                            {% if forloop.first %}
+                                              <h4><b>Pendentes</b></h4>
                                             {% endif %}
 
                                             <ul class="list-unstyled">
@@ -357,7 +369,7 @@
                                                     </ul>
                                                 </li>
                                             </ul>
-                                            <hr>
+
                                         {% endfor %}
                                         <!--Fim  If uma de minhas defensorias tem assinatura pendente -->
                                         {% regroup assinaturas_realizadas_dos_meus_grupos by grupo_assinante_nome as minhas_assinaturas %}
