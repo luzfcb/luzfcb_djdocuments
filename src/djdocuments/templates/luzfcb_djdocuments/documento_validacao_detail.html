@@ -508,6 +508,31 @@
                                     </div>
 
                                 {% endif %}
+                                <hr>
+                                <h4><b>Histórico de Alterações</b></h4>
+                                <table class="table">
+                                  <thead>
+                                    <tr>
+                                      <th><small>Versão</small></th>
+                                      <th><small>Data/Hora</small></th>
+                                      <th><small>Usuário</small></th>
+                                    </tr>
+                                  </thead>
+                                  {% for versao in object.versoes.all %}
+                                  <tr>
+                                    <td><small>{{ versao.versao_numero }}</small></td>
+                                    <td><small>{{ versao.history_date|date:'d/m/Y H:i' }}</small></td>
+                                    <td>
+                                      <small role="button"
+                                        data-container="#popover-modelo"
+                                        data-toggle="popover"
+                                        data-trigger="focus"
+                                        data-content="{{ versao.history_user.get_full_name }}">{{ versao.history_user }}
+                                      </small>
+                                    </td>
+                                  </tr>
+                                  {% endfor %}
+                                </table>
                             </div>
                         </div>
                     </div>
