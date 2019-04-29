@@ -303,7 +303,6 @@ class Documento(SoftDeletableModel):
     eh_modelo_padrao = models.BooleanField(default=False, editable=True)
     modelo_descricao = models.TextField(blank=True, default='')
     modelo_pronto_para_utilizacao = models.BooleanField(default=False)
-    modelo_publico = models.BooleanField(default=False)
     # end template
 
     assinatura_hash = models.TextField(blank=True, editable=False, unique=True, null=True)
@@ -716,9 +715,6 @@ class Documento(SoftDeletableModel):
 
         if self.pk and self.tracker.has_changed('versao_numero'):
             assinatura_update_dict['documento_identificador_versao'] = self.identificador_versao
-
-        if self.eh_modelo and not self.grupo_dono:
-            self.modelo_publico = True
 
         update_fields = None
         if self.pk and not hasattr(self, '_generated_by_simple_history'):

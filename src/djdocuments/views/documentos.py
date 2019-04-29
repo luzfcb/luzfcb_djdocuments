@@ -1867,20 +1867,6 @@ class DocumentoModeloAtivarDesativarUtilizacao(AjaxFormPostMixin, BaseUpdateView
         return super(DocumentoModeloAtivarDesativarUtilizacao, self).form_valid(form)
 
 
-class DocumentoModeloAtivarDesativarPublicidade(AjaxFormPostMixin, BaseUpdateView):
-    model = Documento
-    slug_field = 'pk_uuid'
-    fields = ('modelo_publico',)
-    success_url = reverse_lazy('documentos:dashboard_modelos')
-    document_json_fields = ('pk_uuid', 'modelo_publico')
-    queryset = Documento.objects.modelos()
-
-    def form_valid(self, form):
-        obj = form.save(commit=False)
-        obj._desabilitar_temporiariamente_versao_numero = True
-        return super(DocumentoModeloAtivarDesativarPublicidade, self).form_valid(form)
-
-
 class DocumentoMarcarDesmarcarProntoParaAssinar(AjaxFormPostMixin, FormActionViewMixin, DjDocumentsBackendMixin, generic.UpdateView):
     model = Documento
     form_class = DocumentoMarcarDesmarcarProntoParaAssinarForm
