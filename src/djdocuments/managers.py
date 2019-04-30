@@ -87,9 +87,9 @@ class DocumentoQuerySet(SoftDeletableQuerySet):
                 % self.__class__.__name__
             )
         if grupos_ids and isinstance(grupos_ids, (list, tuple, ValuesListQuerySet)):
-            q &= (Q(grupo_dono__in=grupos_ids) | Q(grupo_dono=None))
+            q &= (Q(grupo_dono__in=grupos_ids) | Q(grupo_dono=None) | Q(modelo_publico=True))
         else:
-            q |= (q | Q(grupo_dono=None))
+            q |= (q | Q(grupo_dono=None) | Q(modelo_publico=True))
         qs = self.filter(q)
         return qs
 
