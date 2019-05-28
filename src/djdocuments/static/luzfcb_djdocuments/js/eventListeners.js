@@ -244,7 +244,7 @@
     var mark_fields_with_errors = function (errors, form) {
         for (var key in errors) {
             if (errors.hasOwnProperty(key)) {
-                var el_text = '<p id="error_1_id_' + key + '" class="help-block autoadded"> <strong>' + errors[key] + '</strong></p>';
+                var el_text = '<p id="error_1_id_' + key + '" class="help-block alert alert-danger autoadded"> <strong>' + errors[key] + '</strong></p>';
                 var p_element = $(el_text);
                 var input_id = 'id_' + key;
                 var label_search = "label[for='" + input_id + "']";
