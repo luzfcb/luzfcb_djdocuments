@@ -9,7 +9,6 @@
     <link href="{% static 'luzfcb_djdocuments/css/luzfcb_document_format_styles_print.css' %}"
           rel="stylesheet">
 
-
     <style>
 
         @media screen {
@@ -70,10 +69,6 @@
                 padding-top: 0px;
             }
         }
-
-        {#        body {#}
-        {#            padding-top: 90px;#}
-        {#        }#}
 
         #documento_dados {
             color: #ffffff;
@@ -659,16 +654,14 @@
             });
         });
     </script>
-    <iframe id="iframeprint" style="display: none;"></iframe>
+    <!--<iframe id="iframeprint" style="display: none;"></iframe>-->
     <script>
         jQuery(document).ready(function ($) {
             function print(element, url) {
-                {#                var iframe_novo = '<iframe id="iframeprint" src="' + url + '" frameborder="0"></iframe>';#}
                 $(element).removeClass('active').addClass('active');
                 $(element).attr('disabled');
                 var iframeId = 'iframeprint';
                 var $iframe = $('iframe#iframeprint');
-                {#                $iframe = $(iframe_novo);#}
                 console.log($iframe);
                 console.log(url);
                 $iframe.attr('src', url);
@@ -690,7 +683,6 @@
                 evt.preventDefault();
                 var url = $(this).prop('href');
                 print(this, url);
-                {#                return false;#}
             });
         });
     </script>
