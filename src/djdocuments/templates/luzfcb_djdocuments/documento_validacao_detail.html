@@ -9,7 +9,6 @@
     <link href="{% static 'luzfcb_djdocuments/css/luzfcb_document_format_styles_print.css' %}"
           rel="stylesheet">
 
-
     <style>
 
         @media screen {
@@ -71,13 +70,14 @@
             }
         }
 
-        {#        body {#}
-        {#            padding-top: 90px;#}
-        {#        }#}
-
         #documento_dados {
             color: #ffffff;
         }
+
+    .btn {
+        margin-top:  5px;
+        margin-left: 3px;
+    }
     </style>
 {% endblock %}
 
@@ -96,27 +96,17 @@
                     <div class="col-md-12">
                         <div class="col-md-8">
                             <div class="navbar-header">
-                                <a class="navbar-brand" href="#">SOLAR</a>
                                 <a class="navbar-brand" href="#">{% nome_sistema %}</a>
                             </div>
-                            <div class="col-md-4">
-                            <span><strong>Documento{% if object.eh_modelo %} Modelo{% endif %}
-                                : {{ object.identificador_versao }}</strong></span>
-                            </div>
-                            <div class="col-md-6">
-                                <span><strong>Defensoria:</strong> {{ object.grupo_dono }}</span>
-                            </div>
-                            <div class="col-md-4">
-                                <span><strong>Tipo:</strong> {{ object.tipo_documento }}</span>
-                            </div>
-                            <div class="col-md-6">
-                                {% if object.eh_modelo %}
-                                    <span><strong>Descrição:</strong> {{ object.modelo_descricao|safe }}</span>
-                                {% else %}
-                                    <span><strong>Assunto:</strong> {{ object.assunto|safe }}</span>
-                                {% endif %}
-
-                            </div>
+                            {% if object.eh_modelo %}
+                                <div class="col-md-4">
+                                    <span><strong>Documento Modelo: {{ object.identificador_versao }}</strong></span>
+                                </div>
+                                <div class="col-md-4">
+                                    <span><strong>Tipo:</strong> {{ object.tipo_documento }}</span>
+                                </div>
+                                <span><strong>Descrição:</strong> {{ object.modelo_descricao|safe }}</span>
+                            {% endif %}
                         </div>
 
                         <div class="col-md-4">
@@ -176,12 +166,10 @@
                 <div class="col-md-4 ">
                     <div class="left-menu">
                         <div class="panel panel-default">
-                            {% if not object.eh_modelo %}
-                                <div class="panel-heading text-center">
-                                    <h5><b>Estado Documental</b></h5>
-                                    <h5 class="text-center">
-
-
+                            <div id="doc_dados" class="panel panel-heading">
+                                {% if not object.eh_modelo %}
+                                    <p>
+                                        <b>Situação:</b>
                                         {% if object.possui_assinatura_pendente == 0 %}
                                             <span class="label label-danger">Ainda não possui assinantes cadastrados</span>
                                         {% elif object.possui_assinatura_pendente == 1 and object.esta_pronto_para_assinar %}
@@ -193,47 +181,47 @@
                                         {% else %}
                                             <span class="label label-success">Assinado e Finalizado</span>
                                         {% endif %}
-
-
-                                    </h5>
-                                </div>
-                            {% endif %}
+                                    </p>
+                                {% endif %}
+                                <p><b>Assunto:</b> {{ object.assunto }}</p>
+                                <p><b>Documento:</b> {{ object.identificador_versao }}</p>
+                                <p><b>Grupo Dono:</b> {{ object.grupo_dono }}</p>
+                                <p><b>Tipo:</b> {{ object.tipo_documento }}</p>
+                                <p>
+                                    <small>
+                                        <b>Criado por </b>
+                                        <span role="button"
+                                          data-container="#popover-modelo"
+                                          data-toggle="popover"
+                                          data-trigger="focus"
+                                          data-content="{{ object.criado_por_nome }}">{{ object.criado_por }}
+                                        </span>
+                                        <b>em</b> {{ object.criado_em|date:'d/m/Y H:i' }}
+                                    </small>
+                                </p>
+                                <p>
+                                    <small>
+                                        <b>Alterado por </b>
+                                        <span role="button"
+                                          data-container="#popover-modelo"
+                                          data-toggle="popover"
+                                          data-trigger="focus"
+                                          data-content="{{ object.modificado_por_nome }}">{{ object.modificado_por }}
+                                        </span>
+                                         <b>em</b> {{ object.modificado_em|date:'d/m/Y H:i' }}
+                                    </small>
+                                </p>
+                            </div>
                             <div class="panel-body">
-                                <div id="doc_dados">
-                                    <h4><b>Dados</b></h4>
-                                    <p><b>Documento:</b> {{ object.identificador_versao }}</p>
-                                    <p>
-                                        <small>
-                                            <b>Criado por </b>
-                                            <span role="button"
-                                              data-container="#popover-modelo"
-                                              data-toggle="popover"
-                                              data-trigger="focus"
-                                              data-content="{{ object.criado_por_nome }}">{{ object.criado_por }}
-                                            </span>
-                                            <b>em</b> {{ object.criado_em|date:'d/m/Y H:i' }}
-                                        </small>
-                                    </p>
-                                    <p>
-                                        <small>
-                                            <b>Alterado por </b>
-                                            <span role="button"
-                                              data-container="#popover-modelo"
-                                              data-toggle="popover"
-                                              data-trigger="focus"
-                                              data-content="{{ object.modificado_por_nome }}">{{ object.modificado_por }}
-                                            </span>
-                                             <b>em</b> {{ object.modificado_em|date:'d/m/Y H:i' }}
-                                        </small>
-                                    </p>
-                                </div>
                                 <div id="acoes">
-                                    <hr>
                                     {% if pode_editar and not object.esta_pronto_para_assinar %}
-                                        <a href="{{ object.get_edit_url }}" class="btn btn-sm btn-primary"><span
-                                                class="glyphicon glyphicon-pencil"
-                                                aria-hidden="true"></span> Editar
-                                            documento</a>
+                                        <div class="alert alert-info">
+                                          <b>Liberar para assinatura:</b> clique em Editar e em seguida no botão "Liberar para assinatura".
+                                        </div>
+                                        <a href="{{ object.get_edit_url }}" class="btn btn-sm btn-primary">
+                                            <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+                                            Editar
+                                        </a>
                                     {% elif pode_editar and object.esta_pronto_para_assinar %}
                                         <a href="{{ object.get_pronto_para_assinar_url }}"
                                            class="btn btn-sm btn-primary"
@@ -249,10 +237,9 @@
                                            class="btn btn-sm btn-primary"
                                            data-ajaxmodal="true"
                                            data-ajaxmodal-prefetch="true"
-                                        ><span
-                                                class="glyphicon glyphicon-pencil"
-
-                                                aria-hidden="true"></span> Finalizar</a>
+                                        ><span class="glyphicon glyphicon-check" aria-hidden="true"></span>
+                                            Finalizar
+                                        </a>
                                     {% endif %}
                                     {% if pode_adicionar_assinantes %}
 {#                                        <small class="pull-right">#}
@@ -264,6 +251,7 @@
                                                     {#                                                data-toggle="modal"#}
                                                     {#                                                data-target=".adicionar_assinantes_modal"#}
                                             >
+                                                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                                                 Adicionar assinantes
                                             </a>
 {#                                        </small>#}
@@ -666,16 +654,14 @@
             });
         });
     </script>
-    <iframe id="iframeprint" style="display: none;"></iframe>
+    <!--<iframe id="iframeprint" style="display: none;"></iframe>-->
     <script>
         jQuery(document).ready(function ($) {
             function print(element, url) {
-                {#                var iframe_novo = '<iframe id="iframeprint" src="' + url + '" frameborder="0"></iframe>';#}
                 $(element).removeClass('active').addClass('active');
                 $(element).attr('disabled');
                 var iframeId = 'iframeprint';
                 var $iframe = $('iframe#iframeprint');
-                {#                $iframe = $(iframe_novo);#}
                 console.log($iframe);
                 console.log(url);
                 $iframe.attr('src', url);
@@ -697,7 +683,6 @@
                 evt.preventDefault();
                 var url = $(this).prop('href');
                 print(this, url);
-                {#                return false;#}
             });
         });
     </script>

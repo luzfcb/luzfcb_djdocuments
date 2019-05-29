@@ -244,11 +244,22 @@
     var mark_fields_with_errors = function (errors, form) {
         for (var key in errors) {
             if (errors.hasOwnProperty(key)) {
-                var el_text = '<p id="error_1_id_' + key + '" class="help-block autoadded"> <strong>' + errors[key] + '</strong></p>';
+                var el_text = '<p id="error_1_id_' + key + '" class="help-block alert alert-danger autoadded"> <strong>' + errors[key] + '</strong></p>';
+
                 var p_element = $(el_text);
+                var label_search = '';
+
                 var input_id = 'id_' + key;
-                var label_search = "label[for='" + input_id + "']";
-                $('#hint_id_' + key, form).before(p_element);
+                var hint_id = '#hint_id_' + key;
+
+                if (form.context.action.includes('assinarfinalizar')){
+                    input_id = 'id_assinarfinalizar-' + key;
+                    hint_id = '#hint_id_assinarfinalizar-' + key
+                }
+
+                label_search = "label[for='" + input_id + "']";
+                $(hint_id, form).before(p_element);
+
 
                 $(label_search).parents('div:first').removeClass('has-error').removeClass('error').addClass('has-error').addClass('error');
             }
