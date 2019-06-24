@@ -201,7 +201,7 @@ class DocumentoCriarAutocomplete(DjDocumentsBackendMixin, autocomplete.Select2Qu
 
         tipo_documento = self.forwarded.get('tipo_documento', None)
         grupos_ids = self.djdocuments_backend.get_grupos_usuario(self.request.user).values_list('id', flat=True)
-        qs = models.Documento.admin_objects.modelos(grupos_ids).filter(
+        qs = models.Documento.admin_objects.modelos(grupos_ids, False).filter(
             esta_ativo=True,
             modelo_pronto_para_utilizacao=True
         ).exclude(
