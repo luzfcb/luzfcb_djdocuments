@@ -78,7 +78,7 @@ class DocumentoQuerySet(SoftDeletableQuerySet):
         qs = self.filter(q)
         return qs
 
-    def modelos(self, grupos_ids=None):
+    def modelos(self, grupos_ids=None, modelos_publicos=True):
         q = Q()
         q &= Q(eh_modelo=True)
         if grupos_ids and not isinstance(grupos_ids, (list, tuple, ValuesListQuerySet)):
@@ -87,9 +87,15 @@ class DocumentoQuerySet(SoftDeletableQuerySet):
                 % self.__class__.__name__
             )
         if grupos_ids and isinstance(grupos_ids, (list, tuple, ValuesListQuerySet)):
-            q &= (Q(grupo_dono__in=grupos_ids) | Q(grupo_dono=None))
+            if modelos_publicos:
+                q &= (Q(grupo_dono__in=grupos_ids) | Q(grupo_dono=None) | Q(modelo_publico=True))
+            else:
+                q &= (Q(grupo_dono__in=grupos_ids) | Q(grupo_dono=None))
         else:
-            q |= (q | Q(grupo_dono=None))
+            if modelos_publicos:
+                q |= (q | Q(grupo_dono=None) | Q(modelo_publico=True))
+            else:
+                q |= (q | Q(grupo_dono=None))
         qs = self.filter(q)
         return qs
 
@@ -159,10 +165,10 @@ class DocumentoAdminManager(SoftDeletableManager):
     def from_groups(self, grupos_ids):
         return self.get_queryset().from_groups(grupos_ids=grupos_ids)
 
-    def modelos(self, grupos_ids=None):
+    def modelos(self, grupos_ids=None, modelos_publicos=True):
         return self._queryset_class(model=self.model,
                                     using=self._db,
-                                    hints=self._hints).ativos().modelos(grupos_ids=grupos_ids)
+                                    hints=self._hints).ativos().modelos(grupos_ids=grupos_ids, modelos_publicos=modelos_publicos)
 
     def documentos_dos_grupos(self, grupos_ids=None):
         return self._queryset_class(model=self.model,

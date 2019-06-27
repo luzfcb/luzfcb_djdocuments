@@ -765,9 +765,17 @@ class DocumentoCriar(CreatePopupMixin, VinculateMixin, FormActionViewMixin, DjDo
 
     def get_modelo_from_form(self, form):
         from dj_waff.choice_with_other import OTHER_CHOICE
-        chave, modelo_documento = form.cleaned_data['modelo_documento']
-        if not chave == OTHER_CHOICE:
-            modelo_documento = Documento.objects.modelos().filter(eh_modelo_padrao=True).first()
+
+        modelo_documento = form.cleaned_data['modelo_documento']
+
+        # se valor for uma tupla, obtém chave e objeto a partir dela
+        if isinstance(modelo_documento, tuple):
+
+            chave, modelo_documento = modelo_documento
+
+            if not chave == OTHER_CHOICE:
+                modelo_documento = Documento.objects.modelos().filter(eh_modelo_padrao=True).first()
+
         return modelo_documento
 
     def form_valid(self, form):
@@ -1865,6 +1873,20 @@ class DocumentoModeloAtivarDesativarUtilizacao(AjaxFormPostMixin, BaseUpdateView
         obj = form.save(commit=False)
         obj._desabilitar_temporiariamente_versao_numero = True
         return super(DocumentoModeloAtivarDesativarUtilizacao, self).form_valid(form)
+
+
+class DocumentoModeloAtivarDesativarPublicidade(AjaxFormPostMixin, BaseUpdateView):
+    model = Documento
+    slug_field = 'pk_uuid'
+    fields = ('modelo_publico',)
+    success_url = reverse_lazy('documentos:dashboard_modelos')
+    document_json_fields = ('pk_uuid', 'modelo_publico')
+    queryset = Documento.objects.modelos()
+
+    def form_valid(self, form):
+        obj = form.save(commit=False)
+        obj._desabilitar_temporiariamente_versao_numero = True
+        return super(DocumentoModeloAtivarDesativarPublicidade, self).form_valid(form)
 
 
 class DocumentoMarcarDesmarcarProntoParaAssinar(AjaxFormPostMixin, FormActionViewMixin, DjDocumentsBackendMixin, generic.UpdateView):
